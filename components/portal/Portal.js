@@ -162,7 +162,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang 
     switch(activeTab) {
       case 'dashboard':  return <Dashboard {...props} />
       case 'costos':     return <Costos {...props} />
-      case 'archivos':   return <Archivos {...props} />
+      case 'archivos':   return <Archivos {...props} isArq={isArq} />
       case 'cronograma': return <Cronograma {...props} />
       case 'soporte':    return <Soporte {...props} isArq={isArq} />
       case 'admin':      return isArq ? <Admin {...props} /> : <Dashboard {...props} />
