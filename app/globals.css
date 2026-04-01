@@ -436,21 +436,67 @@ body {
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
+/* Hamburger - hidden on desktop */
+.nav-hamburger { display: none; }
+.mobile-1col { } /* desktop: no change */
+
 /* Responsive */
 @media (max-width: 768px) {
-  .nav { padding: 0 20px; }
-  .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; }
-  .hero-h1 { font-size: 40px; }
+  /* Nav */
+  .nav { padding: 0 20px; height: 56px; }
+  .nav-links { display: none !important; }
+  .nav-hamburger {
+    display: flex !important;
+    flex-direction: column; justify-content: center;
+    background: none; border: none; cursor: pointer;
+    padding: 4px; gap: 0;
+  }
+
+  /* Hero */
+  .hero { grid-template-columns: 1fr; padding: 90px 24px 60px; }
+  .hero-h1 { font-size: 42px; }
   .hero-stats { display: none; }
   .hero-actions { flex-direction: column; }
   .btn-primary, .btn-ghost { width: 100%; text-align: center; }
-  .section { padding: 60px 24px; }
+
+  /* Sections */
+  .section { padding: 56px 24px; }
+  .section-h2 { font-size: 36px; }
+
+  /* Features */
+  .mobile-1col { grid-template-columns: 1fr !important; gap: 40px !important; }
   .features-grid { grid-template-columns: 1fr; }
   .feature-item { border-right: none !important; }
-  .pricing-section { padding: 60px 24px; }
+
+  /* Pricing */
+  .pricing-section { padding: 56px 24px; }
   .pricing-grid { grid-template-columns: 1fr; }
   .pcard { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,.1); }
+
+  /* Footer */
+  .footer { padding: 48px 24px 24px; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+
+  /* Portal */
+  .page-content { padding: 20px 16px; }
   .metrics-grid { grid-template-columns: 1fr 1fr; }
   .two-col, .three-col { grid-template-columns: 1fr; }
+  .portal-topbar { padding: 0 16px; height: auto; min-height: 56px; }
+  .portal-tabs { width: 100%; border-top: 1px solid var(--border); overflow-x: auto; }
+  .portal-tab { padding: 10px 12px; font-size: 11px; }
+  .portal-user span:not(.portal-avatar) { display: none; }
+
+  /* Modal */
+  .modal { max-width: 100%; margin: 0 16px; }
+  .modal-header { padding: 28px 24px 20px; }
+  .modal-body { padding: 24px; }
+  .card { padding: 18px 16px; }
+}
+
+@media (max-width: 480px) {
+  .hero-h1 { font-size: 34px; }
+  .section-h2 { font-size: 30px; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .metric-value { font-size: 28px; }
+  .footer-grid { grid-template-columns: 1fr; }
 }

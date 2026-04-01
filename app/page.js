@@ -160,7 +160,7 @@ export default function Home() {
 
       {/* QUE ES */}
       <section id="que-es" className="section" style={{background:'var(--white)'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:80,alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:80,alignItems:'start'}} className="mobile-1col">
           <div>
             <span className="section-label">{t.queEsLabel}</span>
             <h2 className="section-h2">{t.queEsH2}</h2>
@@ -182,7 +182,7 @@ export default function Home() {
 
       {/* COMO FUNCIONA */}
       <section id="video-sec" className="section" style={{borderTop:'1px solid var(--border)'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:80,alignItems:'center'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:80,alignItems:'center'}} className="mobile-1col">
           <div>
             <span className="section-label">Como funciona</span>
             <h2 className="section-h2">Tres minutos<br/>para <em>entenderlo todo</em></h2>

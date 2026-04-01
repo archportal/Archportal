@@ -41,6 +41,18 @@ export default function Nav({ onLogin, lang, setLang }) {
 
           <button className="nav-cta" onClick={onLogin}>{t.cliente}</button>
         </div>
+
+        {/* Hamburger button - mobile only */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{ display: 'none' }}
+          className="nav-hamburger"
+          aria-label="Menu"
+        >
+          <span style={{ display: 'block', width: 22, height: 2, background: scrolled ? 'var(--ink)' : '#fff', marginBottom: 5, transition: 'all .3s', transform: menuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }}/>
+          <span style={{ display: 'block', width: 22, height: 2, background: scrolled ? 'var(--ink)' : '#fff', transition: 'all .3s', opacity: menuOpen ? 0 : 1 }}/>
+          <span style={{ display: 'block', width: 22, height: 2, background: scrolled ? 'var(--ink)' : '#fff', marginTop: 5, transition: 'all .3s', transform: menuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }}/>
+        </button>
       </nav>
 
       {/* Mobile menu */}
