@@ -121,11 +121,11 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
   )
 }
 
-export default function Portal({ user, projects:initialProjects, onLogout, lang }) {
+export default function Portal({ user, projects:initialProjects, onLogout, lang, clientProjectData }) {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [projects, setProjects] = useState(initialProjects || [])
-  const [activeProject, setActiveProject] = useState(null)
-  const [projectData, setProjectData] = useState(null)
+  const [activeProject, setActiveProject] = useState(clientProjectData?.project || null)
+  const [projectData, setProjectData] = useState(clientProjectData || null)
 
   const isArq = user.role === 'arq' || user.impersonated
   const tabs = isArq ? TABS_ARQ : TABS_CLI
@@ -139,6 +139,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang 
     setActiveTab('dashboard')
   }, [])
 
+
   const refreshProject = useCallback(async () => {
     if (!activeProject?.id) return
     const res = await fetch(`/api/projects?id=${activeProject.id}`)
@@ -151,6 +152,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang 
     await fetch(`/api/projects?id=${id}`, { method:'DELETE' })
     setProjects(prev => prev.filter(p => p.id !== id))
   }
+
 
   if (!activeProject) {
     return <ProjectsScreen user={user} projects={projects} onSelect={handleSelect} onCreate={p => setProjects(prev=>[...prev,p])} onDelete={handleDelete} />

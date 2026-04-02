@@ -16,6 +16,7 @@ export default function Home() {
   const [user, setUser] = useState(null)
   const [projects, setProjects] = useState([])
   const [isMaster, setIsMaster] = useState(false)
+  const [clientProjectData, setClientProjectData] = useState(null)
 
   const t = {
     es: {
@@ -85,6 +86,7 @@ export default function Home() {
       const data = await res.json()
       setUser(userData)
       setProjects([data.project || clientProject])
+      setClientProjectData(data)
       setShowLogin(false)
       return
     }
@@ -104,7 +106,7 @@ export default function Home() {
   }
 
   if (isMaster) return <MasterPanel onImpersonate={handleImpersonate} onLogout={handleLogout} />
-  if (user) return <Portal user={user} projects={projects} onLogout={handleLogout} lang={lang} />
+  if (user) return <Portal user={user} projects={projects} onLogout={handleLogout} lang={lang} clientProjectData={clientProjectData} />
 
   return (
     <>
