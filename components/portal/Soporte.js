@@ -166,13 +166,17 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
               <div className="card-title">Base de conocimiento actual</div>
               {kb.length===0 ? (
                 <p style={{fontSize:13,fontWeight:300,color:'var(--g400)'}}>Sin datos adicionales aún.</p>
-              ) : kb.map((k,i) => (
-                <div key={i} style={{padding:'10px 0',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                  <div><div style={{fontSize:12,fontWeight:500,color:'var(--ink)',marginBottom:2}}>{k.tema}</div><div style={{fontSize:12,fontWeight:300,color:'var(--g500)'}}>{k.info}</div></div>
-                  <span style={{fontSize:10,padding:'2px 8px',background:'var(--g100)',color:'var(--g500)',marginLeft:8,flexShrink:0}}>DISPONIBLE</span>
+              ) : (
+                <div style={{overflowY:'scroll',maxHeight:280,marginBottom:8}}>
+                  {kb.map((k,i) => (
+                    <div key={i} style={{padding:'10px 0',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                      <div><div style={{fontSize:12,fontWeight:500,color:'var(--ink)',marginBottom:2}}>{k.tema}</div><div style={{fontSize:12,fontWeight:300,color:'var(--g500)'}}>{k.info}</div></div>
+                      <span style={{fontSize:10,padding:'2px 8px',background:'var(--g100)',color:'var(--g500)',marginLeft:8,flexShrink:0}}>DISPONIBLE</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginTop:16,lineHeight:1.7}}>El asistente responde automáticamente con la información cargada. Si no tiene el dato, el arquitecto recibe una notificación y responde personalmente.</p>
+              )}
+              <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginTop:8,lineHeight:1.7}}>El asistente responde automáticamente con la información cargada. Si no tiene el dato, el arquitecto recibe una notificación y responde personalmente.</p>
             </div>
           </div>
         )}
