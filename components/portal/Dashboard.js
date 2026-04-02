@@ -166,7 +166,7 @@ export default function Dashboard({ project, user, lang }) {
         <div className="card">
           <div className="card-title">{t.bitacora} {photos.length>0&&<span style={{fontSize:11,color:'var(--g400)',fontWeight:300}}>· {photos.length} fotos</span>}</div>
           {photos.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noFotos}</p> : (
-            <div style={{overflowY:'auto',maxHeight:320}}>
+            <div style={{overflowY:'scroll',maxHeight:318,borderTop:'1px solid var(--g100)',marginTop:8,paddingTop:3}}>
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>
                 {photos.map((f,i)=>(
                   <div key={i} onClick={()=>setLightbox({...f,index:i})} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative',cursor:'zoom-in'}}>
