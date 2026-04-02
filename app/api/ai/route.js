@@ -14,7 +14,7 @@ export async function POST(request) {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 600,
-      system: `${context || 'Eres el asistente de un proyecto de construcción.'}\n\nIMPORTANTE: Si no tienes información suficiente para responder la pregunta con datos concretos del proyecto, responde EXACTAMENTE con: "NO_TENGO_DATO". No intentes adivinar ni dar información genérica.`,
+      system: `${context || 'Eres el asistente de un proyecto de construcción.'}\n\nINSTRUCCIONES:\n1. Usa TODA la información del proyecto y la base de conocimiento para responder.\n2. Si la respuesta está en la información proporcionada, respóndela directamente y con claridad.\n3. SOLO si definitivamente no tienes el dato en la información proporcionada, responde EXACTAMENTE: "NO_TENGO_DATO"\n4. No respondas NO_TENGO_DATO si el dato sí está en la base de conocimiento o en los datos del proyecto.`,
       messages: [{ role: 'user', content: pregunta }]
     })
 
