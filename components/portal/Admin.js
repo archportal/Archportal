@@ -11,7 +11,7 @@ async function uploadFile(file, projectId, bucket) {
   const res = await fetch('/api/upload', { method: 'POST', body: formData })
   const data = await res.json()
   if (!res.ok) { console.warn('Upload error:', data.error); return null }
-  return data.url
+  return data // return full object with url and extractedText
 }
 
 export default function Admin({ project, user, onRefresh }) {
@@ -181,8 +181,8 @@ export default function Admin({ project, user, onRefresh }) {
               setSaving(true)
               const newPhotos=[...photosDB]
               for(const file of fotoFiles){
-                const url=await uploadFile(file,p.id,'project-photos')
-                if(url)newPhotos.unshift({nombre:file.name,url,fecha:new Date().toLocaleDateString('es-MX')})
+                const result=await uploadFile(file,p.id,'project-photos')
+                if(result?.url)newPhotos.unshift({nombre:file.name,url:result.url,fecha:new Date().toLocaleDateString('es-MX')})
               }
               const ok=await api({photos:newPhotos})
               if(ok){setFotoFiles([]);showToast('Fotos subidas')}
@@ -261,10 +261,19 @@ export default function Admin({ project, user, onRefresh }) {
             </div>
             <button className="btn-submit" style={{maxWidth:180}} onClick={async()=>{
               if(!archivoForm.nombre){showToast('Escribe el nombre');return}
-              const url=await uploadFile(archivoFile,p.id,'project-files')
-              const newFiles=[...filesDB,{...archivoForm,url,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
-              const ok=await api({files:newFiles})
-              if(ok){setArchivoForm({nombre:'',tipo:'PDF',etapa:'',fecha:''});setArchivoFile(null);showToast('Archivo agregado')}
+              const result=await uploadFile(archivoFile,p.id,'project-files')
+              if(!result?.url){showToast('Error al subir archivo');return}
+              const newFiles=[...filesDB,{...archivoForm,url:result.url,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
+              // Auto-save PDF text to knowledge base
+              let extraPatches = {}
+              if(result.extractedText) {
+                const currentKb = (() => { try { return typeof p.knowledge_base==='string'?JSON.parse(p.knowledge_base):(Array.isArray(p.knowledge_base)?p.knowledge_base:[]) } catch { return [] } })()
+                const newKb = [...currentKb, { tema: archivoForm.nombre, info: result.extractedText }]
+                extraPatches = { knowledge_base: newKb }
+                showToast('Archivo subido y texto extraído a base de conocimiento')
+              }
+              const ok=await api({files:newFiles, ...extraPatches})
+              if(ok){setArchivoForm({nombre:'',tipo:'PDF',etapa:'',fecha:''});setArchivoFile(null);if(!result.extractedText)showToast('Archivo agregado')}
             }} disabled={saving}>Agregar archivo</button>
           </div>
 
