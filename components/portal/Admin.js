@@ -110,6 +110,7 @@ export default function Admin({ project, user, onRefresh }) {
           <div className="card" style={{marginTop:16}}>
             <div className="card-title">Avance por etapa (%)</div>
             <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:16}}>Mueve el slider para actualizar el porcentaje.</p>
+            <div style={{overflowY:'scroll',maxHeight:340,marginBottom:10}}>
             {etapas.map((e,i)=>(
               <div key={i} style={{background:'var(--paper)',padding:12,marginBottom:10}}>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr auto',gap:10,marginBottom:10}}>
@@ -136,6 +137,7 @@ export default function Admin({ project, user, onRefresh }) {
                 </div>
               </div>
             ))}
+            </div>
             <div style={{display:'flex',gap:10,marginTop:8}}>
               <button onClick={()=>setEtapas(prev=>[...prev,{nombre:'',fechas:'Por definir',estatus:'Pendiente',porcentaje:0}])} style={{padding:'10px 20px',background:'transparent',border:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:11,color:'var(--g500)',cursor:'pointer',letterSpacing:'.08em',textTransform:'uppercase'}}>+ Agregar etapa</button>
               <button className="btn-submit" style={{maxWidth:200,marginTop:0}} onClick={()=>api({stages:etapas}).then(ok=>ok&&showToast('Cronograma guardado'))} disabled={saving}>Guardar avances</button>
@@ -190,15 +192,17 @@ export default function Admin({ project, user, onRefresh }) {
             </label>
             {fotoFiles.length>0&&<p style={{fontSize:12,color:'var(--g500)',marginBottom:8}}>{fotoFiles.length} foto(s) seleccionada(s)</p>}
             {photosDB.length>0&&(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4,marginBottom:12}}>
-                {photosDB.map((f,i)=>(
-                  <div key={i} style={{aspectRatio:'1',overflow:'hidden',background:'var(--g100)',position:'relative'}}>
-                    <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
-                    <div style={{position:'absolute',bottom:0,left:0,right:0,background:'rgba(12,12,12,.5)',padding:'3px 6px'}}>
-                      <div style={{fontSize:9,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
+              <div style={{overflowY:'scroll',maxHeight:318,borderTop:'1px solid var(--g100)',marginTop:8,paddingTop:3}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4,marginBottom:12}}>
+                  {photosDB.map((f,i)=>(
+                    <div key={i} style={{aspectRatio:'1',overflow:'hidden',background:'var(--g100)',position:'relative'}}>
+                      <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
+                      <div style={{position:'absolute',bottom:0,left:0,right:0,background:'rgba(12,12,12,.5)',padding:'3px 6px'}}>
+                        <div style={{fontSize:9,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
             {photosDB.length===0&&<p style={{fontSize:12,color:'var(--g400)',marginBottom:12}}>Sin fotos aún.</p>}
