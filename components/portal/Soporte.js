@@ -98,7 +98,7 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
               {q.respuesta ? (
                 <div style={{marginLeft:42,background:'var(--paper)',padding:'12px 16px',borderLeft:'2px solid var(--ink)'}}>
                   <div style={{fontSize:10,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--g400)',marginBottom:6}}>{q.ia_respondio?'IA':(lang==='en'?'Architect':'Arquitecto')}</div>
-                  <p style={{fontSize:13,fontWeight:300,color:'var(--ink)',lineHeight:1.7,margin:0}}>{q.respuesta}</p>
+                  <p style={{fontSize:13,fontWeight:300,color:'var(--ink)',lineHeight:1.7,margin:0}}>{q.respuesta.replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/`(.*?)`/g,'$1')}</p>
                 </div>
               ) : isArq ? (
                 <div style={{marginLeft:42}}>
