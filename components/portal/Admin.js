@@ -200,6 +200,12 @@ export default function Admin({ project, user, onRefresh }) {
                       <div style={{position:'absolute',bottom:0,left:0,right:0,background:'rgba(12,12,12,.5)',padding:'3px 6px'}}>
                         <div style={{fontSize:9,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
                       </div>
+                      <button onClick={async()=>{
+                        if(!confirm('¿Eliminar esta foto?')) return
+                        const newPhotos = photosDB.filter((_,idx)=>idx!==i)
+                        const ok = await api({photos:newPhotos})
+                        if(ok) showToast('Foto eliminada')
+                      }} style={{position:'absolute',top:4,right:4,width:20,height:20,borderRadius:'50%',background:'rgba(12,12,12,.7)',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>✕</button>
                     </div>
                   ))}
                 </div>
