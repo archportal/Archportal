@@ -190,10 +190,13 @@ export default function Admin({ project, user, onRefresh }) {
             </label>
             {fotoFiles.length>0&&<p style={{fontSize:12,color:'var(--g500)',marginBottom:8}}>{fotoFiles.length} foto(s) seleccionada(s)</p>}
             {photosDB.length>0&&(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:4,marginBottom:12}}>
-                {photosDB.slice(0,6).map((f,i)=>(
-                  <div key={i} style={{aspectRatio:'1',overflow:'hidden',background:'var(--g100)'}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4,marginBottom:12}}>
+                {photosDB.map((f,i)=>(
+                  <div key={i} style={{aspectRatio:'1',overflow:'hidden',background:'var(--g100)',position:'relative'}}>
                     <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
+                    <div style={{position:'absolute',bottom:0,left:0,right:0,background:'rgba(12,12,12,.5)',padding:'3px 6px'}}>
+                      <div style={{fontSize:9,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
+                    </div>
                   </div>
                 ))}
               </div>

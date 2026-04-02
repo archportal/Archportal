@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const fmt = n => '$' + Number(n||0).toLocaleString('es-MX')
 
@@ -26,11 +26,24 @@ export default function Dashboard({ project, user, lang }) {
   const porPagarPct = presupuesto > 0 ? Math.round(porPagar / presupuesto * 100) : 0
 
   const barRef = useRef(null)
+  const [lightbox, setLightbox] = useState(null) // {url, nombre, index}
+
   useEffect(() => {
     if (barRef.current) {
       setTimeout(() => { barRef.current.style.width = avg + '%' }, 100)
     }
   }, [avg])
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setLightbox(null)
+      if (e.key === 'ArrowRight' && lightbox) setLightbox(photos[(lightbox.index+1)%photos.length] ? {...photos[(lightbox.index+1)%photos.length], index:(lightbox.index+1)%photos.length} : lightbox)
+      if (e.key === 'ArrowLeft' && lightbox) { const prev = (lightbox.index-1+photos.length)%photos.length; setLightbox({...photos[prev], index:prev}) }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [lightbox, photos])
 
   const t = lang==='en'
     ? {av:'Overall progress',pres:'Budget',ej:'Spent',pp:'To pay',ent:'Delivery',avEtapa:'Progress by stage',bitacora:'Visual log',archRec:'Recent files',cosRec:'Recent costs',info:'Project info',notas:'Resident log',notasCli:'Architect notes',noFotos:'No photos yet',noArch:'No files yet',noCostos:'No expenses yet',noNotas:'No notes published.',noNotasCli:'No notes yet.'}
@@ -40,6 +53,23 @@ export default function Dashboard({ project, user, lang }) {
 
   return (
     <div>
+
+      {/* LIGHTBOX */}
+      {lightbox && (
+        <div onClick={()=>setLightbox(null)} style={{position:'fixed',inset:0,background:'rgba(12,12,12,.95)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out'}}>
+          <button onClick={e=>{e.stopPropagation();const prev=(lightbox.index-1+photos.length)%photos.length;setLightbox({...photos[prev],index:prev})}} style={{position:'absolute',left:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:24,width:44,height:44,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
+          <div onClick={e=>e.stopPropagation()} style={{maxWidth:'85vw',maxHeight:'85vh',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
+            <img src={lightbox.url||lightbox.remoteUrl} alt={lightbox.nombre} style={{maxWidth:'100%',maxHeight:'78vh',objectFit:'contain'}}/>
+            <div style={{display:'flex',alignItems:'center',gap:16}}>
+              <span style={{fontSize:12,color:'rgba(255,255,255,.5)',letterSpacing:'.04em'}}>{lightbox.nombre}</span>
+              {lightbox.fecha && <span style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>{lightbox.fecha}</span>}
+              <span style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>{lightbox.index+1} / {photos.length}</span>
+            </div>
+          </div>
+          <button onClick={e=>{e.stopPropagation();const next=(lightbox.index+1)%photos.length;setLightbox({...photos[next],index:next})}} style={{position:'absolute',right:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:24,width:44,height:44,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
+          <button onClick={()=>setLightbox(null)} style={{position:'absolute',top:20,right:20,background:'transparent',border:'none',color:'rgba(255,255,255,.5)',fontSize:20,cursor:'pointer',padding:8}}>✕</button>
+        </div>
+      )}
 
       {/* HERO */}
       <div style={{background:'var(--ink)',padding:'32px 28px',marginBottom:12,position:'relative',overflow:'hidden'}}>
@@ -137,9 +167,12 @@ export default function Dashboard({ project, user, lang }) {
           <div className="card-title">{t.bitacora}</div>
           {photos.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noFotos}</p> : (
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>
-              {photos.slice(0,6).map((f,i)=>(
-                <div key={i} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative'}}>
-                  <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
+              {photos.map((f,i)=>(
+                <div key={i} onClick={()=>setLightbox({...f,index:i})} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative',cursor:'zoom-in'}}>
+                  <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .3s'}} onError={e=>e.target.style.display='none'}
+                    onMouseEnter={e=>e.target.style.transform='scale(1.05)'}
+                    onMouseLeave={e=>e.target.style.transform='scale(1)'}
+                  />
                   <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(to top,rgba(12,12,12,.6) 0%,transparent 100%)',padding:'6px 8px'}}>
                     <div style={{fontSize:9,color:'#fff',letterSpacing:'.04em',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
                   </div>
