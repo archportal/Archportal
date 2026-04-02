@@ -2,6 +2,26 @@
 import { useState } from 'react'
 import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/lib/emailjs'
 
+// Extract text from PDF in the browser using pdfjs-dist
+async function extractPdfTextClient(file) {
+  try {
+    const pdfjsLib = await import('pdfjs-dist')
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
+    let fullText = ''
+    for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      fullText += content.items.map(item => item.str).join(' ') + '\n'
+    }
+    return fullText.trim().substring(0, 3000)
+  } catch (e) {
+    console.warn('PDF client extraction error:', e.message)
+    return null
+  }
+}
+
 async function uploadFile(file, projectId, bucket) {
   if (!file) return null
   const formData = new FormData()
@@ -11,7 +31,7 @@ async function uploadFile(file, projectId, bucket) {
   const res = await fetch('/api/upload', { method: 'POST', body: formData })
   const data = await res.json()
   if (!res.ok) { console.warn('Upload error:', data.error); return null }
-  return data // return full object with url and extractedText
+  return data
 }
 
 export default function Admin({ project, user, onRefresh }) {
@@ -261,19 +281,28 @@ export default function Admin({ project, user, onRefresh }) {
             </div>
             <button className="btn-submit" style={{maxWidth:180}} onClick={async()=>{
               if(!archivoForm.nombre){showToast('Escribe el nombre');return}
-              const result=await uploadFile(archivoFile,p.id,'project-files')
-              if(!result?.url){showToast('Error al subir archivo');return}
-              const newFiles=[...filesDB,{...archivoForm,url:result.url,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
-              // Auto-save PDF text to knowledge base
+              setSaving(true)
+              // Extract PDF text in browser BEFORE uploading
+              let extractedText = null
+              if(archivoFile && (archivoFile.type==='application/pdf' || archivoFile.name.toLowerCase().endsWith('.pdf'))) {
+                showToast('Extrayendo texto del PDF...')
+                extractedText = await extractPdfTextClient(archivoFile)
+              }
+              const result = archivoFile ? await uploadFile(archivoFile, p.id, 'project-files') : { url: null }
+              const newFiles=[...filesDB,{...archivoForm,url:result?.url||null,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
               let extraPatches = {}
-              if(result.extractedText) {
+              if(extractedText) {
                 const currentKb = (() => { try { return typeof p.knowledge_base==='string'?JSON.parse(p.knowledge_base):(Array.isArray(p.knowledge_base)?p.knowledge_base:[]) } catch { return [] } })()
-                const newKb = [...currentKb, { tema: archivoForm.nombre, info: result.extractedText }]
+                const newKb = [...currentKb, { tema: archivoForm.nombre, info: extractedText }]
                 extraPatches = { knowledge_base: newKb }
-                showToast('Archivo subido y texto extraído a base de conocimiento')
               }
               const ok=await api({files:newFiles, ...extraPatches})
-              if(ok){setArchivoForm({nombre:'',tipo:'PDF',etapa:'',fecha:''});setArchivoFile(null);if(!result.extractedText)showToast('Archivo agregado')}
+              if(ok){
+                setArchivoForm({nombre:'',tipo:'PDF',etapa:'',fecha:''})
+                setArchivoFile(null)
+                showToast(extractedText ? 'PDF subido y texto extraído a base de conocimiento ✓' : 'Archivo agregado')
+              }
+              setSaving(false)
             }} disabled={saving}>Agregar archivo</button>
           </div>
 
