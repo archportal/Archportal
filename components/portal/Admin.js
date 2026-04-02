@@ -6,9 +6,13 @@ import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/li
 async function extractPdfTextClient(file) {
   try {
     const pdfjsLib = await import('pdfjs-dist')
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`
+    // Use fake worker to avoid version mismatch issues
+    pdfjsLib.GlobalWorkerOptions.workerSrc = ''
     const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
+    const pdf = await pdfjsLib.getDocument({ 
+      data: new Uint8Array(arrayBuffer),
+      disableWorker: true 
+    }).promise
     let fullText = ''
     for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
       const page = await pdf.getPage(i)
