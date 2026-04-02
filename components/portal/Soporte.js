@@ -83,9 +83,10 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
 
   return (
     <div>
-      <div style={{paddingBottom:24,borderBottom:'1px solid var(--border)',marginBottom:24}}>
-        <h1 style={{fontFamily:'Cormorant Garamond, serif',fontSize:36,fontWeight:300,color:'var(--ink)',marginBottom:4}}>Soporte</h1>
-        <p style={{fontSize:13,fontWeight:300,color:'var(--g400)'}}>{isArq ? 'Gestiona preguntas del cliente y base de conocimiento' : (lang==='en'?'Send your questions about the project':'Envía tus preguntas sobre el proyecto')}</p>
+      <div style={{background:'var(--ink)',padding:'24px 28px',marginBottom:12}}>
+        <div style={{fontSize:9,letterSpacing:'.2em',textTransform:'uppercase',color:'rgba(255,255,255,.3)',marginBottom:8}}>Proyecto · Asistencia</div>
+        <h1 style={{fontFamily:'Cormorant Garamond, serif',fontSize:28,fontWeight:400,color:'#fff',marginBottom:4}}>Soporte</h1>
+        <p style={{fontSize:12,color:'rgba(255,255,255,.4)',margin:0}}>{isArq ? 'Gestiona preguntas del cliente y base de conocimiento' : (lang==='en'?'Send your questions about the project':'Envía tus preguntas sobre el proyecto')}</p>
       </div>
 
       <div className={isArq ? 'two-col' : ''}>
@@ -95,7 +96,7 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
           {questions.length===0 && <p style={{fontSize:13,fontWeight:300,color:'var(--g400)',marginBottom:20}}>{isArq?'El cliente aún no ha enviado preguntas.':'Sin preguntas aún.'}</p>}
 
           {questions.map((q,i) => (
-            <div key={i} style={{marginBottom:20,paddingBottom:20,borderBottom:'1px solid var(--border)'}}>
+            <div key={i} style={{marginBottom:0,paddingBottom:20,paddingTop:20,borderBottom:'1px solid var(--g100)'}}>
               <div style={{display:'flex',gap:10,marginBottom:8}}>
                 <div style={{width:32,height:32,borderRadius:'50%',background:'var(--g100)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,color:'var(--g600)',flexShrink:0}}>{isArq?'CL':'TU'}</div>
                 <div>

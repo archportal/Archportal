@@ -83,10 +83,10 @@ export default function Admin({ project, user, onRefresh }) {
 
   return (
     <div>
-      <div style={{paddingBottom:24,borderBottom:'1px solid var(--border)',marginBottom:24}}>
-        <div style={{fontSize:10,letterSpacing:'.15em',textTransform:'uppercase',color:'var(--g400)',marginBottom:4}}>Vista de arquitecto — modo edicion activo</div>
-        <h1 style={{fontFamily:'Cormorant Garamond, serif',fontSize:36,fontWeight:300,color:'var(--ink)',marginBottom:4}}>Panel de administración</h1>
-        <p style={{fontSize:13,fontWeight:300,color:'var(--g400)'}}>Los cambios se reflejan de inmediato al cliente</p>
+      <div style={{background:'var(--ink)',padding:'24px 28px',marginBottom:12}}>
+        <div style={{fontSize:9,letterSpacing:'.2em',textTransform:'uppercase',color:'rgba(255,255,255,.3)',marginBottom:8}}>Modo edición activo</div>
+        <h1 style={{fontFamily:'Cormorant Garamond, serif',fontSize:28,fontWeight:400,color:'#fff',marginBottom:4}}>Panel de administración</h1>
+        <p style={{fontSize:12,color:'rgba(255,255,255,.4)',margin:0}}>Los cambios se reflejan de inmediato al cliente</p>
       </div>
 
       <div className="two-col">

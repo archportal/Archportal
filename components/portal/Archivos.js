@@ -14,56 +14,60 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
     setDeleting(i)
     const newFiles = files.filter((_, idx) => idx !== i)
     try {
-      const res = await fetch('/api/projects', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: p.id, files: newFiles })
-      })
+      const res = await fetch('/api/projects', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:p.id, files:newFiles }) })
       if (res.ok) { showToast('Archivo eliminado'); onRefresh?.() }
       else showToast('Error al eliminar')
     } catch { showToast('Error al eliminar') }
     finally { setDeleting(null) }
   }
 
+  const tipoBg = { PDF:'#FBE4E4', DWG:'#E4EBF8', XLS:'#EBF2E4', IMG:'#F5F0E8', Otro:'#F0EFEC' }
+  const tipoColor = { PDF:'#8B1A1A', DWG:'#1A3A8B', XLS:'#2D5016', IMG:'#5C4A1A', Otro:'#6B6A62' }
+
   return (
     <div>
-      <div style={{ paddingBottom: 24, borderBottom: '1px solid var(--border)', marginBottom: 24 }}>
-        <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: 'var(--ink)', marginBottom: 4 }}>Archivos</h1>
-        <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--g400)' }}>Planos, memorias y documentación</p>
+      {/* Header */}
+      <div style={{background:'var(--ink)',padding:'24px 28px',marginBottom:12}}>
+        <div style={{fontSize:9,letterSpacing:'.2em',textTransform:'uppercase',color:'rgba(255,255,255,.3)',marginBottom:8}}>Proyecto · Documentación</div>
+        <h1 style={{fontFamily:'Cormorant Garamond, serif',fontSize:28,fontWeight:400,color:'#fff'}}>Archivos</h1>
       </div>
 
       <div className="card">
-        <div className="card-title">Documentos del proyecto</div>
+        <div className="card-title" style={{marginBottom:16}}>Documentos del proyecto · {files.length} archivo{files.length!==1?'s':''}</div>
         {files.length === 0 ? (
-          <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--g400)' }}>Sin archivos aún. El arquitecto los irá subiendo aquí.</p>
+          <div style={{padding:'32px 0',textAlign:'center'}}>
+            <div style={{fontSize:13,fontWeight:300,color:'var(--g400)'}}>Sin archivos aún. El arquitecto los irá subiendo aquí.</div>
+          </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table style={{width:'100%',borderCollapse:'collapse'}}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Archivo','Tipo','Etapa','Fecha',''].map(h => (
-                  <th key={h} style={{ textAlign: 'left', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--g400)', padding: '8px 12px 8px 0', fontWeight: 400 }}>{h}</th>
+              <tr>
+                {['Archivo','Tipo','Etapa','Fecha',''].map(h=>(
+                  <th key={h} style={{textAlign:'left',fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--g400)',padding:'0 12px 12px 0',fontWeight:400,borderBottom:'1px solid var(--border)'}}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {files.map((f, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '12px 12px 12px 0', fontSize: 13, fontWeight: 300, color: 'var(--ink)' }}>{f.nombre}</td>
-                  <td style={{ padding: '12px 12px 12px 0' }}>
-                    <span style={{ fontSize: 9, padding: '3px 8px', background: f.tipo==='PDF'?'#FBE4E4':'#E4EBF8', color: f.tipo==='PDF'?'#8B1A1A':'#1A3A8B' }}>{f.tipo || 'FILE'}</span>
+              {files.map((f,i)=>(
+                <tr key={i} style={{borderBottom:'1px solid var(--g100)'}}>
+                  <td style={{padding:'14px 12px 14px 0'}}>
+                    <div style={{fontSize:13,fontWeight:400,color:'var(--ink)'}}>{f.nombre}</div>
                   </td>
-                  <td style={{ padding: '12px 12px 12px 0', fontSize: 12, color: 'var(--g500)' }}>{f.etapa || '—'}</td>
-                  <td style={{ padding: '12px 12px 12px 0', fontSize: 12, color: 'var(--g400)' }}>{f.fecha}</td>
-                  <td style={{ padding: '12px 0' }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <td style={{padding:'14px 12px 14px 0'}}>
+                    <span style={{fontSize:9,padding:'3px 8px',background:tipoBg[f.tipo]||tipoBg.Otro,color:tipoColor[f.tipo]||tipoColor.Otro,letterSpacing:'.06em'}}>{f.tipo||'FILE'}</span>
+                  </td>
+                  <td style={{padding:'14px 12px 14px 0',fontSize:12,color:'var(--g500)'}}>{f.etapa||'—'}</td>
+                  <td style={{padding:'14px 12px 14px 0',fontSize:12,color:'var(--g400)'}}>{f.fecha}</td>
+                  <td style={{padding:'14px 0'}}>
+                    <div style={{display:'flex',gap:8,alignItems:'center',justifyContent:'flex-end'}}>
                       {f.url && (
-                        <a href={f.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: 'var(--ink)', textDecoration: 'none', border: '1px solid var(--border)', padding: '4px 12px', fontFamily: 'Jost, sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>
+                        <a href={f.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:'var(--ink)',textDecoration:'none',border:'1px solid var(--border)',padding:'5px 14px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase'}}>
                           Descargar
                         </a>
                       )}
                       {isArq && (
-                        <button onClick={() => deleteFile(i)} disabled={deleting === i} style={{ fontSize: 11, color: '#B83232', background: 'transparent', border: '1px solid #B83232', padding: '4px 12px', fontFamily: 'Jost, sans-serif', letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', opacity: deleting === i ? .4 : 1 }}>
-                          {deleting === i ? '...' : 'Eliminar'}
+                        <button onClick={()=>deleteFile(i)} disabled={deleting===i} style={{fontSize:11,color:'#B83232',background:'transparent',border:'1px solid #B83232',padding:'5px 14px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',cursor:'pointer',opacity:deleting===i?.4:1}}>
+                          {deleting===i?'...':'Eliminar'}
                         </button>
                       )}
                     </div>
@@ -75,7 +79,7 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
         )}
       </div>
 
-      {toast && <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', background: 'var(--ink)', color: 'var(--white)', padding: '12px 24px', fontSize: 13, fontWeight: 300, zIndex: 9999 }}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'var(--ink)',color:'var(--white)',padding:'12px 24px',fontSize:13,fontWeight:300,zIndex:9999}}>{toast}</div>}
     </div>
   )
 }
