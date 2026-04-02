@@ -164,20 +164,22 @@ export default function Dashboard({ project, user, lang }) {
 
         {/* Bitácora visual */}
         <div className="card">
-          <div className="card-title">{t.bitacora}</div>
+          <div className="card-title">{t.bitacora} {photos.length>0&&<span style={{fontSize:11,color:'var(--g400)',fontWeight:300}}>· {photos.length} fotos</span>}</div>
           {photos.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noFotos}</p> : (
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>
-              {photos.map((f,i)=>(
-                <div key={i} onClick={()=>setLightbox({...f,index:i})} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative',cursor:'zoom-in'}}>
-                  <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .3s'}} onError={e=>e.target.style.display='none'}
-                    onMouseEnter={e=>e.target.style.transform='scale(1.05)'}
-                    onMouseLeave={e=>e.target.style.transform='scale(1)'}
-                  />
-                  <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(to top,rgba(12,12,12,.6) 0%,transparent 100%)',padding:'6px 8px'}}>
-                    <div style={{fontSize:9,color:'#fff',letterSpacing:'.04em',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
+            <div style={{overflowY:'auto',maxHeight:320}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>
+                {photos.map((f,i)=>(
+                  <div key={i} onClick={()=>setLightbox({...f,index:i})} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative',cursor:'zoom-in'}}>
+                    <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .3s'}} onError={e=>e.target.style.display='none'}
+                      onMouseEnter={e=>e.target.style.transform='scale(1.05)'}
+                      onMouseLeave={e=>e.target.style.transform='scale(1)'}
+                    />
+                    <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(to top,rgba(12,12,12,.6) 0%,transparent 100%)',padding:'6px 8px'}}>
+                      <div style={{fontSize:9,color:'#fff',letterSpacing:'.04em',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
