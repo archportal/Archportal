@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/lib/emailjs'
 
 // Extract text from PDF in the browser using pdfjs-dist
@@ -52,6 +52,7 @@ export default function Admin({ project, user, onRefresh }) {
   const [info, setInfo] = useState({ nombre:p.nombre||'', cliente:p.cliente||'', ubicacion:p.ubicacion||'', arquitecto:p.arquitecto||'', superficie:p.superficie||'', niveles:p.niveles||'', inicio:p.inicio||'', entrega:p.entrega||'', etapa_actual:p.etapa_actual||'' })
   const [pres, setPres] = useState({ aprobado:p.presupuesto||'', ejercido:p.pres_ejercido||'', pagado:p.pres_pagado||'' })
   const [etapas, setEtapas] = useState(stagesDB.length ? stagesDB.map(s=>({nombre:s.nombre||'',fechas:s.fechas||'Por definir',estatus:s.estatus||'Pendiente',porcentaje:s.porcentaje||0})) : [{nombre:'Proyecto arquitectonico',fechas:'Por definir',estatus:'Pendiente',porcentaje:0}])
+  const dragIndex = useRef(null)
   const [costoForm, setCostoForm] = useState({concepto:'',categoria:'Material',etapa:'',monto:'',estatus:'Pendiente',fecha:''})
   const [archivoForm, setArchivoForm] = useState({nombre:'',tipo:'PDF',etapa:'',fecha:''})
   const [archivoFile, setArchivoFile] = useState(null)
@@ -109,11 +110,18 @@ export default function Admin({ project, user, onRefresh }) {
           {/* Etapas */}
           <div className="card" style={{marginTop:16}}>
             <div className="card-title">Avance por etapa (%)</div>
-            <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:16}}>Mueve el slider para actualizar el porcentaje.</p>
+            <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:16}}>Mueve el slider para actualizar el porcentaje. Arrastra <span style={{color:'var(--ink)'}}>⠿</span> para reordenar.</p>
             <div style={{overflowY:'scroll',maxHeight:340,marginBottom:10}}>
             {etapas.map((e,i)=>(
-              <div key={i} style={{background:'var(--paper)',padding:12,marginBottom:10}}>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr auto',gap:10,marginBottom:10}}>
+              <div key={i}
+                draggable
+                onDragStart={()=>{ dragIndex.current=i }}
+                onDragOver={ev=>{ ev.preventDefault(); ev.currentTarget.style.borderTop='2px solid var(--ink)' }}
+                onDragLeave={ev=>{ ev.currentTarget.style.borderTop='none' }}
+                onDrop={ev=>{ ev.currentTarget.style.borderTop='none'; const from=dragIndex.current; if(from===i) return; setEtapas(prev=>{ const arr=[...prev]; const [item]=arr.splice(from,1); arr.splice(i,0,item); return arr }) }}
+                style={{background:'var(--paper)',padding:12,marginBottom:10,cursor:'grab'}}>
+                <div style={{display:'grid',gridTemplateColumns:'20px 1fr 1fr auto',gap:10,marginBottom:10,alignItems:'start'}}>
+                  <div style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
                   <div className="form-field" style={{marginBottom:0}}>
                     <label className="form-label">Nombre de etapa</label>
                     <input className="form-input" value={e.nombre} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
@@ -129,7 +137,7 @@ export default function Admin({ project, user, onRefresh }) {
                     </select>
                   </div>
                 </div>
-                <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <div style={{display:'flex',alignItems:'center',gap:12,paddingLeft:30}}>
                   <span style={{fontSize:12,color:'var(--g500)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.nombre||'Etapa'}</span>
                   <input type="range" min="0" max="100" value={e.porcentaje} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,porcentaje:parseInt(ev.target.value)}:x))} style={{flex:2,accentColor:'var(--ink)'}}/>
                   <span style={{fontSize:13,fontWeight:500,color:'var(--ink)',minWidth:36,textAlign:'right'}}>{e.porcentaje}%</span>

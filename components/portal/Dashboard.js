@@ -12,6 +12,14 @@ const printStyles = `
   .portal-topbar { display: none !important; }
   body { background: white !important; }
   .card { break-inside: avoid; border: 1px solid #E2E1DC !important; }
+  #dashboard-print h1 { color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #dashboard-print p { color: rgba(255,255,255,0.7) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #dashboard-print div[style*="background:var(--ink)"],
+  #dashboard-print div[style*="background:'var(--ink)'"] {
+    background: #0C0C0C !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   @page { margin: 1.5cm; size: A4; }
 }
 `
