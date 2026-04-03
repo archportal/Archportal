@@ -44,6 +44,10 @@ export default function Home() {
       contactDesc:'Tienes preguntas o quieres una demo personalizada para tu despacho.',
       footerTagline:'Portal de gestion para despachos de arquitectura y construccion.',
       footerLinks:{producto:'Producto',recursos:'Recursos',legal:'Legal'},
+      comoFuncionaLabel:'Como funciona', comoFuncionaH2:'Tres minutos para entenderlo todo',
+      comoFuncionaDesc:'Un recorrido completo por el portal desde la perspectiva del arquitecto y del cliente.',
+      comoFuncionaItems:['Arquitecto actualiza el portal','Cliente consulta en tiempo real','IA responde preguntas automaticamente','Notificaciones cuando algo es urgente'],
+      tickerItems:['Bitácora visual','Archivos y planos','Multi-proyecto','Dashboard en tiempo real','Control de costos','Cronograma de obra','Notificaciones automáticas','Soporte con IA','Transparencia total','Acceso 24/7'],
     },
     en: {
       eyebrow:'Portal for architecture and construction firms',
@@ -70,6 +74,10 @@ export default function Home() {
       contactDesc:'Have questions or want a personalized demo for your firm.',
       footerTagline:'Management portal for architecture and construction firms.',
       footerLinks:{producto:'Product',recursos:'Resources',legal:'Legal'},
+      comoFuncionaLabel:'How it works', comoFuncionaH2:'Three minutes to understand it all',
+      comoFuncionaDesc:'A complete walkthrough of the portal from the architect and client perspective.',
+      comoFuncionaItems:['Architect updates the portal','Client checks in real time','AI answers questions automatically','Notifications when something is urgent'],
+      tickerItems:['Visual log','Plans & files','Multi-project','Real-time dashboard','Cost control','Project schedule','Automatic notifications','AI support','Full transparency','24/7 access'],
     }
   }[lang]
 
@@ -149,7 +157,7 @@ export default function Home() {
         <div className="ticker-track">
           {[...Array(2)].map((_,rep) => (
             <div key={rep} style={{display:'flex',alignItems:'center',gap:0,flexShrink:0}}>
-              {['Bitácora visual','Archivos y planos','Multi-proyecto','Dashboard en tiempo real','Control de costos','Cronograma de obra','Notificaciones automáticas','Soporte con IA','Transparencia total','Acceso 24/7'].map((item,i) => (
+              {(t.tickerItems||[]).map((item,i) => (
                 <span key={i} style={{display:'flex',alignItems:'center',gap:0}}>
                   <span style={{fontSize:11,fontWeight:400,letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(255,255,255,.55)',padding:'0 32px',whiteSpace:'nowrap'}}>{item}</span>
                   <span style={{width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.2)',flexShrink:0}}/>
@@ -186,10 +194,10 @@ export default function Home() {
       <section id="video-sec" className="section" style={{borderTop:'1px solid var(--border)'}}>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:80,alignItems:'center'}} className="mobile-1col">
           <div>
-            <span className="section-label">Como funciona</span>
-            <h2 className="section-h2">Tres minutos<br/>para <em>entenderlo todo</em></h2>
-            <p style={{marginTop:16,fontSize:14,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:40}}>Un recorrido completo por el portal desde la perspectiva del arquitecto y del cliente.</p>
-            {['Arquitecto actualiza el portal','Cliente consulta en tiempo real','IA responde preguntas automaticamente','Notificaciones cuando algo es urgente'].map((item,i)=>(
+            <span className="section-label">{t.comoFuncionaLabel}</span>
+            <h2 className="section-h2">{t.comoFuncionaH2}</h2>
+            <p style={{marginTop:16,fontSize:14,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:40}}>{t.comoFuncionaDesc}</p>
+            {(t.comoFuncionaItems||[]).map((item,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',gap:16,padding:'16px 0',borderBottom:'1px solid var(--border)'}}>
                 <div style={{width:6,height:6,borderRadius:'50%',background:'var(--g300)',flexShrink:0}}/>
                 <span style={{fontSize:13,fontWeight:300,color:'var(--g600)'}}>{item}</span>
