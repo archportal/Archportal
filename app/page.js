@@ -36,9 +36,9 @@ export default function Home() {
       ],
       pricingLabel:'Planes', pricingH2:'Comienza hoy',
       plans:[
-        {key:'mensual',label:'Mensual',price:'$120',period:'USD / mes',features:['1 proyecto activo','Portal cliente incluido','Soporte con IA','Bitacora visual','Control de costos'],featured:false},
-        {key:'trimestral',label:'Trimestral',price:'$300',period:'USD / trimestre',features:['3 proyectos activos','Portal cliente incluido','Soporte con IA','Bitacora visual','Control de costos'],featured:true},
-        {key:'anual',label:'Anual',price:'$1,100',period:'USD / año',features:['Proyectos ilimitados','Portal cliente incluido','Soporte con IA prioritario','Bitacora visual','Control de costos'],featured:false}
+        {key:'mensual',label:'Mensual',price:'$499',period:'MXN / mes',features:['Hasta 3 proyectos activos','Portal cliente incluido','Soporte con IA','Bitácora visual','Control de costos','Cronograma de obra'],featured:false},
+        {key:'trimestral',label:'Trimestral',price:'$1,199',period:'MXN / trimestre',features:['Hasta 10 proyectos activos','Portal cliente incluido','Soporte con IA','Bitácora visual','Control de costos','Cronograma de obra'],featured:true},
+        {key:'anual',label:'Anual',price:'$3,999',period:'MXN / año',features:['Hasta 20 proyectos activos','Portal cliente incluido','Soporte con IA','Bitácora visual','Control de costos','Cronograma de obra'],featured:false}
       ],
       comenzar:'Comenzar', contactLabel:'Contacto', contactH2:'Hablemos',
       contactDesc:'Tienes preguntas o quieres una demo personalizada para tu despacho.',
@@ -62,9 +62,9 @@ export default function Home() {
       ],
       pricingLabel:'Plans', pricingH2:'Start today',
       plans:[
-        {key:'monthly',label:'Monthly',price:'$120',period:'USD / month',features:['1 active project','Client portal included','AI support','Visual log','Cost control'],featured:false},
-        {key:'quarterly',label:'Quarterly',price:'$300',period:'USD / quarter',features:['3 active projects','Client portal included','AI support','Visual log','Cost control'],featured:true},
-        {key:'annual',label:'Annual',price:'$1,100',period:'USD / year',features:['Unlimited projects','Client portal included','Priority AI support','Visual log','Cost control'],featured:false}
+        {key:'monthly',label:'Monthly',price:'$499',period:'MXN / month',features:['Up to 3 active projects','Client portal included','AI support','Visual log','Cost control','Project schedule'],featured:false},
+        {key:'quarterly',label:'Quarterly',price:'$1,199',period:'MXN / quarter',features:['Up to 10 active projects','Client portal included','AI support','Visual log','Cost control','Project schedule'],featured:true},
+        {key:'annual',label:'Annual',price:'$3,999',period:'MXN / year',features:['Up to 20 active projects','Client portal included','AI support','Visual log','Cost control','Project schedule'],featured:false}
       ],
       comenzar:'Get started', contactLabel:'Contact', contactH2:"Let's talk",
       contactDesc:'Have questions or want a personalized demo for your firm.',
