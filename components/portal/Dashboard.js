@@ -3,6 +3,19 @@ import { useEffect, useRef, useState } from 'react'
 
 const fmt = n => '$' + Number(n||0).toLocaleString('es-MX')
 
+const printStyles = `
+@media print {
+  body * { visibility: hidden !important; }
+  #dashboard-print, #dashboard-print * { visibility: visible !important; }
+  #dashboard-print { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
+  .portal-topbar { display: none !important; }
+  body { background: white !important; }
+  .card { break-inside: avoid; border: 1px solid #E2E1DC !important; }
+  @page { margin: 1.5cm; size: A4; }
+}
+`
+
 export default function Dashboard({ project, user, lang }) {
   const data = project || {}
   const p = data.project || data || {}
@@ -53,6 +66,17 @@ export default function Dashboard({ project, user, lang }) {
 
   return (
     <div>
+      <style>{printStyles}</style>
+
+      {/* Botón exportar — solo visible en pantalla */}
+      <div className="no-print" style={{display:'flex',justifyContent:'flex-end',padding:'0 0 12px'}}>
+        <button onClick={()=>window.print()} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 18px',background:'var(--white)',border:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--g500)',cursor:'pointer'}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Exportar PDF
+        </button>
+      </div>
+
+      <div id="dashboard-print">
 
       {/* LIGHTBOX */}
       {lightbox && (
@@ -246,6 +270,7 @@ export default function Dashboard({ project, user, lang }) {
         </div>
       </div>
 
+      </div> {/* end dashboard-print */}
     </div>
   )
 }
