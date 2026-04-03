@@ -56,6 +56,13 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
   const [error, setError] = useState('')
   const ini = (user.name||user.email||'U').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()
 
+  const PLAN_LIMITS = { mensual:3, trimestral:10, anual:20 }
+  const plan = user.plan || 'mensual'
+  const limit = PLAN_LIMITS[plan] || 3
+  const used = projects.length
+  const remaining = Math.max(0, limit - used)
+  const atLimit = used >= limit
+
   const crear = async () => {
     if (!form.nombre.trim()) { setError('Escribe el nombre del proyecto'); return }
     setLoading(true)
@@ -86,9 +93,18 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
           <div>
             <p style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'var(--g400)', marginBottom:8 }}>Tus proyectos</p>
             <h1 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:48, fontWeight:300, color:'var(--ink)', lineHeight:1.1 }}>Selecciona un<br/><em style={{ fontStyle:'italic' }}>proyecto</em></h1>
+            <div style={{ marginTop:12, display:'flex', alignItems:'center', gap:8 }}>
+              <div style={{ height:4, width:120, background:'var(--g100)', borderRadius:2, overflow:'hidden' }}>
+                <div style={{ height:4, background: atLimit ? '#B83232' : 'var(--ink)', width: Math.min(100, (used/limit)*100)+'%', transition:'width .6s' }}/>
+              </div>
+              <span style={{ fontSize:11, color: atLimit ? '#B83232' : 'var(--g400)', fontWeight:300 }}>
+                {used} de {limit} proyectos · Plan {plan}
+              </span>
+            </div>
           </div>
-          <button onClick={() => setShowForm(!showForm)} style={{ padding:'12px 24px', background:'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor:'pointer' }}>+ Nuevo proyecto</button>
+          <button onClick={() => { if(atLimit){ setError(`Tu plan ${plan} permite máximo ${limit} proyecto(s). Actualiza tu plan para agregar más.`); setShowForm(false); return; } setShowForm(!showForm) }} style={{ padding:'12px 24px', background: atLimit ? 'var(--g300)' : 'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor: atLimit ? 'not-allowed' : 'pointer' }}>+ Nuevo proyecto</button>
         </div>
+        {error && <p style={{ fontSize:12, color:'#B83232', marginBottom:16, padding:'12px 16px', background:'#FBE4E4' }}>{error}</p>}
 
         {showForm && (
           <div style={{ background:'var(--white)', border:'1px solid var(--border)', padding:32, marginBottom:32 }}>
@@ -101,7 +117,7 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
                 </div>
               ))}
             </div>
-            {error && <p style={{ fontSize:12, color:'#B83232', marginBottom:12 }}>{error}</p>}
+            {error && !atLimit && <p style={{ fontSize:12, color:'#B83232', marginBottom:12 }}>{error}</p>}
             <div style={{ display:'flex', gap:10, marginTop:8 }}>
               <button onClick={() => setShowForm(false)} style={{ padding:'10px 24px', background:'transparent', border:'1px solid var(--border)', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Cancelar</button>
               <button className="btn-submit" onClick={crear} disabled={loading} style={{ maxWidth:180, marginTop:0 }}>{loading?'...':'Crear proyecto'}</button>
