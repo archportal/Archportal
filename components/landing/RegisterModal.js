@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react'
 
 const PLANS = {
-  mensual:{label:'Plan Mensual',price:'$120 USD / mes'},
-  trimestral:{label:'Plan Trimestral',price:'$300 USD / trimestre'},
-  anual:{label:'Plan Anual',price:'$1,100 USD / año'},
-  monthly:{label:'Monthly Plan',price:'$120 USD / month'},
-  quarterly:{label:'Quarterly Plan',price:'$300 USD / quarter'},
-  annual:{label:'Annual Plan',price:'$1,100 USD / year'},
+  mensual:{label:'Plan Mensual',price:'$499 MXN / mes',limit:'Hasta 3 proyectos'},
+  trimestral:{label:'Plan Trimestral',price:'$1,199 MXN / trimestre',limit:'Hasta 10 proyectos'},
+  anual:{label:'Plan Anual',price:'$3,999 MXN / año',limit:'Hasta 20 proyectos'},
+  monthly:{label:'Monthly Plan',price:'$499 MXN / month',limit:'Up to 3 projects'},
+  quarterly:{label:'Quarterly Plan',price:'$1,199 MXN / quarter',limit:'Up to 10 projects'},
+  annual:{label:'Annual Plan',price:'$3,999 MXN / year',limit:'Up to 20 projects'},
 }
 
 import { sendWelcomeEmail } from '@/lib/emailjs'
@@ -96,7 +96,10 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang }) {
             <>
               <div style={{background:'var(--paper)',padding:'20px 24px',marginBottom:24}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                  <div><div style={{fontSize:13,fontWeight:500,color:'var(--ink)'}}>{planInfo.label}</div><div style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginTop:2}}>{lang==='en'?'All benefits included':'Todos los beneficios incluidos'}</div></div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:500,color:'var(--ink)'}}>{planInfo.label}</div>
+                    <div style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginTop:2}}>{planInfo.limit}</div>
+                  </div>
                   <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:28,fontWeight:400,color:'var(--ink)'}}>{planInfo.price}</div>
                 </div>
               </div>

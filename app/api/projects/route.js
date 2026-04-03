@@ -61,6 +61,19 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const { stages, costs, photos, files, posts, questions, ...projectData } = body
+
+    // Check project limit based on plan
+    const PLAN_LIMITS = { mensual: 3, trimestral: 10, anual: 20, monthly: 3, quarterly: 10, annual: 20 }
+    if (projectData.user_id) {
+      const { data: user } = await supabaseAdmin.from('users').select('plan').eq('id', projectData.user_id).maybeSingle()
+      const plan = user?.plan || 'mensual'
+      const limit = PLAN_LIMITS[plan] || 3
+      const { count } = await supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('user_id', projectData.user_id)
+      if (count >= limit) {
+        return NextResponse.json({ error: `Tu plan ${plan} permite un máximo de ${limit} proyecto(s). Actualiza tu plan para agregar más.` }, { status: 403 })
+      }
+    }
+
     const { data: project, error } = await supabaseAdmin.from('projects').insert(projectData).select().single()
     if (error) throw error
     await supabaseAdmin.from('project_stages').insert({ project_id: project.id, nombre: 'Proyecto arquitectonico', porcentaje: 0, fechas: 'Por definir', estatus: 'Pendiente', orden: 0 })
