@@ -282,7 +282,7 @@ export default function Home() {
         <div className="footer-bottom"><span>© 2026 ArchPortal</span><span>archportal.mx</span></div>
       </footer>
 
-      {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} onRegister={()=>{setShowLogin(false);setShowRegister(true)}} lang={lang}/>}
+      {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} onRegister={()=>{setShowLogin(false);document.getElementById('precios')?.scrollIntoView({behavior:'smooth'})}} lang={lang}/>}
       {showRegister && <RegisterModal onClose={()=>setShowRegister(false)} plan={selectedPlan} onSuccess={()=>{setShowRegister(false);setShowLogin(true)}} lang={lang}/>}
       {showTerms && <TermsModal onClose={()=>setShowTerms(false)}/>}
     </>
