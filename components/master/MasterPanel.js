@@ -1,15 +1,25 @@
 'use client'
 import { useState, useEffect } from 'react'
 
+const EMAILJS_SERVICE  = 'service_y8oqc0d'
+const EMAILJS_TEMPLATE = 'template_xttyjuw'
+const EMAILJS_PUBLIC   = '7rTOKqMzkk2FuOzSV'
+
 export default function MasterPanel({ onImpersonate, onLogout }) {
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [apiKey, setApiKey] = useState('')
+  const [users, setUsers]       = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [apiKey, setApiKey]     = useState('')
   const [apiSaved, setApiSaved] = useState(false)
+
+  // Broadcast state
+  const [bSubject,  setBSubject]  = useState('')
+  const [bMessage,  setBMessage]  = useState('')
+  const [bFilter,   setBFilter]   = useState('todos')   // 'todos' | 'mensual' | 'anual'
+  const [bSending,  setBSending]  = useState(false)
+  const [bResult,   setBResult]   = useState(null)      // { ok, sent, failed }
 
   useEffect(() => {
     fetch('/api/master').then(r => r.json()).then(d => { setUsers(d.users || []); setLoading(false) })
-    // Load saved API key from localStorage
     const saved = localStorage.getItem('master_anthropic_key') || ''
     setApiKey(saved)
   }, [])
@@ -22,14 +32,69 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
 
   const fmt = (d) => d ? new Date(d).toLocaleDateString('es-MX') : '—'
 
+  // Recipients según filtro
+  const recipients = users.filter(u => {
+    if (u.role !== 'arq') return false
+    if (bFilter === 'todos') return true
+    return u.plan === bFilter
+  })
+
+  const sendBroadcast = async () => {
+    if (!bSubject.trim() || !bMessage.trim()) return
+    if (recipients.length === 0) return
+
+    setBSending(true)
+    setBResult(null)
+
+    // Cargar EmailJS dinámicamente
+    if (!window.emailjs) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script')
+        s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'
+        s.onload = res; s.onerror = rej
+        document.head.appendChild(s)
+      })
+      window.emailjs.init(EMAILJS_PUBLIC)
+    }
+
+    let sent = 0, failed = 0
+
+    for (const u of recipients) {
+      try {
+        await window.emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+          to_email:   u.email,
+          to_name:    u.name || u.email,
+          subject:    bSubject,
+          message:    bMessage,
+        })
+        sent++
+      } catch (err) {
+        console.error('EmailJS error para', u.email, err)
+        failed++
+      }
+      // Pequeña pausa para no saturar EmailJS
+      await new Promise(r => setTimeout(r, 300))
+    }
+
+    setBSending(false)
+    setBResult({ ok: failed === 0, sent, failed })
+    if (failed === 0) { setBSubject(''); setBMessage('') }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--off)' }}>
+      {/* Header */}
       <div style={{ background: 'var(--ink)', padding: '0 32px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 400, color: 'var(--white)' }}>ArchPortal <span style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginLeft: 12 }}>Panel Maestro</span></div>
+        <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 400, color: 'var(--white)' }}>
+          ArchPortal{' '}
+          <span style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginLeft: 12 }}>Panel Maestro</span>
+        </div>
         <button onClick={onLogout} style={{ background: 'none', border: '1px solid rgba(255,255,255,.2)', padding: '6px 16px', fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(255,255,255,.6)', cursor: 'pointer', letterSpacing: '.08em', textTransform: 'uppercase' }}>Salir</button>
       </div>
 
       <div style={{ padding: '48px 32px', maxWidth: 1200, margin: '0 auto' }}>
+
+        {/* Title */}
         <div style={{ marginBottom: 40 }}>
           <p style={{ fontSize: 10, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--g400)', marginBottom: 8 }}>Panel maestro</p>
           <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 48, fontWeight: 300, color: 'var(--ink)' }}>Suscriptores</h1>
@@ -73,6 +138,118 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
           </div>
           {apiKey && <p style={{ fontSize: 11, color: 'var(--g400)', marginTop: 10 }}>Key activa: {apiKey.substring(0, 16)}...</p>}
         </div>
+
+        {/* ── COMUNICADOS ─────────────────────────────────────────── */}
+        <div className="card" style={{ marginBottom: 32 }}>
+          <div className="card-title">Comunicados</div>
+          <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--g500)', lineHeight: 1.7, marginBottom: 24 }}>
+            Envía anuncios, notificaciones o promociones a tus usuarios por correo electrónico.
+          </p>
+
+          {/* Filtro destinatarios */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--g400)', marginBottom: 10, display: 'block' }}>Destinatarios</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[
+                { val: 'todos',    label: `Todos (${users.filter(u=>u.role==='arq').length})` },
+                { val: 'mensual',  label: `Plan mensual (${users.filter(u=>u.role==='arq'&&u.plan==='mensual').length})` },
+                { val: 'anual',    label: `Plan anual (${users.filter(u=>u.role==='arq'&&u.plan==='anual').length})` },
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  onClick={() => setBFilter(opt.val)}
+                  style={{
+                    padding: '7px 16px',
+                    fontFamily: 'Jost, sans-serif',
+                    fontSize: 11,
+                    fontWeight: 500,
+                    letterSpacing: '.06em',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    border: bFilter === opt.val ? '1.5px solid var(--ink)' : '1.5px solid var(--border)',
+                    background: bFilter === opt.val ? 'var(--ink)' : 'transparent',
+                    color: bFilter === opt.val ? 'var(--white)' : 'var(--g500)',
+                    transition: 'all .15s',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Asunto */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--g400)', marginBottom: 8, display: 'block' }}>Asunto</label>
+            <input
+              type="text"
+              value={bSubject}
+              onChange={e => setBSubject(e.target.value)}
+              placeholder="Ej: Nuevas funciones disponibles en ArchPortal"
+              style={{ width: '100%', padding: '12px 0', border: 'none', borderBottom: '1.5px solid var(--border)', fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, background: 'transparent', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          {/* Mensaje */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--g400)', marginBottom: 8, display: 'block' }}>Mensaje</label>
+            <textarea
+              value={bMessage}
+              onChange={e => setBMessage(e.target.value)}
+              placeholder="Escribe aquí el cuerpo del mensaje..."
+              rows={5}
+              style={{ width: '100%', padding: '12px', border: '1.5px solid var(--border)', fontFamily: 'Jost, sans-serif', fontSize: 13, fontWeight: 300, background: 'transparent', color: 'var(--ink)', outline: 'none', resize: 'vertical', lineHeight: 1.7, boxSizing: 'border-box' }}
+            />
+          </div>
+
+          {/* Preview destinatarios */}
+          {recipients.length > 0 && (
+            <div style={{ marginBottom: 20, padding: '12px 16px', background: 'var(--off)', borderLeft: '3px solid var(--ink)' }}>
+              <p style={{ fontSize: 11, color: 'var(--g500)', margin: 0 }}>
+                Se enviará a <strong style={{ color: 'var(--ink)' }}>{recipients.length} usuario{recipients.length !== 1 ? 's' : ''}</strong>:{' '}
+                {recipients.slice(0,4).map(u => u.email).join(', ')}{recipients.length > 4 ? ` y ${recipients.length - 4} más…` : ''}
+              </p>
+            </div>
+          )}
+
+          {/* Resultado */}
+          {bResult && (
+            <div style={{ marginBottom: 16, padding: '12px 16px', background: bResult.ok ? '#EBF2E4' : '#FBE9E9', borderLeft: `3px solid ${bResult.ok ? '#2D5016' : '#8B1A1A'}` }}>
+              <p style={{ fontSize: 12, color: bResult.ok ? '#2D5016' : '#8B1A1A', margin: 0, fontWeight: 500 }}>
+                {bResult.ok
+                  ? `✓ Enviado correctamente a ${bResult.sent} usuario${bResult.sent !== 1 ? 's' : ''}`
+                  : `⚠ Enviado: ${bResult.sent} · Fallidos: ${bResult.failed}`}
+              </p>
+            </div>
+          )}
+
+          {/* Botón enviar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button
+              onClick={sendBroadcast}
+              disabled={bSending || !bSubject.trim() || !bMessage.trim() || recipients.length === 0}
+              style={{
+                padding: '12px 32px',
+                background: (bSending || !bSubject.trim() || !bMessage.trim() || recipients.length === 0) ? 'var(--g200)' : 'var(--ink)',
+                color: (bSending || !bSubject.trim() || !bMessage.trim() || recipients.length === 0) ? 'var(--g400)' : 'var(--white)',
+                border: 'none',
+                fontFamily: 'Jost, sans-serif',
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: '.08em',
+                textTransform: 'uppercase',
+                cursor: (bSending || !bSubject.trim() || !bMessage.trim() || recipients.length === 0) ? 'not-allowed' : 'pointer',
+                transition: 'all .15s',
+              }}
+            >
+              {bSending ? `Enviando… (${recipients.length})` : `Enviar comunicado`}
+            </button>
+            {bSending && (
+              <p style={{ fontSize: 12, color: 'var(--g400)', margin: 0 }}>Esto puede tomar unos segundos, no cierres la ventana.</p>
+            )}
+          </div>
+        </div>
+        {/* ── FIN COMUNICADOS ─────────────────────────────────────── */}
 
         {/* Users table */}
         <div className="card">
@@ -118,6 +295,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
             </table>
           )}
         </div>
+
       </div>
     </div>
   )
