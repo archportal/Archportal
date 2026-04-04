@@ -48,7 +48,7 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang }) {
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
       // Enviar correo de bienvenida via EmailJS
-      try { await sendWelcomeEmail(form.nombre, form.email, form.password) } catch(e) { console.warn('EmailJS welcome:', e) }
+      try { await sendWelcomeEmail(form.nombre, form.email, form.password, plan) } catch(e) { console.warn('EmailJS welcome:', e) }
       setStep(4)
     } catch(e) { setError('Error al crear la cuenta. Intenta de nuevo.') }
     finally { setLoading(false) }
