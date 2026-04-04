@@ -54,7 +54,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
         s.onload = res; s.onerror = rej
         document.head.appendChild(s)
       })
-      window.emailjs.init(EMAILJS_PUBLIC)
+      window.emailjs.init({ publicKey: EMAILJS_PUBLIC })
     }
 
     let sent = 0, failed = 0
