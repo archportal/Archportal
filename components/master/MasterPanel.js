@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 
 const EMAILJS_SERVICE  = 'service_y8oqc0d'
-const EMAILJS_TEMPLATE = 'template_xttyjuw'
+const EMAILJS_TEMPLATE = 'template_w05m1ot'
 const EMAILJS_PUBLIC   = '7rTOKqMzkk2FuOzSV'
 
 export default function MasterPanel({ onImpersonate, onLogout }) {
