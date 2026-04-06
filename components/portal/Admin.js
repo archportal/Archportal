@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/lib/emailjs'
+import { supabase } from '@/lib/supabase'
 
 // Extract text from PDF in the browser using pdfjs-dist
 async function extractPdfTextClient(file) {
@@ -27,14 +28,14 @@ async function extractPdfTextClient(file) {
 
 async function uploadFile(file, projectId, bucket) {
   if (!file) return null
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('projectId', projectId)
-  formData.append('bucket', bucket)
-  const res = await fetch('/api/upload', { method: 'POST', body: formData })
-  const data = await res.json()
-  if (!res.ok) { console.warn('Upload error:', data.error); return null }
-  return data
+  const fileName = file.name.replace(/\s/g, '_')
+  const path = `${projectId}/${Date.now()}_${fileName}`
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(path, file, { contentType: file.type, upsert: true })
+  if (error) { console.warn('Upload error:', error.message); return null }
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path)
+  return { url: publicUrl }
 }
 
 export default function Admin({ project, user, onRefresh }) {
