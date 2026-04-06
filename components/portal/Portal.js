@@ -311,7 +311,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const [showProfile, setShowProfile] = useState(false)
   const [showHelp, setShowHelp]       = useState(false)
   const [menuOpen, setMenuOpen]       = useState(false)
-  const [menuOpen, setMenuOpen]       = useState(false)
 
   const isArq = user.role === 'arq' || user.impersonated
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
