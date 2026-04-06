@@ -12,6 +12,7 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
   const presupuesto = p.presupuesto || 0
   const ejercido    = p.pres_ejercido || 0
   const pagado      = p.pres_pagado || 0
+  const totalGastos = costs.reduce((s,c) => s + (parseInt(c.monto)||0), 0)
   const porPagar    = Math.max(0, ejercido - pagado)
   const pendientes  = costs.filter(c=>c.estatus==='Pendiente').length
   const pagadoPct   = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
@@ -114,8 +115,8 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
               ))}
             </div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 0 0',borderTop:'2px solid var(--border)',marginTop:8}}>
-              <span style={{fontSize:13,fontWeight:500,color:'var(--ink)',letterSpacing:'.04em'}}>Total ejercido</span>
-              <span style={{fontFamily:'Cormorant Garamond,serif',fontSize:28,fontWeight:300,color:'var(--ink)'}}>{fmt(ejercido)} <span style={{fontSize:14,color:'var(--g400)'}}>MXN</span></span>
+              <span style={{fontSize:13,fontWeight:500,color:'var(--ink)',letterSpacing:'.04em'}}>Total de gastos registrados</span>
+              <span style={{fontFamily:'Cormorant Garamond,serif',fontSize:28,fontWeight:300,color:'var(--ink)'}}>{fmt(totalGastos)} <span style={{fontSize:14,color:'var(--g400)'}}>MXN</span></span>
             </div>
           </>
         )}
