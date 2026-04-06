@@ -235,7 +235,8 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
 
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
-      <div style={{ background:'var(--white)', borderBottom:'1px solid var(--border)', padding:'0 32px', height:56, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div className="portal-topbar" style={{ height:'auto' }}>
+      <div className="portal-topbar-row1">
         <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:20, fontWeight:400, color:'var(--ink)' }}>ArchPortal</div>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid var(--border)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>
@@ -247,6 +248,7 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
           {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00', letterSpacing:'.06em', textTransform:'uppercase' }}>Impersonando</span>}
           <button onClick={() => window.location.reload()} style={{ background:'none', border:'1px solid var(--border)', padding:'6px 12px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Salir</button>
         </div>
+      </div>
       </div>
 
       <div style={{ padding:'48px 32px', maxWidth:1100, margin:'0 auto' }}>
@@ -355,23 +357,27 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
       <div className="portal-topbar">
-        <div className="portal-logo" onClick={() => { setActiveProject(null); setProjectData(null) }}>ArchPortal</div>
+        {/* Fila 1: logo + usuario (visible en móvil y desktop) */}
+        <div className="portal-topbar-row1">
+          <div className="portal-logo" onClick={() => { setActiveProject(null); setProjectData(null) }}>ArchPortal</div>
+          <div className="portal-user">
+            {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>}
+            <div style={{ display:'flex', alignItems:'center', gap:6, cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
+              <div className="portal-avatar">{ini}</div>
+              <span className="portal-username" style={{ fontSize:12, color:'var(--g400)' }}>{activeProject?.nombre || '—'}</span>
+              {isArq && <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>}
+            </div>
+            {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00' }}>Admin</span>}
+            <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
+          </div>
+        </div>
+        {/* Fila 2: tabs (scroll horizontal en móvil) */}
         <div className="portal-tabs">
           {tabs.map(tab => (
             <button key={tab.id} className={`portal-tab ${activeTab===tab.id?'active':''}`} onClick={() => setActiveTab(tab.id)}>
               {lang==='en' ? tab.en : tab.es}
             </button>
           ))}
-        </div>
-        <div className="portal-user">
-          {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>}
-          <div style={{ display:'flex', alignItems:'center', gap:6, cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
-            <div className="portal-avatar">{ini}</div>
-            <span style={{ fontSize:12, color:'var(--g400)' }}>{activeProject?.nombre || '—'}</span>
-            {isArq && <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>}
-          </div>
-          {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00' }}>Admin</span>}
-          <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
         </div>
       </div>
       <div className="page-content">{renderTab()}</div>

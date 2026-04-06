@@ -121,6 +121,11 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
 .step-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 
 /* ── PORTAL TOPBAR ────────────────────────────────── */
+/* Fila 1 del topbar — en desktop es transparente (el topbar es flex row) */
+.portal-topbar-row1 {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 28px; height:58px; width:100%;
+}
 .portal-topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
 .portal-logo { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; color:var(--ink); cursor:pointer; }
 .portal-tabs { display:flex; gap:0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -221,27 +226,67 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
   .pcard { border-right:none !important; border-bottom:1px solid rgba(255,255,255,.1); }
   .footer { padding:48px 24px 24px; }
   .footer-grid { grid-template-columns:1fr 1fr; gap:32px; }
-  .page-content { padding:16px; }
+  .page-content { padding:12px; }
   .metrics-grid { grid-template-columns:1fr 1fr; gap:8px; }
-  .metric-value { font-size:30px; }
+  .metric-card { padding:16px; }
+  .metric-value { font-size:26px; }
+  .metric-label { font-size:9px; margin-bottom:8px; }
+  .metric-sub { font-size:10px; }
   .two-col,.three-col { grid-template-columns:1fr; }
-  .portal-topbar { padding:0 16px; }
-  .portal-tabs { width:100%; border-top:1px solid var(--border); overflow-x:auto; }
-  .portal-tab { padding:10px 12px; font-size:11px; }
+
+  /* Portal topbar — 2 filas en móvil */
+  .portal-topbar {
+    padding:0;
+    height:auto;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .portal-topbar-row1 {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 16px;
+    height:50px;
+    border-bottom:1px solid var(--border);
+  }
+  .portal-tabs {
+    display:flex;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    border-bottom:1px solid var(--border);
+    background:var(--white);
+  }
+  .portal-tabs::-webkit-scrollbar { display:none; }
+  .portal-tab {
+    padding:10px 14px;
+    font-size:11px;
+    white-space:nowrap;
+    flex-shrink:0;
+    border-bottom:2px solid transparent;
+  }
+  .portal-tab.active {
+    border-bottom-color:var(--ink);
+  }
+  .portal-user span.portal-username { display:none; }
+
   .modal { max-width:100%; margin:0 16px; }
   .modal-header { padding:28px 24px 20px; }
   .modal-body { padding:24px; }
-  .card { padding:18px 16px; }
-  .section-hero { padding:20px 16px; }
-  .section-hero-title { font-size:26px; }
+  .card { padding:16px; }
+  .section-hero { padding:18px 16px; }
+  .section-hero-title { font-size:24px; }
+  .data-table th, .data-table td { padding:10px 8px 10px 0; font-size:12px; }
+  .stage-row { gap:8px; }
 }
 
 @media (max-width:480px) {
   .hero-h1 { font-size:34px; }
   .section-h2 { font-size:30px; }
   .metrics-grid { grid-template-columns:1fr 1fr; }
-  .metric-value { font-size:26px; }
+  .metric-value { font-size:22px; }
   .footer-grid { grid-template-columns:1fr; }
+  .portal-tab { padding:10px 10px; font-size:10px; }
 }
 
 /* ── PRINT ────────────────────────────────────────── */
