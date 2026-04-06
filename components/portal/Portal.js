@@ -310,6 +310,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const [projectData, setProjectData] = useState(clientProjectData || null)
   const [showProfile, setShowProfile] = useState(false)
   const [showHelp, setShowHelp]       = useState(false)
+  const [menuOpen, setMenuOpen]       = useState(false)
 
   const isArq = user.role === 'arq' || user.impersonated
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
@@ -357,9 +358,15 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
       <div className="portal-topbar">
-        {/* Logo — izquierda */}
+        {/* Fila 1: logo + usuario (visible en móvil y desktop) */}
         <div className="portal-topbar-row1">
           <div className="portal-logo" onClick={() => { setActiveProject(null); setProjectData(null) }}>ArchPortal</div>
+          {/* Hamburger — visible solo en móvil */}
+          <button className="portal-hamburger" onClick={() => setMenuOpen(prev => !prev)} aria-label="Menú">
+            <span style={menuOpen?{transform:'rotate(45deg) translate(5px,5px)'}:{}}/>
+            <span style={menuOpen?{opacity:0}:{}}/>
+            <span style={menuOpen?{transform:'rotate(-45deg) translate(5px,-5px)'}:{}}/>
+          </button>
           <div className="portal-user">
             {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>}
             <div style={{ display:'flex', alignItems:'center', gap:6, cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
@@ -371,7 +378,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
             <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
           </div>
         </div>
-        {/* Tabs — centro en desktop, fila en móvil */}
+        {/* Fila 2: tabs (scroll horizontal en móvil) */}
         <div className="portal-tabs">
           {tabs.map(tab => (
             <button key={tab.id} className={`portal-tab ${activeTab===tab.id?'active':''}`} onClick={() => setActiveTab(tab.id)}>

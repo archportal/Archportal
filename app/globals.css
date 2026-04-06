@@ -121,6 +121,8 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
 .step-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 
 /* ── PORTAL TOPBAR ────────────────────────────────── */
+/* Hamburger oculto en desktop */
+.portal-hamburger { display:none; }
 /* Desktop: grid 3 cols — logo | tabs centrados | usuario */
 .portal-topbar {
   background:var(--white); border-bottom:1px solid var(--border);
@@ -243,41 +245,69 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
   .metric-sub { font-size:10px; }
   .two-col,.three-col { grid-template-columns:1fr; }
 
-  /* Portal topbar — 2 filas en móvil */
+  /* Portal topbar — hamburguesa en móvil */
   .portal-topbar {
     padding:0;
     height:auto;
     flex-direction:column;
     align-items:stretch;
+    grid-template-columns:none;
+    display:flex;
   }
   .portal-topbar-row1 {
-    display:flex;
+    display:flex !important;
     align-items:center;
     justify-content:space-between;
     padding:0 16px;
-    height:50px;
+    height:52px;
     border-bottom:1px solid var(--border);
   }
+  /* Tabs ocultos por defecto en móvil */
   .portal-tabs {
-    display:flex;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-    border-bottom:1px solid var(--border);
+    display:none;
+    flex-direction:column;
     background:var(--white);
+    border-bottom:1px solid var(--border);
+    padding:8px 0;
   }
-  .portal-tabs::-webkit-scrollbar { display:none; }
+  .portal-tabs.open {
+    display:flex;
+  }
   .portal-tab {
-    padding:10px 14px;
-    font-size:11px;
+    padding:13px 20px;
+    font-size:13px;
     white-space:nowrap;
-    flex-shrink:0;
-    border-bottom:2px solid transparent;
+    border-bottom:none;
+    border-left:3px solid transparent;
+    text-align:left;
+    width:100%;
   }
   .portal-tab.active {
-    border-bottom-color:var(--ink);
+    border-left-color:var(--ink);
+    color:var(--ink);
+    font-weight:600;
+    background:var(--off);
+    border-bottom-color:transparent;
   }
   .portal-user span.portal-username { display:none; }
+  /* Botón hamburguesa — visible solo en móvil */
+  .portal-hamburger {
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:8px;
+  }
+  .portal-hamburger span {
+    display:block;
+    width:22px;
+    height:2px;
+    background:var(--ink);
+    border-radius:2px;
+    transition:all .2s;
+  }
 
   .modal { max-width:100%; margin:0 16px; }
   .modal-header { padding:28px 24px 20px; }
