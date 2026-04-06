@@ -311,6 +311,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const [showProfile, setShowProfile] = useState(false)
   const [showHelp, setShowHelp]       = useState(false)
   const [menuOpen, setMenuOpen]       = useState(false)
+  const [menuOpen, setMenuOpen]       = useState(false)
 
   const isArq = user.role === 'arq' || user.impersonated
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
@@ -358,11 +359,10 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
       <div className="portal-topbar">
-        {/* Fila 1: logo + usuario (visible en móvil y desktop) */}
+        {/* Row 1: logo | tabs (desktop center) | usuario */}
         <div className="portal-topbar-row1">
           <div className="portal-logo" onClick={() => { setActiveProject(null); setProjectData(null) }}>ArchPortal</div>
-          {/* Hamburger — visible solo en móvil */}
-          <button className="portal-hamburger" onClick={() => setMenuOpen(prev => !prev)} aria-label="Menú">
+          <button className="portal-hamburger" onClick={() => setMenuOpen(p => !p)} aria-label="Menú">
             <span style={menuOpen?{transform:'rotate(45deg) translate(5px,5px)'}:{}}/>
             <span style={menuOpen?{opacity:0}:{}}/>
             <span style={menuOpen?{transform:'rotate(-45deg) translate(5px,-5px)'}:{}}/>
@@ -378,10 +378,10 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
             <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
           </div>
         </div>
-        {/* Fila 2: tabs (scroll horizontal en móvil) */}
-        <div className="portal-tabs">
+        {/* Tabs: centro en desktop, dropdown en móvil */}
+        <div className={`portal-tabs${menuOpen ? ' open' : ''}`}>
           {tabs.map(tab => (
-            <button key={tab.id} className={`portal-tab ${activeTab===tab.id?'active':''}`} onClick={() => setActiveTab(tab.id)}>
+            <button key={tab.id} className={`portal-tab ${activeTab===tab.id?'active':''}`} onClick={() => { setActiveTab(tab.id); setMenuOpen(false) }}>
               {lang==='en' ? tab.en : tab.es}
             </button>
           ))}
