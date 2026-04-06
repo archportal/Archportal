@@ -58,6 +58,10 @@ export default function Admin({ project, user, onRefresh }) {
   const [kbInfo, setKbInfo] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
+  const [accountName, setAccountName] = useState(user.name||'')
+  const [newPass, setNewPass] = useState('')
+  const [newPass2, setNewPass2] = useState('')
+  const [savingAccount, setSavingAccount] = useState(false)
 
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(''), 3000) }
 
@@ -343,6 +347,54 @@ export default function Admin({ project, user, onRefresh }) {
           const ok=await api({costs:newCosts})
           if(ok){setCostoForm({concepto:'',categoria:'Material',etapa:'',monto:'',estatus:'Pendiente',fecha:''});showToast('Gasto registrado')}
         }} disabled={saving}>Agregar gasto</button>
+      </div>
+
+      {/* ── MI CUENTA ────────────────────────────────── */}
+      <div className="card" style={{marginBottom:12}}>
+        <div className="card-title">Mi cuenta</div>
+        <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:16,lineHeight:1.7}}>Actualiza tu nombre o cambia tu contraseña de acceso.</p>
+
+        {/* Nombre */}
+        <div style={{marginBottom:20}}>
+          <label className="form-label" style={{marginBottom:6,display:'block'}}>Nombre completo</label>
+          <div style={{display:'flex',gap:10,alignItems:'flex-end'}}>
+            <input style={{...inputStyle,flex:1}} value={accountName} onChange={e=>setAccountName(e.target.value)} placeholder="Tu nombre"/>
+            <button className="btn-submit" style={{maxWidth:160,marginTop:0,flexShrink:0}} disabled={savingAccount||!accountName.trim()} onClick={async()=>{
+              setSavingAccount(true)
+              try {
+                const res = await fetch('/api/auth/update-account', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, name:accountName.trim() }) })
+                if(res.ok) showToast('Nombre actualizado')
+                else showToast('Error al actualizar')
+              } catch { showToast('Error al actualizar') }
+              finally { setSavingAccount(false) }
+            }}>Guardar nombre</button>
+          </div>
+        </div>
+
+        {/* Contraseña */}
+        <div style={{borderTop:'1px solid var(--border)',paddingTop:16}}>
+          <label className="form-label" style={{marginBottom:12,display:'block'}}>Cambiar contraseña</label>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px 16px',marginBottom:12}}>
+            <div>
+              <label className="form-label" style={{marginBottom:6,display:'block'}}>Nueva contraseña</label>
+              <input style={inputStyle} type="password" placeholder="Mínimo 8 caracteres" value={newPass} onChange={e=>setNewPass(e.target.value)}/>
+            </div>
+            <div>
+              <label className="form-label" style={{marginBottom:6,display:'block'}}>Confirmar contraseña</label>
+              <input style={inputStyle} type="password" placeholder="Repite la contraseña" value={newPass2} onChange={e=>setNewPass2(e.target.value)}/>
+            </div>
+          </div>
+          {newPass && newPass !== newPass2 && <p style={{fontSize:12,color:'var(--danger)',marginBottom:8}}>Las contraseñas no coinciden</p>}
+          <button className="btn-submit" style={{maxWidth:200}} disabled={savingAccount||newPass.length<8||newPass!==newPass2} onClick={async()=>{
+            setSavingAccount(true)
+            try {
+              const res = await fetch('/api/auth/update-account', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, password:newPass }) })
+              if(res.ok) { showToast('Contraseña actualizada'); setNewPass(''); setNewPass2('') }
+              else showToast('Error al cambiar contraseña')
+            } catch { showToast('Error al cambiar contraseña') }
+            finally { setSavingAccount(false) }
+          }}>Cambiar contraseña</button>
+        </div>
       </div>
 
       {toast&&<div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'var(--ink)',color:'var(--white)',padding:'12px 24px',fontSize:13,fontWeight:300,zIndex:9999}}>{toast}</div>}
