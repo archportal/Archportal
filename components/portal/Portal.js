@@ -364,11 +364,11 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
           ))}
         </div>
         <div className="portal-user">
-          <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>
-          <div style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer' }} onClick={() => setShowProfile(true)}>
+          {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>}
+          <div style={{ display:'flex', alignItems:'center', gap:6, cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
             <div className="portal-avatar">{ini}</div>
             <span style={{ fontSize:12, color:'var(--g400)' }}>{activeProject?.nombre || '—'}</span>
-            <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>
+            {isArq && <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>}
           </div>
           {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00' }}>Admin</span>}
           <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
