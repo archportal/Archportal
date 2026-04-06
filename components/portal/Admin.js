@@ -30,9 +30,10 @@ async function uploadFile(file, projectId, bucket) {
   if (!file) return null
   const fileName = file.name.replace(/\s/g, '_')
   const path = `${projectId}/${Date.now()}_${fileName}`
+  const arrayBuffer = await file.arrayBuffer()
   const { error } = await supabase.storage
     .from(bucket)
-    .upload(path, file, { contentType: file.type, upsert: true })
+    .upload(path, arrayBuffer, { contentType: file.type, upsert: true })
   if (error) { console.warn('Upload error:', error.message); return null }
   const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path)
   return { url: publicUrl }
