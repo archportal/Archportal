@@ -29,6 +29,7 @@ export default function Dashboard({ project, user, lang }) {
   const avg         = stages.length ? Math.round(stages.reduce((s,e)=>s+(e.porcentaje||0),0)/stages.length) : 0
   const presupuesto = p.presupuesto || 0
   const ejercido    = p.pres_ejercido || 0
+  const totalGastos = (project?.costs||p.costs||[]).reduce((s,c)=>s+(parseInt(c.monto)||0),0)
   const pagado      = p.pres_pagado || 0
   const porPagar    = Math.max(0, ejercido - pagado)
   const etapaActual  = stages.find(e=>e.estatus==='En curso')?.nombre || p.etapa_actual || 'Por iniciar'
@@ -113,7 +114,7 @@ export default function Dashboard({ project, user, lang }) {
         {[
           {label:t.av, val:avg+'%', sub:etapaActual+' en curso', accent:false},
           {label:t.pres, val:fmt(presupuesto), sub:'MXN aprobado', accent:false},
-          {label:t.ej, val:fmt(ejercido), sub:presupuesto>0?Math.round(ejercido/presupuesto*100)+'% del total':'0%', accent:false},
+          {label:t.ej, val:fmt(totalGastos), sub:presupuesto>0?Math.round(totalGastos/presupuesto*100)+'% del presupuesto':'0%', accent:false},
           {label:t.ent, val:p.entrega||'Por definir', sub:'Siguiente: '+siguienteEtapa, accent:false, small:true},
         ].map(({label,val,sub,accent,small})=>(
           <div key={label} className={`metric-card${accent?' accent':''}`}>
@@ -145,7 +146,7 @@ export default function Dashboard({ project, user, lang }) {
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:1,background:'var(--border)'}}>
             {[
               ['Aprobado',fmt(presupuesto),'var(--g100)','var(--ink)'],
-              ['Ejercido',fmt(ejercido),'var(--white)','var(--ink)'],
+              ['Ejercido',fmt(totalGastos),'var(--white)','var(--ink)'],
               ['Pagado',fmt(pagado),'var(--white)','var(--ink)'],
               ['Por pagar',fmt(porPagar),'#FEF4E4','#7A4A00'],
             ].map(([label,val,bg,color])=>(
