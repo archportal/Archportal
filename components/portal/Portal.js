@@ -357,7 +357,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
       <div className="portal-topbar">
-        {/* Fila 1: logo + usuario (visible en móvil y desktop) */}
+        {/* Logo — izquierda */}
         <div className="portal-topbar-row1">
           <div className="portal-logo" onClick={() => { setActiveProject(null); setProjectData(null) }}>ArchPortal</div>
           <div className="portal-user">
@@ -371,7 +371,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
             <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
           </div>
         </div>
-        {/* Fila 2: tabs (scroll horizontal en móvil) */}
+        {/* Tabs — centro en desktop, fila en móvil */}
         <div className="portal-tabs">
           {tabs.map(tab => (
             <button key={tab.id} className={`portal-tab ${activeTab===tab.id?'active':''}`} onClick={() => setActiveTab(tab.id)}>

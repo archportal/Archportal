@@ -121,9 +121,21 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
 .step-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 
 /* ── PORTAL TOPBAR ────────────────────────────────── */
-/* En desktop: topbar es flex-row, row1 es display:contents (transparente) */
-.portal-topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; flex-wrap:nowrap; }
+/* Desktop: grid 3 cols — logo | tabs centrados | usuario */
+.portal-topbar {
+  background:var(--white); border-bottom:1px solid var(--border);
+  height:58px; display:grid; grid-template-columns:1fr auto 1fr;
+  align-items:center; position:sticky; top:0; z-index:100;
+  padding:0 20px;
+}
+/* row1 = logo (col 1) + usuario (col 3) — display:contents hace que sus hijos participen en el grid */
 .portal-topbar-row1 { display:contents; }
+/* Logo va a col 1 */
+.portal-topbar-row1 .portal-logo { grid-column:1; }
+/* Usuario va a col 3, alineado a la derecha */
+.portal-topbar-row1 .portal-user { grid-column:3; justify-self:end; }
+/* Tabs van a col 2, centrados */
+.portal-tabs { grid-column:2; display:flex; justify-content:center; overflow:visible; }
 .portal-logo { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; color:var(--ink); cursor:pointer; }
 .portal-tabs { display:flex; gap:0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .portal-tab { padding:8px 18px; background:none; border:none; font-family:'Jost',sans-serif; font-size:12px; font-weight:400; color:var(--g400); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all .2s; letter-spacing:.04em; }
@@ -239,7 +251,7 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
     align-items:stretch;
   }
   .portal-topbar-row1 {
-    display:flex !important;
+    display:flex;
     align-items:center;
     justify-content:space-between;
     padding:0 16px;
