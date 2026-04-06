@@ -12,7 +12,7 @@ const PLANS = {
 
 import { sendWelcomeEmail, sendMembershipEmail } from "@/lib/emailjs"
 
-export default function RegisterModal({ onClose, plan, onSuccess, lang }) {
+export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTerms, onShowPrivacy }) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -108,19 +108,26 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang }) {
               {/* T&C */}
               <div style={{marginBottom:24}}>
                 <label className="form-label">{lang==='en'?'Terms and conditions':'Términos y condiciones'}</label>
-                <div style={{height:160,overflowY:'scroll',border:'1px solid var(--border)',padding:16,fontSize:11,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:12}}>
-                  <p style={{fontWeight:500,color:'var(--ink)',marginBottom:8}}>Términos y Condiciones — Arch Portal</p>
-                  <p style={{marginBottom:8}}><strong>1. Descripción:</strong> Arch Portal es un SaaS para profesionales de arquitectura y construcción.</p>
-                  <p style={{marginBottom:8}}><strong>2. Cuentas:</strong> Eres responsable de mantener la confidencialidad de tus credenciales.</p>
-                  <p style={{marginBottom:8}}><strong>3. Propiedad:</strong> Conservas todos los derechos sobre tus planos y documentos.</p>
-                  <p style={{marginBottom:8}}><strong>4. Uso aceptable:</strong> No uses la plataforma para contenido ilegal.</p>
-                  <p style={{marginBottom:8}}><strong>5. Pagos:</strong> Los cobros son recurrentes. Puedes cancelar en cualquier momento.</p>
-                  <p style={{marginBottom:8}}><strong>6. Responsabilidad:</strong> Arch Portal no es responsable por errores de construcción.</p>
-                  <p><strong>7. Legislación:</strong> Estos Términos se rigen por las leyes de México, jurisdicción Baja California.</p>
+                <div style={{height:180,overflowY:'scroll',border:'1px solid var(--border)',padding:16,fontSize:11,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:12}}>
+                  <p style={{fontWeight:500,color:'var(--ink)',marginBottom:10,fontSize:12}}>Términos y Condiciones — ArchPortal · Versión 1.0</p>
+                  <p style={{marginBottom:8}}><strong>1. Descripción:</strong> ArchPortal es una plataforma SaaS para gestión de proyectos de arquitectura y construcción.</p>
+                  <p style={{marginBottom:8}}><strong>2. Cuentas:</strong> Eres responsable de mantener la confidencialidad de tus credenciales y de todas las actividades bajo tu cuenta.</p>
+                  <p style={{marginBottom:8}}><strong>3. Propiedad:</strong> Conservas todos los derechos sobre tus planos, documentos y fotografías. Al subirlos otorgas una licencia no exclusiva solo para prestar el servicio.</p>
+                  <p style={{marginBottom:8}}><strong>4. Uso aceptable:</strong> No uses la plataforma para contenido ilegal, difamatorio o que infrinja derechos de terceros.</p>
+                  <p style={{marginBottom:8}}><strong>5. Pagos:</strong> Los cobros son recurrentes según el ciclo elegido. Reembolso completo disponible en los primeros 7 días naturales sin uso.</p>
+                  <p style={{marginBottom:8}}><strong>6. Limitación de responsabilidad:</strong> ArchPortal no es responsable por errores de construcción ni por las respuestas del asistente de IA. La responsabilidad máxima no excederá 3 meses de suscripción.</p>
+                  <p style={{marginBottom:8}}><strong>7. Privacidad:</strong> El tratamiento de datos personales se rige por la LFPDPPP conforme a nuestro Aviso de Privacidad.</p>
+                  <p><strong>8. Legislación:</strong> Estos Términos se rigen por las leyes de México, jurisdicción Ensenada, Baja California.</p>
                 </div>
-                <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer'}}>
+                <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',marginBottom:10}}>
                   <input type="checkbox" checked={tcAccepted} onChange={e=>setTcAccepted(e.target.checked)} style={{marginTop:3,width:15,height:15,flexShrink:0,cursor:'pointer',accentColor:'var(--ink)'}}/>
-                  <span style={{fontSize:12,fontWeight:300,color:'var(--ink)',lineHeight:1.6}}>{lang==='en'?'I have read and accept the ':'He leído y acepto los '}<strong>{lang==='en'?'Terms and Conditions':'Términos y Condiciones'}</strong>{lang==='en'?' of Arch Portal.':' de Arch Portal.'}</span>
+                  <span style={{fontSize:12,fontWeight:300,color:'var(--ink)',lineHeight:1.6}}>
+                    {lang==='en'?'I have read and accept the ':'He leído y acepto los '}
+                    <strong onClick={onShowTerms} style={{cursor:'pointer',textDecoration:'underline'}}>{lang==='en'?'Terms and Conditions':'Términos y Condiciones'}</strong>
+                    {lang==='en'?' and ':' y el '}
+                    <strong onClick={onShowPrivacy} style={{cursor:'pointer',textDecoration:'underline'}}>{lang==='en'?'Privacy Notice':'Aviso de Privacidad'}</strong>
+                    {lang==='en'?' of ArchPortal.':', de ArchPortal.'}
+                  </span>
                 </label>
               </div>
 

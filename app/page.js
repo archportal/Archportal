@@ -4,6 +4,7 @@ import Nav from '@/components/landing/Nav'
 import LoginModal from '@/components/landing/LoginModal'
 import RegisterModal from '@/components/landing/RegisterModal'
 import TermsModal from '@/components/landing/TermsModal'
+import PrivacyModal from '@/components/landing/PrivacyModal'
 import Portal from '@/components/portal/Portal'
 import MasterPanel from '@/components/master/MasterPanel'
 
@@ -12,6 +13,7 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState('mensual')
   const [user, setUser] = useState(null)
   const [projects, setProjects] = useState([])
@@ -276,15 +278,16 @@ export default function Home() {
           </div>
           <div>
             <div className="footer-col-title">{t.footerLinks.legal}</div>
-            <ul className="footer-links"><li><a onClick={()=>setShowTerms(true)}>Términos de uso</a></li><li><a>Privacidad</a></li></ul>
+            <ul className="footer-links"><li><a onClick={()=>setShowTerms(true)}>Términos de uso</a></li><li><a onClick={()=>setShowPrivacy(true)}>Aviso de privacidad</a></li></ul>
           </div>
         </div>
         <div className="footer-bottom"><span>© 2026 ArchPortal</span><span>archportal.mx</span></div>
       </footer>
 
-      {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} onRegister={()=>{setShowLogin(false);document.getElementById('precios')?.scrollIntoView({behavior:'smooth'})}} lang={lang}/>}
-      {showRegister && <RegisterModal onClose={()=>setShowRegister(false)} plan={selectedPlan} onSuccess={()=>{setShowRegister(false);setShowLogin(true)}} lang={lang}/>}
+      {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} onRegister={()=>{setShowLogin(false);setShowRegister(true)}} lang={lang}/>}
+      {showRegister && <RegisterModal onClose={()=>setShowRegister(false)} plan={selectedPlan} onSuccess={()=>{setShowRegister(false);setShowLogin(true)}} lang={lang} onShowTerms={()=>setShowTerms(true)} onShowPrivacy={()=>setShowPrivacy(true)}/>}
       {showTerms && <TermsModal onClose={()=>setShowTerms(false)}/>}
+      {showPrivacy && <PrivacyModal onClose={()=>setShowPrivacy(false)}/>}
     </>
   )
 }
