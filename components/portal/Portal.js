@@ -7,9 +7,9 @@ import Soporte from './Soporte'
 import Cronograma from './Cronograma'
 import Admin from './Admin'
 
-const EMAILJS_SERVICE  = 'service_y8oqc0d'
+const EMAILJS_SERVICE  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE
 const EMAILJS_TEMPLATE = 'template_d2n23nw'
-const EMAILJS_PUBLIC   = '7rTOKqMzkk2FuOzSV'
+const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
 const SUPPORT_EMAIL    = 'locastav11@gmail.com'
 
 const TABS_ARQ = [

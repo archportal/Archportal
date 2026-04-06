@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-const EMAILJS_SERVICE  = 'service_y8oqc0d'
+const EMAILJS_SERVICE  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE
 const EMAILJS_TEMPLATE = 'template_w05m1ot'
-const EMAILJS_PUBLIC   = '7rTOKqMzkk2FuOzSV'
+const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
 
 export default function MasterPanel({ onImpersonate, onLogout }) {
   const [users, setUsers]       = useState([])
