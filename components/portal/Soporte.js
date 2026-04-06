@@ -54,6 +54,14 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
     onRefresh?.()
   }
 
+  const deleteQuestion = async (i) => {
+    if (!confirm('¿Eliminar esta pregunta?')) return
+    const updated = questions.filter((_,idx) => idx !== i)
+    setQuestions(updated)
+    await fetch('/api/projects', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:p.id, questions:updated }) })
+    onRefresh?.()
+  }
+
   const addKb = async () => {
     if (!kbTema||!kbInfo) return
     setSavingKb(true)
@@ -95,7 +103,10 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
                 <div style={{flex:1}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
                     <span style={{fontSize:12,fontWeight:500,color:'var(--ink)'}}>{isArq?'Cliente':(lang==='en'?'Your question':'Tu pregunta')}</span>
-                    <span style={{fontSize:10,color:'var(--g400)'}}>{new Date(q.created_at||Date.now()).toLocaleString('es-MX')}</span>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:10,color:'var(--g400)'}}>{new Date(q.created_at||Date.now()).toLocaleString('es-MX')}</span>
+                      {isArq && <button onClick={()=>deleteQuestion(i)} style={{fontSize:10,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'2px 8px',cursor:'pointer',fontFamily:'Jost,sans-serif',flexShrink:0}}>✕</button>}
+                    </div>
                   </div>
                   <p style={{fontSize:14,fontWeight:300,color:'var(--g600)',lineHeight:1.7,margin:0}}>{q.pregunta}</p>
                 </div>
