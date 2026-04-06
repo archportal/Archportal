@@ -121,12 +121,9 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
 .step-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 
 /* ── PORTAL TOPBAR ────────────────────────────────── */
-/* Fila 1 del topbar — en desktop es transparente (el topbar es flex row) */
-.portal-topbar-row1 {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 28px; height:58px; width:100%;
-}
-.portal-topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+/* En desktop: topbar es flex-row, row1 es display:contents (transparente) */
+.portal-topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; flex-wrap:nowrap; }
+.portal-topbar-row1 { display:contents; }
 .portal-logo { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; color:var(--ink); cursor:pointer; }
 .portal-tabs { display:flex; gap:0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .portal-tab { padding:8px 18px; background:none; border:none; font-family:'Jost',sans-serif; font-size:12px; font-weight:400; color:var(--g400); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all .2s; letter-spacing:.04em; }
@@ -242,7 +239,7 @@ body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--i
     align-items:stretch;
   }
   .portal-topbar-row1 {
-    display:flex;
+    display:flex !important;
     align-items:center;
     justify-content:space-between;
     padding:0 16px;
