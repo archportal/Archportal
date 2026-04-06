@@ -5,6 +5,7 @@ const fmt = n => '$' + Number(n||0).toLocaleString('es-MX')
 
 const printStyles = `
 @media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   body * { visibility: hidden !important; }
   #dashboard-print, #dashboard-print * { visibility: visible !important; }
   #dashboard-print { position: absolute; left: 0; top: 0; width: 100%; }
@@ -12,13 +13,21 @@ const printStyles = `
   .portal-topbar { display: none !important; }
   body { background: white !important; }
   .card { break-inside: avoid; border: 1px solid #E2E1DC !important; }
-  #dashboard-print h1 { color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  #dashboard-print p { color: rgba(255,255,255,0.7) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  #dashboard-print div[style*="background:var(--ink)"],
-  #dashboard-print div[style*="background:'var(--ink)'"] {
-    background: #0C0C0C !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  #dashboard-print .print-header {
+    background: #1A1A18 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  #dashboard-print .print-header * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  #dashboard-print h1 { color: #ffffff !important; }
+  #dashboard-print .print-header p { color: rgba(255,255,255,0.6) !important; }
+  #dashboard-print .print-progress-bar {
+    background: #C8A96E !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   @page { margin: 1.5cm; size: A4; }
 }
