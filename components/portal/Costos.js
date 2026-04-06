@@ -114,9 +114,15 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
                 </div>
               ))}
             </div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 0 0',borderTop:'2px solid var(--border)',marginTop:8}}>
-              <span style={{fontSize:13,fontWeight:500,color:'var(--ink)',letterSpacing:'.04em'}}>Total de gastos registrados</span>
-              <span style={{fontFamily:'Cormorant Garamond,serif',fontSize:28,fontWeight:300,color:'var(--ink)'}}>{fmt(totalGastos)} <span style={{fontSize:14,color:'var(--g400)'}}>MXN</span></span>
+            <div style={{marginTop:16,background:'var(--ink)',padding:'20px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{fontSize:9,letterSpacing:'.2em',textTransform:'uppercase',color:'rgba(255,255,255,.4)',marginBottom:6}}>Suma total</div>
+                <div style={{fontSize:13,fontWeight:400,color:'rgba(255,255,255,.8)'}}>Gastos registrados</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <span style={{fontFamily:'Cormorant Garamond,serif',fontSize:36,fontWeight:300,color:'var(--white)'}}>{fmt(totalGastos)}</span>
+                <span style={{fontSize:13,color:'rgba(255,255,255,.4)',marginLeft:6}}>MXN</span>
+              </div>
             </div>
           </>
         )}
