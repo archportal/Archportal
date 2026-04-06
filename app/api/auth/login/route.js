@@ -1,15 +1,25 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
+import { rateLimit, getIP, rateLimitResponse } from '@/lib/ratelimit'
 
-const MASTER_EMAIL = 'master@archportal.mx'
-const MASTER_PASS  = 'master2025'
+// Master credentials desde variables de entorno (nunca hardcodeadas)
+const MASTER_EMAIL = process.env.MASTER_EMAIL || 'master@archportal.mx'
+const MASTER_PASS  = process.env.MASTER_PASS
 
 export async function POST(request) {
   try {
+    // Rate limit: 5 intentos por minuto por IP
+    const rl = rateLimit(getIP(request), 5, 60_000)
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt)
+
     const { email, password } = await request.json()
 
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Correo y contraseña requeridos' }, { status: 400 })
+    }
+
     // Master account check
-    if (email === MASTER_EMAIL && password === MASTER_PASS) {
+    if (MASTER_PASS && email === MASTER_EMAIL && password === MASTER_PASS) {
       return NextResponse.json({
         success: true,
         user: { id: 'master', email: MASTER_EMAIL, role: 'master', name: 'ArchPortal Admin' },

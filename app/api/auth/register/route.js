@@ -1,9 +1,18 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
+import { rateLimit, getIP, rateLimitResponse } from '@/lib/ratelimit'
 
 export async function POST(request) {
   try {
+    // Rate limit: 3 registros por minuto por IP
+    const rl = rateLimit(getIP(request), 3, 60_000)
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt)
+
     const { nombre, email, password, despacho, ciudad, plan } = await request.json()
+
+    if (!nombre || !email || !password) {
+      return NextResponse.json({ error: 'Nombre, email y contraseña son requeridos' }, { status: 400 })
+    }
 
     // Check duplicate
     const { data: existing } = await supabaseAdmin.from('users').select('id').eq('email', email).maybeSingle()
@@ -53,14 +62,13 @@ export async function POST(request) {
               <div style="background:#fff;border:1px solid #E2E1DC;padding:48px;">
                 <p style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6B6A62;margin:0 0 24px;">Cuenta activada</p>
                 <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:400;color:#0C0C0C;margin:0 0 24px;">Bienvenido a ArchPortal, ${nombre}</h1>
-                <p style="font-size:14px;color:#3D3C36;line-height:1.8;margin:0 0 24px;">Tu cuenta ha sido creada exitosamente. Aquí están tus credenciales de acceso:</p>
+                <p style="font-size:14px;color:#3D3C36;line-height:1.8;margin:0 0 24px;">Tu cuenta ha sido creada exitosamente.</p>
                 <div style="background:#F5F4F1;padding:24px;margin:0 0 32px;">
                   <p style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#9A9990;margin:0 0 12px;">Tus credenciales</p>
                   <p style="margin:0;font-size:14px;color:#0C0C0C;"><strong>Usuario:</strong> ${email}</p>
-                  <p style="margin:8px 0 0;font-size:14px;color:#0C0C0C;"><strong>Contraseña:</strong> ${password}</p>
                   <p style="margin:8px 0 0;font-size:14px;color:#0C0C0C;"><strong>Plan:</strong> ${plan || 'Mensual'}</p>
                 </div>
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">Entrar al portal</a>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://archportal.mx'}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">Entrar al portal</a>
               </div>
               <p style="text-align:center;margin-top:24px;font-size:11px;color:#9A9990;">ArchPortal — Portal para despachos de arquitectura</p>
             </div>`
@@ -70,9 +78,9 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true, user,
-      credentials: { email, password } // Return for EmailJS fallback on client
+      credentials: { email, password }
     })
 
   } catch (error) {
