@@ -144,6 +144,16 @@ export async function PATCH(request) {
       }
     }
 
+    // Posts replacement (for deletion)
+    if (posts !== undefined) {
+      await supabaseAdmin.from('project_posts').delete().eq('project_id', id)
+      if (posts.length > 0) {
+        await supabaseAdmin.from('project_posts').insert(
+          posts.map(p => ({ project_id: id, texto: p.texto||'', autor: p.autor||'', fecha: p.fecha||'' }))
+        )
+      }
+    }
+
     // Photos
     if (photos !== undefined) {
       await supabaseAdmin.from('project_photos').delete().eq('project_id', id)
