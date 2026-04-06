@@ -85,40 +85,34 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
           </div>
         ) : (
           <>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  {['Concepto','Categoría','Etapa','Monto','Estatus','Fecha', isArq ? '' : null].filter(Boolean).map(h=>(
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {costs.map((c,i)=>(
-                  <tr key={i}>
-                    <td style={{fontWeight:400,color:'var(--ink)'}}>{c.concepto}</td>
-                    <td style={{color:'var(--g500)'}}>{c.categoria}</td>
-                    <td style={{color:'var(--g500)'}}>{c.etapa||'—'}</td>
-                    <td style={{fontWeight:500,color:'var(--ink)'}}>{fmt(c.monto)}</td>
-                    <td><span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus}</span></td>
-                    <td style={{color:'var(--g400)'}}>{c.fecha}</td>
+            <div style={{display:'grid',gap:8,marginBottom:8}}>
+              {costs.map((c,i)=>(
+                <div key={i} style={{background:'var(--off)',border:'1px solid var(--border)',padding:'14px 16px'}}>
+                  {/* Fila superior: concepto + monto */}
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8,gap:8}}>
+                    <span style={{fontSize:14,fontWeight:500,color:'var(--ink)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.concepto}</span>
+                    <span style={{fontSize:15,fontWeight:600,color:'var(--ink)',flexShrink:0}}>{fmt(c.monto)}</span>
+                  </div>
+                  {/* Fila inferior: metadata + acciones */}
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                    <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+                      <span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus}</span>
+                      <span style={{fontSize:11,color:'var(--g400)'}}>{c.categoria}</span>
+                      {c.etapa && <span style={{fontSize:11,color:'var(--g400)'}}>{c.etapa}</span>}
+                      {c.fecha && <span style={{fontSize:11,color:'var(--g300)'}}>{c.fecha}</span>}
+                    </div>
                     {isArq && (
-                      <td>
-                        <button
-                          onClick={() => deleteCost(i)}
-                          disabled={deleting === i}
-                          style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'5px 12px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',cursor:'pointer',opacity:deleting===i?.4:1,transition:'all .2s'}}
-                          onMouseEnter={e=>{e.currentTarget.style.background='var(--danger)';e.currentTarget.style.color='#fff'}}
-                          onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--danger)'}}
-                        >
-                          {deleting===i?'...':'✕'}
-                        </button>
-                      </td>
+                      <button onClick={() => deleteCost(i)} disabled={deleting===i}
+                        style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'5px 12px',fontFamily:'Jost,sans-serif',cursor:'pointer',opacity:deleting===i?.4:1,flexShrink:0}}
+                        onMouseEnter={e=>{e.currentTarget.style.background='var(--danger)';e.currentTarget.style.color='#fff'}}
+                        onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--danger)'}}>
+                        {deleting===i?'...':'✕ Eliminar'}
+                      </button>
                     )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              ))}
+            </div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 0 0',borderTop:'2px solid var(--border)',marginTop:8}}>
               <span style={{fontSize:13,fontWeight:500,color:'var(--ink)',letterSpacing:'.04em'}}>Total ejercido</span>
               <span style={{fontFamily:'Cormorant Garamond,serif',fontSize:28,fontWeight:300,color:'var(--ink)'}}>{fmt(ejercido)} <span style={{fontSize:14,color:'var(--g400)'}}>MXN</span></span>

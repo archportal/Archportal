@@ -22,7 +22,6 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
   }
 
   const tipoIcon = { PDF:'📄', DWG:'📐', XLS:'📊', IMG:'🖼️', Otro:'📁' }
-  const tipoChip = { PDF:'chip-red', DWG:'chip-blue', XLS:'chip-green', IMG:'chip-warn', Otro:'chip-gray' }
 
   return (
     <div>
@@ -46,29 +45,33 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
         ) : (
           <div style={{display:'grid',gap:8}}>
             {files.map((f,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:16,padding:'16px 20px',background:'var(--off)',border:'1px solid var(--border)',transition:'all .2s'}}
+              <div key={i} style={{background:'var(--off)',border:'1px solid var(--border)',padding:'14px 16px',transition:'border-color .2s'}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor='var(--ink)'}
                 onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}
               >
-                <div style={{fontSize:28,flexShrink:0}}>{tipoIcon[f.tipo]||tipoIcon.Otro}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:14,fontWeight:500,color:'var(--ink)',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
-                  <div style={{display:'flex',gap:12,alignItems:'center'}}>
-                    <span style={{fontSize:10,padding:'3px 8px',letterSpacing:'.06em',textTransform:'uppercase',background:f.tipo==='PDF'?'#FBE4E4':f.tipo==='DWG'?'#E4EBF8':f.tipo==='XLS'?'#EBF2E4':'#F0EFEC',color:f.tipo==='PDF'?'#8B1A1A':f.tipo==='DWG'?'#1A3A8B':f.tipo==='XLS'?'#2D5016':'#6B6A62',fontWeight:500}}>{f.tipo||'FILE'}</span>
-                    {f.etapa && <span style={{fontSize:11,color:'var(--g400)'}}>{f.etapa}</span>}
-                    {f.fecha && <span style={{fontSize:11,color:'var(--g300)'}}>{f.fecha}</span>}
+                {/* Fila superior: icono + nombre */}
+                <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:10}}>
+                  <div style={{fontSize:24,flexShrink:0}}>{tipoIcon[f.tipo]||tipoIcon.Otro}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:500,color:'var(--ink)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
+                    <div style={{display:'flex',gap:8,alignItems:'center',marginTop:4,flexWrap:'wrap'}}>
+                      <span style={{fontSize:10,padding:'2px 7px',letterSpacing:'.06em',textTransform:'uppercase',background:f.tipo==='PDF'?'#FBE4E4':f.tipo==='DWG'?'#E4EBF8':f.tipo==='XLS'?'#EBF2E4':'#F0EFEC',color:f.tipo==='PDF'?'#8B1A1A':f.tipo==='DWG'?'#1A3A8B':f.tipo==='XLS'?'#2D5016':'#6B6A62',fontWeight:500}}>{f.tipo||'FILE'}</span>
+                      {f.etapa && <span style={{fontSize:11,color:'var(--g400)'}}>{f.etapa}</span>}
+                      {f.fecha && <span style={{fontSize:11,color:'var(--g300)'}}>{f.fecha}</span>}
+                    </div>
                   </div>
                 </div>
-                <div style={{display:'flex',gap:8,flexShrink:0}}>
+                {/* Fila inferior: botones */}
+                <div style={{display:'flex',gap:8,paddingLeft:36}}>
                   {f.url && (
-                    <a href={f.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:'var(--white)',background:'var(--ink)',textDecoration:'none',padding:'8px 18px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',fontWeight:500,transition:'opacity .2s'}}
-                      onMouseEnter={e=>e.currentTarget.style.opacity='.8'}
-                      onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                    <a href={f.url} target="_blank" rel="noreferrer"
+                      style={{flex:1,textAlign:'center',fontSize:11,color:'var(--white)',background:'var(--ink)',textDecoration:'none',padding:'8px 16px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',fontWeight:500}}>
                       Descargar
                     </a>
                   )}
                   {isArq && (
-                    <button onClick={()=>deleteFile(i)} disabled={deleting===i} style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'8px 14px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',cursor:'pointer',opacity:deleting===i?.4:1}}>
+                    <button onClick={()=>deleteFile(i)} disabled={deleting===i}
+                      style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'8px 14px',fontFamily:'Jost,sans-serif',cursor:'pointer',opacity:deleting===i?.4:1,flexShrink:0}}>
                       {deleting===i?'...':'✕'}
                     </button>
                   )}
