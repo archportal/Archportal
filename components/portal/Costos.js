@@ -1,10 +1,14 @@
 'use client'
+import { useState } from 'react'
 
 function fmt(n) { return '$' + Number(n||0).toLocaleString('es-MX') }
 
-export default function Costos({ project, lang }) {
+export default function Costos({ project, user, lang, onRefresh, isArq }) {
   const p = project?.project || project || {}
   const costs = project?.costs || p.costs || []
+  const [deleting, setDeleting] = useState(null)
+  const [toast, setToast] = useState('')
+
   const presupuesto = p.presupuesto || 0
   const ejercido    = p.pres_ejercido || 0
   const pagado      = p.pres_pagado || 0
@@ -12,6 +16,24 @@ export default function Costos({ project, lang }) {
   const pendientes  = costs.filter(c=>c.estatus==='Pendiente').length
   const pagadoPct   = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
   const ejercidoPct = presupuesto > 0 ? Math.round(ejercido/presupuesto*100) : 0
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  const deleteCost = async (i) => {
+    if (!confirm('¿Eliminar este gasto?')) return
+    setDeleting(i)
+    const newCosts = costs.filter((_, idx) => idx !== i)
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: p.id, costs: newCosts })
+      })
+      if (res.ok) { showToast('Gasto eliminado'); onRefresh?.() }
+      else showToast('Error al eliminar')
+    } catch { showToast('Error al eliminar') }
+    finally { setDeleting(null) }
+  }
 
   return (
     <div>
@@ -66,7 +88,7 @@ export default function Costos({ project, lang }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  {['Concepto','Categoría','Etapa','Monto','Estatus','Fecha'].map(h=>(
+                  {['Concepto','Categoría','Etapa','Monto','Estatus','Fecha', isArq ? '' : null].filter(Boolean).map(h=>(
                     <th key={h}>{h}</th>
                   ))}
                 </tr>
@@ -80,6 +102,19 @@ export default function Costos({ project, lang }) {
                     <td style={{fontWeight:500,color:'var(--ink)'}}>{fmt(c.monto)}</td>
                     <td><span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus}</span></td>
                     <td style={{color:'var(--g400)'}}>{c.fecha}</td>
+                    {isArq && (
+                      <td>
+                        <button
+                          onClick={() => deleteCost(i)}
+                          disabled={deleting === i}
+                          style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'5px 12px',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',cursor:'pointer',opacity:deleting===i?.4:1,transition:'all .2s'}}
+                          onMouseEnter={e=>{e.currentTarget.style.background='var(--danger)';e.currentTarget.style.color='#fff'}}
+                          onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--danger)'}}
+                        >
+                          {deleting===i?'...':'✕'}
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -91,6 +126,8 @@ export default function Costos({ project, lang }) {
           </>
         )}
       </div>
+
+      {toast && <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'var(--ink)',color:'var(--white)',padding:'12px 28px',fontSize:13,fontWeight:300,zIndex:9999,boxShadow:'0 8px 24px rgba(0,0,0,.2)'}}>{toast}</div>}
     </div>
   )
 }

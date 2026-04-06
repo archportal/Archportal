@@ -343,7 +343,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const renderTab = () => {
     switch(activeTab) {
       case 'dashboard':  return <Dashboard {...props} />
-      case 'costos':     return <Costos {...props} />
+      case 'costos':     return <Costos {...props} isArq={isArq} />
       case 'archivos':   return <Archivos {...props} isArq={isArq} />
       case 'cronograma': return <Cronograma {...props} />
       case 'soporte':    return <Soporte {...props} isArq={isArq} />
