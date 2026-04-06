@@ -31,19 +31,11 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
     setPregunta('')
     try {
       const apiKey = localStorage.getItem('master_anthropic_key') || ''
-      const res = await fetch('/api/ai', { method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ pregunta:q, projectId:p.id, context:buildContext(), apiKey }) })
+      const res = await fetch('/api/ai', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ pregunta:q, projectId:p.id, context:buildContext(), apiKey }) })
       const data = await res.json()
       setQuestions(prev => prev.map((item,i) => i===0 ? { ...item, respuesta:data.respuesta||null, ia_respondio:data.iaRespondio } : item))
       if (!data.iaRespondio) {
-        sendNotifEmail({
-          arquitectoEmail:  p.architect_email || p.architectemail,
-          arquitectoNombre: p.arquitecto,
-          clienteNombre:    p.cliente || user.email,
-          clienteEmail:     user.email,
-          proyecto:         p.nombre,
-          pregunta:         q
-        })
+        sendNotifEmail({ arquitectoEmail:p.architect_email||p.architectemail, arquitectoNombre:p.arquitecto, clienteNombre:p.cliente||user.email, clienteEmail:user.email, proyecto:p.nombre, pregunta:q })
       }
       const updatedQs = [{ pregunta:q, respuesta:data.respuesta||null, ia_respondio:data.iaRespondio||false }, ...qInit]
       await fetch('/api/projects', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:p.id, questions:updatedQs }) })
@@ -58,14 +50,7 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
     setQuestions(updated)
     setEditingResp(prev => { const n={...prev}; delete n[i]; return n })
     await fetch('/api/projects', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:p.id, questions:updated }) })
-    sendBitacoraEmail({
-      clientEmail:      p.client_email,
-      arquitectoNombre: user.name || user.email,
-      arquitectoEmail:  user.email,
-      proyecto:         p.nombre,
-      cliente:          p.cliente,
-      nota:             `Tu arquitecto respondió tu pregunta: "${updated[i].pregunta}"\n\nRespuesta: ${texto}`
-    })
+    sendBitacoraEmail({ clientEmail:p.client_email, arquitectoNombre:user.name||user.email, arquitectoEmail:user.email, proyecto:p.nombre, cliente:p.cliente, nota:`Tu arquitecto respondió tu pregunta: "${updated[i].pregunta}"\n\nRespuesta: ${texto}` })
     onRefresh?.()
   }
 
@@ -83,100 +68,121 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
 
   return (
     <div>
-      <div style={{background:'var(--ink)',padding:'24px 28px',marginBottom:12}}>
-        <div style={{fontSize:9,letterSpacing:'.2em',textTransform:'uppercase',color:'rgba(255,255,255,.3)',marginBottom:8}}>Proyecto · Asistencia</div>
-        <h1 style={{fontFamily:'Cormorant Garamond, serif',fontSize:28,fontWeight:400,color:'#fff',marginBottom:4}}>Soporte</h1>
-        <p style={{fontSize:12,color:'rgba(255,255,255,.4)',margin:0}}>{isArq ? 'Gestiona preguntas del cliente y base de conocimiento' : (lang==='en'?'Send your questions about the project':'Envía tus preguntas sobre el proyecto')}</p>
+      <div className="section-hero" style={{marginBottom:20}}>
+        <div className="section-hero-eyebrow">Proyecto · Asistencia</div>
+        <h1 className="section-hero-title">Soporte</h1>
+        <p className="section-hero-sub">{isArq ? 'Gestiona preguntas del cliente y base de conocimiento' : (lang==='en'?'Send your questions about the project':'Envía tus preguntas sobre el proyecto')}</p>
       </div>
 
       <div className={isArq ? 'two-col' : ''}>
+
+        {/* Preguntas */}
         <div className="card">
           <div className="card-title">{isArq?'Preguntas del cliente':(lang==='en'?'My questions':'Mis preguntas')}</div>
 
-          {questions.length===0 && <p style={{fontSize:13,fontWeight:300,color:'var(--g400)',marginBottom:20}}>{isArq?'El cliente aún no ha enviado preguntas.':'Sin preguntas aún.'}</p>}
+          {questions.length===0 && (
+            <div style={{padding:'32px 0',textAlign:'center'}}>
+              <div style={{fontSize:40,marginBottom:12}}>💬</div>
+              <p style={{fontSize:13,fontWeight:300,color:'var(--g400)'}}>{isArq?'El cliente aún no ha enviado preguntas.':'Sin preguntas aún.'}</p>
+            </div>
+          )}
 
           {questions.map((q,i) => (
-            <div key={i} style={{marginBottom:0,paddingBottom:20,paddingTop:20,borderBottom:'1px solid var(--g100)'}}>
-              <div style={{display:'flex',gap:10,marginBottom:8}}>
-                <div style={{width:32,height:32,borderRadius:'50%',background:'var(--g100)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,color:'var(--g600)',flexShrink:0}}>{isArq?'CL':'TU'}</div>
-                <div>
-                  <div style={{fontSize:12,fontWeight:400,color:'var(--ink)',marginBottom:2}}>{isArq?'Cliente':(lang==='en'?'Your question':'Tu pregunta')}</div>
-                  <div style={{fontSize:11,color:'var(--g400)'}}>{new Date(q.created_at||Date.now()).toLocaleString('es-MX')}</div>
+            <div key={i} style={{padding:'20px 0',borderBottom:'1px solid var(--g100)'}}>
+              {/* Question */}
+              <div style={{display:'flex',gap:12,marginBottom:12}}>
+                <div style={{width:36,height:36,borderRadius:'50%',background:'var(--ink)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600,color:'var(--white)',flexShrink:0}}>{isArq?'CL':'TU'}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                    <span style={{fontSize:12,fontWeight:500,color:'var(--ink)'}}>{isArq?'Cliente':(lang==='en'?'Your question':'Tu pregunta')}</span>
+                    <span style={{fontSize:10,color:'var(--g400)'}}>{new Date(q.created_at||Date.now()).toLocaleString('es-MX')}</span>
+                  </div>
+                  <p style={{fontSize:14,fontWeight:300,color:'var(--g600)',lineHeight:1.7,margin:0}}>{q.pregunta}</p>
                 </div>
               </div>
-              <p style={{fontSize:13,fontWeight:300,color:'var(--ink)',marginLeft:42,marginBottom:10}}>{q.pregunta}</p>
 
-              {q.respuesta && editingResp[i] === undefined ? (
-                <div style={{marginLeft:42,background:'var(--paper)',padding:'12px 16px',borderLeft:'2px solid var(--ink)'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                    <div style={{fontSize:10,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--g400)'}}>{q.ia_respondio?'IA':(lang==='en'?'Architect':'Arquitecto')}</div>
+              {/* Answer */}
+              {q.respuesta && editingResp[i]===undefined ? (
+                <div style={{marginLeft:48,background:q.ia_respondio?'#F8F4EE':'var(--paper)',padding:'14px 18px',borderLeft:`3px solid ${q.ia_respondio?'var(--gold)':'var(--ink)'}`}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--g400)',fontWeight:500}}>{q.ia_respondio?'✨ Asistente IA':(lang==='en'?'Architect':'Arquitecto')}</span>
+                    </div>
                     {isArq && (
-                      <button onClick={()=>setEditingResp(prev=>({...prev,[i]:q.respuesta}))} style={{fontSize:10,background:'transparent',border:'1px solid var(--border)',padding:'2px 10px',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',color:'var(--g500)'}}>
+                      <button onClick={()=>setEditingResp(prev=>({...prev,[i]:q.respuesta}))} style={{fontSize:10,background:'transparent',border:'1px solid var(--border)',padding:'3px 12px',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.06em',textTransform:'uppercase',color:'var(--g500)'}}>
                         Editar
                       </button>
                     )}
                   </div>
-                  <p style={{fontSize:13,fontWeight:300,color:'var(--ink)',lineHeight:1.7,margin:0}}>{cleanText(q.respuesta)}</p>
+                  <p style={{fontSize:13,fontWeight:300,color:'var(--ink)',lineHeight:1.75,margin:0}}>{cleanText(q.respuesta)}</p>
                 </div>
               ) : isArq ? (
-                <div style={{marginLeft:42}}>
-                  <textarea
-                    value={editingResp[i] !== undefined ? editingResp[i] : ''}
-                    onChange={e=>setEditingResp(prev=>({...prev,[i]:e.target.value}))}
-                    placeholder="Escribe tu respuesta..."
-                    rows={3}
-                    style={{width:'100%',padding:'8px 0',border:'none',borderBottom:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:13,background:'transparent',outline:'none',resize:'none'}}
-                  />
-                  <div style={{display:'flex',gap:8,marginTop:8}}>
-                    <button onClick={()=>responder(i, editingResp[i]||'')} style={{padding:'8px 20px',background:'var(--ink)',color:'var(--white)',border:'none',fontFamily:'Jost,sans-serif',fontSize:11,fontWeight:500,letterSpacing:'.08em',textTransform:'uppercase',cursor:'pointer'}}>
-                      {q.respuesta ? 'Actualizar y notificar' : 'Responder y notificar'}
+                <div style={{marginLeft:48}}>
+                  <textarea value={editingResp[i]!==undefined?editingResp[i]:''} onChange={e=>setEditingResp(prev=>({...prev,[i]:e.target.value}))} placeholder="Escribe tu respuesta..." rows={3}
+                    style={{width:'100%',padding:'10px 0',border:'none',borderBottom:'1.5px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:13,background:'transparent',outline:'none',resize:'none',color:'var(--ink)'}}/>
+                  <div style={{display:'flex',gap:8,marginTop:10}}>
+                    <button onClick={()=>responder(i, editingResp[i]||'')} style={{padding:'9px 22px',background:'var(--ink)',color:'var(--white)',border:'none',fontFamily:'Jost,sans-serif',fontSize:11,fontWeight:500,letterSpacing:'.08em',textTransform:'uppercase',cursor:'pointer'}}>
+                      {q.respuesta?'Actualizar y notificar':'Responder y notificar'}
                     </button>
-                    {q.respuesta && <button onClick={()=>setEditingResp(prev=>{ const n={...prev}; delete n[i]; return n })} style={{padding:'8px 16px',background:'transparent',border:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:11,color:'var(--g500)',cursor:'pointer'}}>Cancelar</button>}
+                    {q.respuesta && <button onClick={()=>setEditingResp(prev=>{const n={...prev};delete n[i];return n})} style={{padding:'9px 16px',background:'transparent',border:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:11,color:'var(--g500)',cursor:'pointer'}}>Cancelar</button>}
                   </div>
                 </div>
               ) : (
-                <p style={{marginLeft:42,fontSize:12,fontWeight:300,color:'var(--g400)',fontStyle:'italic'}}>{lang==='en'?'The architect received your question and will respond soon.':'El arquitecto recibió tu pregunta y te responderá pronto.'}</p>
+                <p style={{marginLeft:48,fontSize:12,fontWeight:300,color:'var(--g400)',fontStyle:'italic'}}>{lang==='en'?'The architect received your question and will respond soon.':'El arquitecto recibió tu pregunta y te responderá pronto.'}</p>
               )}
             </div>
           ))}
 
           {!isArq && (
-            <div style={{marginTop:8}}>
+            <div style={{marginTop:20}}>
               <div className="form-field">
                 <label className="form-label">{lang==='en'?'New question':'Nueva pregunta'}</label>
                 <textarea className="form-input" placeholder={lang==='en'?'Write your question...':'Escribe tu pregunta sobre el proyecto...'} value={pregunta} onChange={e=>setPregunta(e.target.value)} rows={3} style={{resize:'vertical',borderBottom:'1.5px solid var(--border)',width:'100%',padding:'8px 0'}}/>
               </div>
-              <button className="btn-submit" onClick={enviar} disabled={loading||!pregunta.trim()} style={{marginTop:8}}>
-                {loading?'...':(lang==='en'?'Send':'Enviar')}
+              <button className="btn-submit" onClick={enviar} disabled={loading||!pregunta.trim()} style={{marginTop:8,maxWidth:200}}>
+                {loading ? (
+                  <span style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+                    <span style={{width:12,height:12,border:'2px solid rgba(255,255,255,.3)',borderTopColor:'#fff',borderRadius:'50%',display:'inline-block',animation:'spin 1s linear infinite'}}/>
+                    Enviando...
+                  </span>
+                ) : (lang==='en'?'Send':'Enviar')}
               </button>
+              <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
             </div>
           )}
         </div>
 
+        {/* Architect KB panel */}
         {isArq && (
           <div>
             <div className="card" style={{marginBottom:16}}>
-              <div className="card-title">Agregar dato a base de conocimiento</div>
-              <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:16,lineHeight:1.7}}>La IA usará estos datos para responder preguntas del cliente automáticamente.</p>
-              <div className="form-field"><label className="form-label">Tema</label><input className="form-input" placeholder="Ej. Especificaciones de acero, Fecha de colado..." value={kbTema} onChange={e=>setKbTema(e.target.value)}/></div>
-              <div className="form-field"><label className="form-label">Información detallada</label><textarea className="form-input" placeholder="Escribe la información que la IA deberá conocer..." value={kbInfo} onChange={e=>setKbInfo(e.target.value)} rows={3} style={{resize:'vertical',borderBottom:'1.5px solid var(--border)',width:'100%',padding:'8px 0'}}/></div>
-              <button className="btn-submit" style={{maxWidth:260}} onClick={addKb} disabled={savingKb}>{savingKb?'...':'Agregar a base de conocimiento'}</button>
+              <div className="card-title">Base de conocimiento</div>
+              <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:20,lineHeight:1.7}}>La IA usa estos datos para responder preguntas del cliente automáticamente.</p>
+              <div className="form-field"><label className="form-label">Tema</label><input className="form-input" placeholder="Ej. Especificaciones de acero..." value={kbTema} onChange={e=>setKbTema(e.target.value)}/></div>
+              <div className="form-field"><label className="form-label">Información</label><textarea className="form-input" placeholder="Escribe la información..." value={kbInfo} onChange={e=>setKbInfo(e.target.value)} rows={3} style={{resize:'vertical',borderBottom:'1.5px solid var(--border)',width:'100%',padding:'8px 0'}}/></div>
+              <button className="btn-submit" style={{maxWidth:260}} onClick={addKb} disabled={savingKb}>{savingKb?'Guardando...':'Agregar a base de conocimiento'}</button>
             </div>
+
             <div className="card">
-              <div className="card-title">Base de conocimiento actual</div>
+              <div className="card-header">
+                <div className="card-title">Entradas actuales</div>
+                <span style={{fontSize:12,color:'var(--g400)'}}>{kb.length} entrada{kb.length!==1?'s':''}</span>
+              </div>
               {kb.length===0 ? (
                 <p style={{fontSize:13,fontWeight:300,color:'var(--g400)'}}>Sin datos adicionales aún.</p>
               ) : (
-                <div style={{overflowY:'scroll',maxHeight:280,marginBottom:8}}>
+                <div style={{overflowY:'scroll',maxHeight:300}}>
                   {kb.map((k,i) => (
-                    <div key={i} style={{padding:'10px 0',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                      <div><div style={{fontSize:12,fontWeight:500,color:'var(--ink)',marginBottom:2}}>{k.tema}</div><div style={{fontSize:12,fontWeight:300,color:'var(--g500)'}}>{k.info}</div></div>
-                      <span style={{fontSize:10,padding:'2px 8px',background:'var(--g100)',color:'var(--g500)',marginLeft:8,flexShrink:0}}>DISPONIBLE</span>
+                    <div key={i} style={{padding:'12px 0',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:500,color:'var(--ink)',marginBottom:3}}>{k.tema}</div>
+                        <div style={{fontSize:12,fontWeight:300,color:'var(--g500)',lineHeight:1.6}}>{k.info}</div>
+                      </div>
+                      <span className="chip chip-green" style={{flexShrink:0}}>Activo</span>
                     </div>
                   ))}
                 </div>
               )}
-              <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginTop:8,lineHeight:1.7}}>El asistente responde automáticamente con la información cargada. Si no tiene el dato, el arquitecto recibe una notificación y responde personalmente.</p>
             </div>
           </div>
         )}
