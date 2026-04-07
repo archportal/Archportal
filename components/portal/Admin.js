@@ -81,7 +81,11 @@ export default function Admin({ project, user, onRefresh }) {
   const [activeSection, setActiveSection] = useState('info')
 
   const sectionRefs = useRef({})
-  const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(''), 3000) }
+  const [lastFailedBody, setLastFailedBody] = useState(null)
+  const showToast = (msg, isError=false, retryBody=null) => {
+    setToast({ msg, isError, retryBody })
+    if (!isError) setTimeout(()=>setToast(''), 3000)
+  }
 
   const api = async (body, silent = false) => {
     if (!silent) setSaving(true)
@@ -89,10 +93,10 @@ export default function Admin({ project, user, onRefresh }) {
     try {
       const res = await fetch('/api/projects', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:p.id,...body}) })
       const data = await res.json()
-      if (!res.ok) { showToast('Error: '+(data.error||'desconocido')); return false }
+      if (!res.ok) { showToast('Error: '+(data.error||'desconocido'), true, body); return false }
       await onRefresh?.()
       return true
-    } catch(e) { showToast('Error al guardar'); return false }
+    } catch(e) { showToast('Error de conexión — verifica tu internet', true, body); return false }
     finally { setSaving(false); setAutoSaving(false) }
   }
 
@@ -295,6 +299,20 @@ export default function Admin({ project, user, onRefresh }) {
       {/* ── ACCESO CLIENTE ───────────────────────────── */}
       <SectionCard id="acceso" title="Acceso del cliente">
         <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:12,lineHeight:1.7}}>Define las credenciales para que tu cliente entre a ver este proyecto.</p>
+        {p.client_last_seen && (
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'var(--success-bg)',marginBottom:12}}>
+            <span style={{fontSize:18}}>✅</span>
+            <span style={{fontSize:12,color:'var(--success)',fontWeight:400}}>
+              Tu cliente entró por última vez el {new Date(p.client_last_seen).toLocaleString('es-MX',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+            </span>
+          </div>
+        )}
+        {!p.client_last_seen && clientEmail && (
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'var(--warn-bg)',marginBottom:12}}>
+            <span style={{fontSize:18}}>⏳</span>
+            <span style={{fontSize:12,color:'var(--warn)'}}>El cliente aún no ha ingresado al portal</span>
+          </div>
+        )}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px 16px',marginBottom:12}}>
           <div>
             <label className="form-label" style={{marginBottom:6,display:'block'}}>Email del cliente</label>
@@ -597,7 +615,15 @@ export default function Admin({ project, user, onRefresh }) {
 
       </div>
 
-      {toast && <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'var(--ink)',color:'var(--white)',padding:'12px 28px',fontSize:13,fontWeight:300,zIndex:9999,boxShadow:'0 8px 24px rgba(0,0,0,.2)'}}>{toast}</div>}
+      {toast && (
+        <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:toast.isError?'#7A0000':'var(--ink)',color:'var(--white)',padding:'12px 20px',fontSize:13,fontWeight:300,zIndex:9999,boxShadow:'0 8px 24px rgba(0,0,0,.2)',display:'flex',alignItems:'center',gap:12,maxWidth:'90vw'}}>
+          <span>{toast.msg||toast}</span>
+          {toast.isError && toast.retryBody && (
+            <button onClick={async()=>{ setToast(''); await api(toast.retryBody) }} style={{background:'rgba(255,255,255,.2)',border:'1px solid rgba(255,255,255,.3)',color:'#fff',padding:'4px 12px',fontFamily:'Jost,sans-serif',fontSize:11,cursor:'pointer',letterSpacing:'.06em',textTransform:'uppercase',flexShrink:0}}>Reintentar</button>
+          )}
+          <button onClick={()=>setToast('')} style={{background:'none',border:'none',color:'rgba(255,255,255,.5)',fontSize:16,cursor:'pointer',flexShrink:0}}>✕</button>
+        </div>
+      )}
     </div>
   )
 }

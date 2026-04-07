@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Dashboard from './Dashboard'
 import Costos from './Costos'
 import Archivos from './Archivos'
@@ -213,6 +213,8 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
   const [error, setError]         = useState('')
   const [showProfile, setShowProfile] = useState(false)
   const [showHelp, setShowHelp]   = useState(false)
+  const [search, setSearch]       = useState('')
+  const filtered = projects.filter(p => !search || p.nombre?.toLowerCase().includes(search.toLowerCase()) || p.cliente?.toLowerCase().includes(search.toLowerCase()))
   const ini = (user.name||user.email||'U').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()
 
   const plan      = user.plan || 'mensual'
@@ -288,11 +290,27 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
           </div>
         )}
 
+        {/* Search */}
+        {projects.length > 3 && (
+          <div style={{ marginBottom:24, position:'relative' }}>
+            <input
+              placeholder="Buscar proyecto o cliente..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width:'100%', padding:'12px 16px 12px 40px', border:'1px solid var(--border)', fontFamily:'Jost,sans-serif', fontSize:13, fontWeight:300, color:'var(--ink)', background:'var(--white)', outline:'none', boxSizing:'border-box' }}
+            />
+            <span style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', fontSize:14, color:'var(--g300)' }}>🔍</span>
+            {search && <button onClick={()=>setSearch('')} style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, color:'var(--g400)' }}>✕</button>}
+          </div>
+        )}
+
         {projects.length === 0 ? (
           <div style={{ padding:'80px 0', textAlign:'center', color:'var(--g400)', fontSize:14, fontWeight:300 }}>No tienes proyectos aún. Crea tu primer proyecto arriba.</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ padding:'48px 0', textAlign:'center', color:'var(--g400)', fontSize:14, fontWeight:300 }}>Sin resultados para "{search}"</div>
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:16 }}>
-            {projects.map((proj,i) => <ProjectCard key={proj.id||i} proj={proj} onSelect={onSelect} onDelete={onDelete} />)}
+            {filtered.map((proj,i) => <ProjectCard key={proj.id||i} proj={proj} onSelect={onSelect} onDelete={onDelete} />)}
           </div>
         )}
       </div>
@@ -311,6 +329,30 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const [showProfile, setShowProfile] = useState(false)
   const [showHelp, setShowHelp]       = useState(false)
   const [menuOpen, setMenuOpen]       = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  // Back button interception
+  useEffect(() => {
+    if (!activeProject) return
+    window.history.pushState({ portal: true }, '')
+    const handlePop = (e) => {
+      window.history.pushState({ portal: true }, '')
+      if (isArq) { setActiveProject(null); setProjectData(null) }
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [activeProject, isArq])
+
+  // Welcome banner for client (once per day)
+  useEffect(() => {
+    if (isArq || !activeProject) return
+    const key = `welcomed_${activeProject.id}_${new Date().toDateString()}`
+    if (!localStorage.getItem(key)) {
+      setShowWelcome(true)
+      localStorage.setItem(key, '1')
+      setTimeout(() => setShowWelcome(false), 5000)
+    }
+  }, [activeProject, isArq])
 
   const isArq = user.role === 'arq' || user.impersonated
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
@@ -386,6 +428,19 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
           ))}
         </div>
       </div>
+      {/* Welcome banner for client */}
+      {showWelcome && !isArq && (
+        <div style={{ background:'var(--ink)', padding:'14px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+            <span style={{ fontSize:20 }}>👋</span>
+            <div>
+              <span style={{ fontSize:13, color:'var(--white)', fontWeight:400 }}>Bienvenido, {activeProject?.cliente || user.email}</span>
+              <span style={{ fontSize:12, color:'rgba(255,255,255,.5)', marginLeft:8 }}>— Proyecto: {activeProject?.nombre}</span>
+            </div>
+          </div>
+          <button onClick={() => setShowWelcome(false)} style={{ background:'none', border:'none', color:'rgba(255,255,255,.4)', fontSize:16, cursor:'pointer' }}>✕</button>
+        </div>
+      )}
       <div className="page-content">{renderTab()}</div>
 
       {showProfile && <ProfilePanel user={user} onClose={() => setShowProfile(false)} />}

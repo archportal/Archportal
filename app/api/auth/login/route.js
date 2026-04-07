@@ -32,6 +32,8 @@ export async function POST(request) {
 
     if (!error && data?.user) {
       const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', data.user.id).maybeSingle()
+      // Update last_seen
+      await supabaseAdmin.from('users').update({ last_seen: new Date().toISOString() }).eq('id', data.user.id).then(()=>{})
       return NextResponse.json({
         success: true,
         user: user || { id: data.user.id, email: data.user.email, role: 'arq', name: email.split('@')[0] },
@@ -48,6 +50,8 @@ export async function POST(request) {
 
     if (projects && projects.length > 0) {
       const proj = projects[0]
+      // Save client last seen on the project
+      await supabaseAdmin.from('projects').update({ client_last_seen: new Date().toISOString() }).eq('id', proj.id).then(()=>{})
       return NextResponse.json({
         success: true,
         user: { id: proj.user_id + '_client_' + proj.id, email, role: 'cli', name: email, project_id: proj.id },

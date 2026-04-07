@@ -139,7 +139,20 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
                   </div>
                 </div>
               ) : (
-                <p style={{marginLeft:48,fontSize:12,fontWeight:300,color:'var(--g400)',fontStyle:'italic'}}>{lang==='en'?'The architect received your question and will respond soon.':'El arquitecto recibió tu pregunta y te responderá pronto.'}</p>
+                <div style={{marginLeft:48,background:'var(--paper)',padding:'14px 18px',borderLeft:'3px solid var(--g200)'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+                    <div style={{width:28,height:28,borderRadius:'50%',background:'var(--ink)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:600,color:'var(--white)',flexShrink:0}}>
+                      {(p.arquitecto||'A').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}
+                    </div>
+                    <span style={{fontSize:11,fontWeight:500,color:'var(--ink)'}}>{p.arquitecto || 'Tu arquitecto'}</span>
+                    <span style={{fontSize:10,padding:'2px 8px',background:'var(--warn-bg)',color:'var(--warn)',letterSpacing:'.06em',textTransform:'uppercase'}}>Pendiente</span>
+                  </div>
+                  <p style={{fontSize:13,fontWeight:300,color:'var(--g600)',lineHeight:1.7,margin:0}}>
+                    {lang==='en'
+                      ? `${p.arquitecto||'Your architect'} has been notified and will respond to you personally as soon as possible.`
+                      : `${p.arquitecto||'Tu arquitecto'} fue notificado y te responderá personalmente a la brevedad.`}
+                  </p>
+                </div>
               )}
             </div>
           ))}
