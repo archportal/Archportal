@@ -253,8 +253,8 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
       </div>
       </div>
 
-      <div style={{ padding:'48px 32px', maxWidth:1100, margin:'0 auto' }}>
-        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:40 }}>
+      <div style={{ padding:'32px 20px', maxWidth:1100, margin:'0 auto' }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:40, flexWrap:'wrap', gap:16 }}>
           <div>
             <p style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'var(--g400)', marginBottom:8 }}>Tus proyectos</p>
             <h1 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:48, fontWeight:300, color:'var(--ink)', lineHeight:1.1 }}>Selecciona un<br/><em style={{ fontStyle:'italic' }}>proyecto</em></h1>
