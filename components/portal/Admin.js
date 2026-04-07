@@ -209,11 +209,11 @@ export default function Admin({ project, user, onRefresh }) {
                 <div style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
                 <div>
                   <label className="form-label">Nombre</label>
-                  <input style={inputStyle} value={e.nombre} onMouseDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
+                  <input style={inputStyle} value={e.nombre} onMouseDown={ev=>ev.stopPropagation()} onKeyDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
                 </div>
                 <div>
                   <label className="form-label">Periodo</label>
-                  <input style={inputStyle} value={e.fechas} onMouseDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
+                  <input style={inputStyle} value={e.fechas} onMouseDown={ev=>ev.stopPropagation()} onKeyDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
                 </div>
                 <div>
                   <label className="form-label">Estatus</label>
