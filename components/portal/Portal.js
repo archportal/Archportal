@@ -331,6 +331,10 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const [menuOpen, setMenuOpen]       = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
 
+  const isArq = user.role === 'arq' || user.impersonated
+  const tabs  = isArq ? TABS_ARQ : TABS_CLI
+  const ini   = (user.name||user.email||'U').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()
+
   // Back button interception
   useEffect(() => {
     if (!activeProject) return
@@ -353,10 +357,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
       setTimeout(() => setShowWelcome(false), 5000)
     }
   }, [activeProject, isArq])
-
-  const isArq = user.role === 'arq' || user.impersonated
-  const tabs  = isArq ? TABS_ARQ : TABS_CLI
-  const ini   = (user.name||user.email||'U').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()
 
   const handleSelect = useCallback(async (proj) => {
     const res = await fetch(`/api/projects?id=${proj.id}`)
