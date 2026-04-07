@@ -322,6 +322,7 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
 }
 
 export default function Portal({ user, projects:initialProjects, onLogout, lang, clientProjectData }) {
+  console.log('clientProjectData:', clientProjectData, 'role:', user.role)
   const [activeTab, setActiveTab]     = useState('dashboard')
   const [projects, setProjects]       = useState(initialProjects || [])
   const [activeProject, setActiveProject] = useState(clientProjectData?.project || null)
