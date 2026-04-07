@@ -40,16 +40,16 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
     <div>
       <div className="section-hero" style={{marginBottom:20}}>
         <div className="section-hero-eyebrow">Proyecto · Finanzas</div>
-        <h1 className="section-hero-title">Control de costos</h1>
+        <h1 className="section-hero-title">{isArq ? 'Control de costos' : 'Finanzas del proyecto'}</h1>
         <p className="section-hero-sub">{costs.length} gasto{costs.length!==1?'s':''} registrado{costs.length!==1?'s':''} · {pendientes} pendiente{pendientes!==1?'s':''}</p>
       </div>
 
       <div className="metrics-grid" style={{marginBottom:20}}>
         {[
-          {label:'Presupuesto', val:fmt(presupuesto), sub:'MXN aprobado'},
-          {label:'Ejercido', val:fmt(ejercido), sub:ejercidoPct+'% del presupuesto'},
-          {label:'Pagado', val:fmt(pagado), sub:pagadoPct+'% liquidado'},
-          {label:'Por pagar', val:fmt(porPagar), sub:pendientes+' pago(s) pendiente(s)', accent:porPagar>0},
+          {label:'Presupuesto total', val:fmt(presupuesto), sub:'MXN aprobado'},
+          {label:'Gastado hasta hoy', val:fmt(totalGastos), sub:presupuesto>0?Math.round(totalGastos/presupuesto*100)+'% del presupuesto':'—'},
+          {label:'Ya liquidado', val:fmt(pagado), sub:pagadoPct+'% pagado'},
+          {label:'Por liquidar', val:fmt(porPagar), sub:pendientes+' pago(s) pendiente(s)', accent:porPagar>0},
         ].map(({label,val,sub,accent})=>(
           <div key={label} className={`metric-card${accent?' accent':''}`}>
             <div className="metric-label">{label}</div>
@@ -97,9 +97,9 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
                   {/* Fila inferior: metadata + acciones */}
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,flexWrap:'wrap'}}>
                     <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-                      <span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus}</span>
-                      <span style={{fontSize:11,color:'var(--g400)'}}>{c.categoria}</span>
-                      {c.etapa && <span style={{fontSize:11,color:'var(--g400)'}}>{c.etapa}</span>}
+                      <span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus==='Pagado'?'✓ Pagado':c.estatus==='Parcial'?'Pago parcial':'Pendiente de pago'}</span>
+                      {isArq && <span style={{fontSize:11,color:'var(--g400)'}}>{c.categoria}</span>}
+                      {isArq && c.etapa && <span style={{fontSize:11,color:'var(--g400)'}}>{c.etapa}</span>}
                       {c.fecha && <span style={{fontSize:11,color:'var(--g300)'}}>{c.fecha}</span>}
                     </div>
                     {isArq && (

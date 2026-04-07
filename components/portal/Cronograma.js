@@ -20,6 +20,18 @@ export default function Cronograma({ project, lang }) {
         <div className="section-hero-eyebrow">Proyecto · Tiempo</div>
         <h1 className="section-hero-title">Cronograma</h1>
         <p className="section-hero-sub">{completadas} de {stages.length} etapas completadas{enCurso ? ' · En curso: '+enCurso.nombre : ''}</p>
+        {avg >= 50 && avg < 100 && (
+          <div style={{marginTop:12,display:'inline-flex',alignItems:'center',gap:8,background:'rgba(200,169,110,.15)',border:'1px solid rgba(200,169,110,.3)',padding:'6px 16px'}}>
+            <span style={{fontSize:20}}>🎉</span>
+            <span style={{fontSize:12,color:'var(--gold)',fontWeight:400}}>¡Ya vas a más de la mitad! Sigue así.</span>
+          </div>
+        )}
+        {avg === 100 && (
+          <div style={{marginTop:12,display:'inline-flex',alignItems:'center',gap:8,background:'rgba(45,80,22,.15)',border:'1px solid rgba(45,80,22,.3)',padding:'6px 16px'}}>
+            <span style={{fontSize:20}}>✅</span>
+            <span style={{fontSize:12,color:'#7bc55a',fontWeight:400}}>¡Proyecto completado!</span>
+          </div>
+        )}
         <div style={{marginTop:20}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
             <span style={{fontSize:11,color:'rgba(255,255,255,.45)',letterSpacing:'.06em',textTransform:'uppercase'}}>Avance general</span>

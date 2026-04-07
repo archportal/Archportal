@@ -16,6 +16,23 @@ const printStyles = `
 }
 `
 
+function progressMessage(avg, lang) {
+  if (lang === 'en') {
+    if (avg === 0) return 'Your project is just getting started 🏗️'
+    if (avg < 25) return 'Great start — foundations are being set'
+    if (avg < 50) return 'Making good progress on your project'
+    if (avg < 75) return "You're past the halfway mark! 🎉"
+    if (avg < 100) return 'Almost there — final stretch!'
+    return 'Project completed ✓'
+  }
+  if (avg === 0) return 'Tu proyecto está comenzando 🏗️'
+  if (avg < 25) return 'Buen inicio — las bases están en marcha'
+  if (avg < 50) return 'Tu proyecto avanza correctamente'
+  if (avg < 75) return '¡Ya vas a más de la mitad! 🎉'
+  if (avg < 100) return 'En la recta final — casi listo'
+  return 'Proyecto completado ✓'
+}
+
 export default function Dashboard({ project, user, lang }) {
   const data = project || {}
   const p = data.project || data || {}
@@ -23,21 +40,21 @@ export default function Dashboard({ project, user, lang }) {
   const costs   = data.costs   || []
   const posts   = data.posts   || []
   const photos  = data.photos  || []
+  const isArq   = user?.role === 'arq' || user?.impersonated
   const parseJson = (v) => { try { return typeof v==='string'?JSON.parse(v):(Array.isArray(v)?v:[]) } catch { return [] } }
   const notes = parseJson(p.notes)
 
-  const avg         = stages.length ? Math.round(stages.reduce((s,e)=>s+(e.porcentaje||0),0)/stages.length) : 0
-  const presupuesto = p.presupuesto || 0
-  const ejercido    = p.pres_ejercido || 0
-  const totalGastos = (project?.costs||p.costs||[]).reduce((s,c)=>s+(parseInt(c.monto)||0),0)
-  const pagado      = p.pres_pagado || 0
-  const porPagar    = Math.max(0, ejercido - pagado)
+  const avg          = stages.length ? Math.round(stages.reduce((s,e)=>s+(e.porcentaje||0),0)/stages.length) : 0
+  const presupuesto  = p.presupuesto || 0
+  const totalGastos  = costs.reduce((s,c)=>s+(parseInt(c.monto)||0),0)
+  const pagado       = p.pres_pagado || 0
+  const porPagar     = Math.max(0, (p.pres_ejercido||0) - pagado)
   const etapaActual  = stages.find(e=>e.estatus==='En curso')?.nombre || p.etapa_actual || 'Por iniciar'
   const siguienteEtapa = stages.find(e=>e.estatus==='Pendiente')?.nombre || '—'
-  const pagadoPct   = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
-  const porPagarPct = presupuesto > 0 ? Math.round(porPagar/presupuesto*100) : 0
+  const etapasCompletadas = stages.filter(e=>e.estatus==='Completado').length
+  const pagadoPct    = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
+  const porPagarPct  = presupuesto > 0 ? Math.round(porPagar/presupuesto*100) : 0
 
-  const barRef = useRef(null)
   const [lightbox, setLightbox] = useState(null)
   const [barW, setBarW] = useState(0)
 
@@ -54,8 +71,8 @@ export default function Dashboard({ project, user, lang }) {
   }, [lightbox, photos])
 
   const t = lang==='en'
-    ? {av:'Overall progress',pres:'Budget',ej:'Spent',pp:'To pay',ent:'Delivery',avEtapa:'Progress by stage',bitacora:'Visual log',cosRec:'Recent costs',info:'Project info',notas:'Resident log',notasCli:'Architect notes',noFotos:'No photos yet',noCostos:'No expenses yet',noNotas:'No notes published.',noNotasCli:'No notes yet.'}
-    : {av:'Avance general',pres:'Presupuesto',ej:'Ejercido',pp:'Por pagar',ent:'Entrega estimada',avEtapa:'Avance por etapa',bitacora:'Bitácora visual',cosRec:'Costos recientes',info:'Información del proyecto',notas:'Bitácora del residente',notasCli:'Notas del arquitecto',noFotos:'Sin fotos aún',noCostos:'Sin gastos aún',noNotas:'Sin notas publicadas.',noNotasCli:'Sin notas del arquitecto.'}
+    ? {av:'Overall progress',pres:'Budget',ej:'Total spent',pp:'To pay',ent:'Est. delivery',avEtapa:'Progress by stage',bitacora:'Visual log',cosRec:'Recent costs',info:'Project info',notas:'Resident log',notasCli:'Architect notes',noFotos:'No photos yet',noCostos:'No expenses yet',noNotas:'No notes published.',noNotasCli:'No notes yet.'}
+    : {av:'Avance general',pres:'Presupuesto',ej:'Gastado hasta hoy',pp:'Por pagar',ent:'Entrega estimada',avEtapa:'Avance por etapa',bitacora:'Bitácora visual',cosRec:'Costos recientes',info:'Información del proyecto',notas:'Bitácora del residente',notasCli:'Notas del arquitecto',noFotos:'Sin fotos aún',noCostos:'Sin gastos aún',noNotas:'Sin notas publicadas.',noNotasCli:'Sin notas del arquitecto.'}
 
   if (!p.id) return <div style={{padding:48,color:'var(--g400)',fontSize:14,fontWeight:300}}>Cargando proyecto...</div>
 
@@ -97,29 +114,47 @@ export default function Dashboard({ project, user, lang }) {
         <div className="section-hero-eyebrow">Proyecto activo</div>
         <h1 className="section-hero-title">{p.nombre}</h1>
         <p className="section-hero-sub">{p.arquitecto} · {p.ubicacion}</p>
-        <div style={{marginTop:20,marginBottom:10}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-            <span style={{fontSize:11,color:'rgba(255,255,255,.45)',letterSpacing:'.08em',textTransform:'uppercase'}}>Inicio: {p.inicio||'—'}</span>
-            <span style={{fontSize:22,fontFamily:'Cormorant Garamond,serif',color:'var(--white)',fontWeight:300}}>{avg}%</span>
-            <span style={{fontSize:11,color:'rgba(255,255,255,.45)',letterSpacing:'.08em',textTransform:'uppercase'}}>Entrega: {p.entrega||'Por definir'}</span>
+
+        {/* Barra de progreso prominente */}
+        <div style={{marginTop:24,marginBottom:4}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:10}}>
+            <div>
+              <div style={{fontSize:10,letterSpacing:'.14em',textTransform:'uppercase',color:'rgba(255,255,255,.35)',marginBottom:4}}>
+                {lang==='en' ? 'Current stage' : 'Etapa actual'}
+              </div>
+              <div style={{fontSize:14,color:'rgba(255,255,255,.85)',fontWeight:400}}>{etapaActual}</div>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:48,fontWeight:300,color:'var(--white)',lineHeight:1}}>{avg}%</div>
+              <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginTop:2}}>
+                {etapasCompletadas} {lang==='en'?'of':'de'} {stages.length} {lang==='en'?'stages':'etapas'}
+              </div>
+            </div>
           </div>
-          <div style={{height:8,background:'rgba(255,255,255,.12)',borderRadius:4,overflow:'hidden'}}>
-            <div style={{height:8,background:'linear-gradient(90deg,var(--gold),#e8c27a)',borderRadius:4,width:barW+'%',transition:'width 1.2s ease'}}/>
+          <div style={{height:10,background:'rgba(255,255,255,.1)',borderRadius:5,overflow:'hidden',marginBottom:12}}>
+            <div style={{height:10,background:'linear-gradient(90deg,var(--gold),#e8c27a)',borderRadius:5,width:barW+'%',transition:'width 1.4s ease'}}/>
+          </div>
+          {/* Mensaje motivacional */}
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span style={{fontSize:12,color:'rgba(255,255,255,.5)',fontStyle:'italic'}}>{progressMessage(avg, lang)}</span>
+            <span style={{fontSize:10,color:'rgba(255,255,255,.35)',letterSpacing:'.06em',textTransform:'uppercase'}}>
+              {lang==='en'?'Delivery:':'Entrega:'} {p.entrega||'Por definir'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* MÉTRICAS */}
+      {/* MÉTRICAS — labels amigables para cliente */}
       <div className="metrics-grid" style={{marginBottom:20}}>
         {[
-          {label:t.av, val:avg+'%', sub:etapaActual+' en curso', accent:false},
-          {label:t.pres, val:fmt(presupuesto), sub:'MXN aprobado', accent:false},
-          {label:t.ej, val:fmt(totalGastos), sub:presupuesto>0?Math.round(totalGastos/presupuesto*100)+'% del presupuesto':'0%', accent:false},
-          {label:t.ent, val:p.entrega||'Por definir', sub:'Siguiente: '+siguienteEtapa, accent:false, small:true},
+          {label:t.av,   val:avg+'%',           sub:etapaActual+' en curso'},
+          {label:t.pres, val:fmt(presupuesto),   sub:'MXN aprobado'},
+          {label:t.ej,   val:fmt(totalGastos),   sub:presupuesto>0?Math.round(totalGastos/presupuesto*100)+'% del presupuesto':'—'},
+          {label:t.ent,  val:p.entrega||'—',     sub:'Siguiente: '+siguienteEtapa, small:true},
         ].map(({label,val,sub,accent,small})=>(
           <div key={label} className={`metric-card${accent?' accent':''}`}>
             <div className="metric-label">{label}</div>
-            <div className="metric-value" style={{fontSize:small?22:undefined}}>{val}</div>
+            <div className="metric-value" style={small?{fontSize:22}:{}}>{val}</div>
             <div className="metric-sub">{sub}</div>
           </div>
         ))}
@@ -127,28 +162,27 @@ export default function Dashboard({ project, user, lang }) {
 
       {/* PRESUPUESTO + ETAPAS */}
       <div className="two-col" style={{marginBottom:16}}>
-
         <div className="card">
           <div className="card-title">Desglose de presupuesto</div>
           <div style={{marginBottom:16}}>
             <div className="progress-bar-wrap" style={{marginBottom:8}}>
               <div className="progress-bar-fill ink" style={{width:pagadoPct+'%'}}/>
             </div>
-            <div style={{display:'flex',gap:20}}>
+            <div style={{display:'flex',gap:16,flexWrap:'wrap'}}>
               {[['var(--ink)','Pagado',pagadoPct+'%'],['var(--g300)','Por pagar',porPagarPct+'%'],['var(--g100)','Disponible',Math.max(0,100-pagadoPct-porPagarPct)+'%']].map(([color,label,pct])=>(
                 <div key={label} style={{display:'flex',alignItems:'center',gap:6}}>
-                  <div style={{width:8,height:8,background:color,border:color==='var(--g100)'?'1px solid var(--border)':'none',borderRadius:2}}/>
-                  <span style={{fontSize:11,color:'var(--g500)'}}>{label} {pct}</span>
+                  <div style={{width:8,height:8,background:color,border:color==='var(--g100)'?'1px solid var(--border)':'none',borderRadius:2,flexShrink:0}}/>
+                  <span style={{fontSize:11,color:'var(--g500)'}}>{label} <strong style={{color:'var(--ink)'}}>{pct}</strong></span>
                 </div>
               ))}
             </div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:1,background:'var(--border)'}}>
             {[
-              ['Aprobado',fmt(presupuesto),'var(--g100)','var(--ink)'],
-              ['Ejercido',fmt(totalGastos),'var(--white)','var(--ink)'],
-              ['Pagado',fmt(pagado),'var(--white)','var(--ink)'],
-              ['Por pagar',fmt(porPagar),'#FEF4E4','#7A4A00'],
+              ['Presupuesto aprobado', fmt(presupuesto),'var(--g100)','var(--ink)'],
+              ['Gastado hasta hoy',    fmt(totalGastos),'var(--white)','var(--ink)'],
+              ['Liquidado',            fmt(pagado),     'var(--white)','var(--ink)'],
+              ['Por liquidar',         fmt(porPagar),   '#FEF4E4','#7A4A00'],
             ].map(([label,val,bg,color])=>(
               <div key={label} style={{background:bg,padding:'16px 18px'}}>
                 <div style={{fontSize:9,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--g400)',marginBottom:6}}>{label}</div>
@@ -183,7 +217,6 @@ export default function Dashboard({ project, user, lang }) {
 
       {/* FOTOS + COSTOS */}
       <div className="two-col" style={{marginBottom:16}}>
-
         <div className="card">
           <div className="card-header">
             <div className="card-title">{t.bitacora}</div>
