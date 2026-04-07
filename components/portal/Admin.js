@@ -209,15 +209,15 @@ export default function Admin({ project, user, onRefresh }) {
                 <div style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
                 <div>
                   <label className="form-label">Nombre</label>
-                  <input style={inputStyle} value={e.nombre} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
+                  <input style={inputStyle} value={e.nombre} onMouseDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
                 </div>
                 <div>
                   <label className="form-label">Periodo</label>
-                  <input style={inputStyle} value={e.fechas} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
+                  <input style={inputStyle} value={e.fechas} onMouseDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
                 </div>
                 <div>
                   <label className="form-label">Estatus</label>
-                  <select style={selectStyle} value={e.estatus} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,estatus:ev.target.value}:x))}>
+                  <select style={selectStyle} value={e.estatus} onMouseDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,estatus:ev.target.value}:x))}>
                     {['Pendiente','En curso','Completado'].map(s=><option key={s}>{s}</option>)}
                   </select>
                 </div>
