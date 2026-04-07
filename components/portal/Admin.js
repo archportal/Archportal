@@ -46,6 +46,87 @@ const SECTIONS = [
   { id:'cuenta',    label:'Mi cuenta' },
 ]
 
+const SectionCard = ({ id, title, children, extra, autoSaving, sectionRef }) => (
+  <div ref={sectionRef} className="card" style={{marginBottom:12,scrollMarginTop:120}}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+      <div className="card-title" style={{marginBottom:0}}>{title}</div>
+      {extra}
+      {autoSaving && <span style={{fontSize:10,color:'var(--g400)',letterSpacing:'.08em'}}>Guardando...</span>}
+    </div>
+    {children}
+  </div>
+)
+
+function EtapaRow({ etapa, index, dragIndexRef, onUpdate, onDelete, onQuickAction, inputStyle, selectStyle }) {
+  const [nombre, setNombre] = useState(etapa.nombre)
+  const [fechas, setFechas] = useState(etapa.fechas)
+
+  useEffect(() => { setNombre(etapa.nombre) }, [etapa.nombre])
+  useEffect(() => { setFechas(etapa.fechas) }, [etapa.fechas])
+
+  return (
+    <div
+      onDragOver={ev=>{ev.preventDefault();ev.currentTarget.style.borderTop='2px solid var(--ink)'}}
+      onDragLeave={ev=>{ev.currentTarget.style.borderTop='none'}}
+      onDrop={ev=>{ev.currentTarget.style.borderTop='none';const from=dragIndexRef.current;if(from===index)return;onQuickAction(index,'drop',from)}}
+      style={{background:etapa.estatus==='En curso'?'rgba(200,169,110,.06)':etapa.estatus==='Completado'?'rgba(45,80,22,.04)':'var(--paper)',padding:'12px 14px',marginBottom:8,border:'1px solid',borderColor:etapa.estatus==='En curso'?'rgba(200,169,110,.3)':etapa.estatus==='Completado'?'rgba(45,80,22,.2)':'var(--border)'}}>
+
+      <div style={{display:'grid',gridTemplateColumns:'20px 1fr 1fr auto auto',gap:8,marginBottom:10,alignItems:'start'}}>
+        <div draggable onDragStart={()=>{dragIndexRef.current=index}} style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
+        <div>
+          <label className="form-label">Nombre</label>
+          <input style={inputStyle} value={nombre}
+            onChange={ev=>setNombre(ev.target.value)}
+            onBlur={ev=>onUpdate(index,'nombre',ev.target.value)}/>
+        </div>
+        <div>
+          <label className="form-label">Periodo</label>
+          <input style={inputStyle} value={fechas}
+            onChange={ev=>setFechas(ev.target.value)}
+            onBlur={ev=>onUpdate(index,'fechas',ev.target.value)}/>
+        </div>
+        <div>
+          <label className="form-label">Estatus</label>
+          <select style={selectStyle} value={etapa.estatus} onChange={ev=>onUpdate(index,'estatus',ev.target.value)}>
+            {['Pendiente','En curso','Completado'].map(s=><option key={s}>{s}</option>)}
+          </select>
+        </div>
+        <div style={{paddingTop:18}}>
+          <button onClick={()=>onDelete(index)} style={{background:'#B83232',color:'#fff',border:'none',width:24,height:24,cursor:'pointer',fontSize:12,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+        </div>
+      </div>
+
+      <div style={{display:'flex',alignItems:'center',gap:8,paddingLeft:28,flexWrap:'wrap'}}>
+        <span style={{fontSize:11,color:'var(--g500)',width:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{etapa.nombre||'Etapa'}</span>
+        <input type="range" min="0" max="100" value={etapa.porcentaje}
+          onChange={ev=>onUpdate(index,'porcentaje',parseInt(ev.target.value))}
+          style={{flex:2,accentColor:'var(--ink)',minWidth:80}}/>
+        <span style={{fontSize:13,fontWeight:600,color:'var(--ink)',width:36,textAlign:'right',flexShrink:0}}>{etapa.porcentaje}%</span>
+        <div style={{display:'flex',gap:4,flexShrink:0}}>
+          {etapa.estatus!=='En curso' && (
+            <button onClick={()=>onQuickAction(index,'iniciar')}
+              style={{fontSize:10,padding:'4px 10px',background:'rgba(200,169,110,.12)',border:'1px solid rgba(200,169,110,.4)',color:'#7A4A00',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.04em',whiteSpace:'nowrap'}}>
+              ▶ Iniciar
+            </button>
+          )}
+          {etapa.estatus!=='Completado' && (
+            <button onClick={()=>onQuickAction(index,'completar')}
+              style={{fontSize:10,padding:'4px 10px',background:'rgba(45,80,22,.08)',border:'1px solid rgba(45,80,22,.2)',color:'#2D5016',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.04em',whiteSpace:'nowrap'}}>
+              ✓ Completar
+            </button>
+          )}
+          {etapa.estatus!=='Pendiente' && (
+            <button onClick={()=>onQuickAction(index,'pendiente')}
+              style={{fontSize:10,padding:'4px 10px',background:'var(--g100)',border:'1px solid var(--border)',color:'var(--g500)',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.04em'}}>
+              Resetear
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Admin({ project, user, onRefresh }) {
   const p = project?.project || project || {}
   const stagesDB = project?.stages || []
@@ -124,14 +205,27 @@ export default function Admin({ project, user, onRefresh }) {
   }
 
   // Quick stage actions
-  const quickStageAction = (i, action) => {
-    setEtapas(prev => prev.map((e, idx) => {
-      if (idx !== i) return e
-      if (action === 'iniciar') return { ...e, estatus:'En curso', porcentaje: e.porcentaje || 10 }
-      if (action === 'completar') return { ...e, estatus:'Completado', porcentaje: 100 }
-      if (action === 'pendiente') return { ...e, estatus:'Pendiente', porcentaje: 0 }
-      return e
-    }))
+  const quickStageAction = (i, action, from) => {
+    setEtapas(prev => {
+      if (action === 'drop') {
+        const arr = [...prev]; const [item] = arr.splice(from, 1); arr.splice(i, 0, item); return arr
+      }
+      return prev.map((e, idx) => {
+        if (idx !== i) return e
+        if (action === 'iniciar') return { ...e, estatus:'En curso', porcentaje: e.porcentaje || 10 }
+        if (action === 'completar') return { ...e, estatus:'Completado', porcentaje: 100 }
+        if (action === 'pendiente') return { ...e, estatus:'Pendiente', porcentaje: 0 }
+        return e
+      })
+    })
+  }
+
+  const handleEtapaUpdate = (i, field, value) => {
+    setEtapas(prev => prev.map((x, idx) => idx === i ? { ...x, [field]: value } : x))
+  }
+
+  const handleEtapaDelete = (i) => {
+    setEtapas(prev => prev.filter((_, idx) => idx !== i))
   }
 
   const porPagar = Math.max(0,(parseInt(pres.ejercido)||0)-(parseInt(pres.pagado)||0))
@@ -141,17 +235,6 @@ export default function Admin({ project, user, onRefresh }) {
 
   const inputStyle = { padding:'10px 12px', border:'1px solid var(--border)', fontFamily:'Jost,sans-serif', fontSize:13, background:'var(--white)', color:'var(--ink)', outline:'none', width:'100%', boxSizing:'border-box' }
   const selectStyle = { ...inputStyle, cursor:'pointer' }
-
-  const SectionCard = ({ id, title, children, extra }) => (
-    <div ref={el => sectionRefs.current[id] = el} className="card" style={{marginBottom:12,scrollMarginTop:120}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-        <div className="card-title" style={{marginBottom:0}}>{title}</div>
-        {extra}
-        {autoSaving && <span style={{fontSize:10,color:'var(--g400)',letterSpacing:'.08em'}}>Guardando...</span>}
-      </div>
-      {children}
-    </div>
-  )
 
   return (
     <div>
@@ -174,7 +257,7 @@ export default function Admin({ project, user, onRefresh }) {
       <div style={{paddingTop:12}}>
 
       {/* ── INFO GENERAL ─────────────────────────────── */}
-      <SectionCard id="info" title="Información general del proyecto">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["info"] = el} id="info" title="Información general del proyecto">
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px 16px',marginBottom:16}}>
           {[['nombre','Nombre'],['cliente','Cliente'],['ubicacion','Ubicación'],['arquitecto','Arquitecto'],['superficie','Superficie m²'],['niveles','Niveles'],['inicio','Fecha inicio'],['entrega','Entrega estimada'],['etapa_actual','Etapa actual']].map(([k,label])=>(
             <div key={k}>
@@ -192,70 +275,19 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── ETAPAS ───────────────────────────────────── */}
-      <SectionCard id="etapas" title="Avance por etapa (%)">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["etapas"] = el} id="etapas" title="Avance por etapa (%)">
         <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:12}}>
           Usa los botones rápidos o mueve el slider. Arrastra <span style={{color:'var(--ink)'}}>⠿</span> para reordenar.
         </p>
         <div style={{marginBottom:10}}>
           {etapas.map((e,i)=>(
-            <div key={i}
-              onDragOver={ev=>{ev.preventDefault();ev.currentTarget.style.borderTop='2px solid var(--ink)'}}
-              onDragLeave={ev=>{ev.currentTarget.style.borderTop='none'}}
-              onDrop={ev=>{ev.currentTarget.style.borderTop='none';const from=dragIndex.current;if(from===i)return;setEtapas(prev=>{const arr=[...prev];const [item]=arr.splice(from,1);arr.splice(i,0,item);return arr})}}
-              style={{background: e.estatus==='En curso'?'rgba(200,169,110,.06)':e.estatus==='Completado'?'rgba(45,80,22,.04)':'var(--paper)',padding:'12px 14px',marginBottom:8,border:'1px solid',borderColor:e.estatus==='En curso'?'rgba(200,169,110,.3)':e.estatus==='Completado'?'rgba(45,80,22,.2)':'var(--border)'}}>
-
-              {/* Fila 1: drag + nombre + periodo + estatus + delete */}
-              <div style={{display:'grid',gridTemplateColumns:'20px 1fr 1fr auto auto',gap:8,marginBottom:10,alignItems:'start'}}>
-                <div draggable onDragStart={()=>{dragIndex.current=i}} style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
-                <div>
-                  <label className="form-label">Nombre</label>
-                  <input style={inputStyle} value={e.nombre} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
-                </div>
-                <div>
-                  <label className="form-label">Periodo</label>
-                  <input style={inputStyle} value={e.fechas} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
-                </div>
-                <div>
-                  <label className="form-label">Estatus</label>
-                  <select style={selectStyle} value={e.estatus} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,estatus:ev.target.value}:x))}>
-                    {['Pendiente','En curso','Completado'].map(s=><option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div style={{paddingTop:18}}>
-                  <button onClick={()=>setEtapas(prev=>prev.filter((_,idx)=>idx!==i))} style={{background:'#B83232',color:'#fff',border:'none',width:24,height:24,cursor:'pointer',fontSize:12,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                </div>
-              </div>
-
-              {/* Fila 2: slider + botones rápidos */}
-              <div style={{display:'flex',alignItems:'center',gap:8,paddingLeft:28,flexWrap:'wrap'}}>
-                <span style={{fontSize:11,color:'var(--g500)',width:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{e.nombre||'Etapa'}</span>
-                <input type="range" min="0" max="100" value={e.porcentaje}
-                  onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,porcentaje:parseInt(ev.target.value)}:x))}
-                  style={{flex:2,accentColor:'var(--ink)',minWidth:80}}/>
-                <span style={{fontSize:13,fontWeight:600,color:'var(--ink)',width:36,textAlign:'right',flexShrink:0}}>{e.porcentaje}%</span>
-                {/* Botones rápidos */}
-                <div style={{display:'flex',gap:4,flexShrink:0}}>
-                  {e.estatus!=='En curso' && (
-                    <button onClick={()=>quickStageAction(i,'iniciar')}
-                      style={{fontSize:10,padding:'4px 10px',background:'rgba(200,169,110,.12)',border:'1px solid rgba(200,169,110,.4)',color:'#7A4A00',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.04em',whiteSpace:'nowrap'}}>
-                      ▶ Iniciar
-                    </button>
-                  )}
-                  {e.estatus!=='Completado' && (
-                    <button onClick={()=>quickStageAction(i,'completar')}
-                      style={{fontSize:10,padding:'4px 10px',background:'rgba(45,80,22,.08)',border:'1px solid rgba(45,80,22,.2)',color:'#2D5016',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.04em',whiteSpace:'nowrap'}}>
-                      ✓ Completar
-                    </button>
-                  )}
-                  {e.estatus!=='Pendiente' && (
-                    <button onClick={()=>quickStageAction(i,'pendiente')}
-                      style={{fontSize:10,padding:'4px 10px',background:'var(--g100)',border:'1px solid var(--border)',color:'var(--g500)',cursor:'pointer',fontFamily:'Jost,sans-serif',letterSpacing:'.04em'}}>
-                      Resetear
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <EtapaRow key={i} etapa={e} index={i}
+              dragIndexRef={dragIndex}
+              onUpdate={handleEtapaUpdate}
+              onDelete={handleEtapaDelete}
+              onQuickAction={quickStageAction}
+              inputStyle={inputStyle}
+              selectStyle={selectStyle}/>
           ))}
         </div>
         <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
@@ -265,7 +297,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── PRESUPUESTO ──────────────────────────────── */}
-      <SectionCard id="presupuesto" title="Presupuesto del proyecto">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["presupuesto"] = el} id="presupuesto" title="Presupuesto del proyecto">
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px 16px',marginBottom:16}}>
           {[['aprobado','Presupuesto aprobado (MXN)'],['ejercido','Monto ejercido (MXN)'],['pagado','Monto pagado (MXN)']].map(([k,label])=>(
             <div key={k}>
@@ -297,7 +329,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── ACCESO CLIENTE ───────────────────────────── */}
-      <SectionCard id="acceso" title="Acceso del cliente">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["acceso"] = el} id="acceso" title="Acceso del cliente">
         <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:12,lineHeight:1.7}}>Define las credenciales para que tu cliente entre a ver este proyecto.</p>
         {p.client_last_seen && (
           <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 14px',background:'var(--success-bg)',marginBottom:12}}>
@@ -330,7 +362,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── FOTOS ────────────────────────────────────── */}
-      <SectionCard id="fotos" title="Fotos de la bitácora">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["fotos"] = el} id="fotos" title="Fotos de la bitácora">
         <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
           <label style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 20px',background:'var(--ink)',color:'var(--white)',cursor:'pointer',fontSize:11,fontFamily:'Jost,sans-serif',letterSpacing:'.08em',textTransform:'uppercase'}}>
             + Seleccionar fotos
@@ -389,7 +421,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── BITÁCORA ─────────────────────────────────── */}
-      <SectionCard id="bitacora" title="Nota de bitácora">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["bitacora"] = el} id="bitacora" title="Nota de bitácora">
         <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:12,lineHeight:1.7}}>El cliente recibe un correo con cada nota que publiques.</p>
         <textarea style={{...inputStyle,resize:'vertical',marginBottom:12}} placeholder="Describe el avance de esta semana — el cliente lo verá en su portal y recibirá un email..." value={postText} onChange={e=>setPostText(e.target.value)} rows={4}/>
         <button className="btn-submit" style={{maxWidth:200,marginBottom:postsDB.length>0?16:0}} disabled={saving||!postText.trim()} onClick={async()=>{
@@ -413,7 +445,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── NOTA DIRECTA AL CLIENTE ──────────────────── */}
-      <SectionCard id="notas" title="Nota directa al cliente">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["notas"] = el} id="notas" title="Nota directa al cliente">
         <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:12,lineHeight:1.7}}>Mensaje privado que solo verá el cliente en su Dashboard.</p>
         <textarea style={{...inputStyle,resize:'vertical',marginBottom:12}} placeholder="Ej: Necesitamos tu firma en los planos esta semana..." value={notaText} onChange={e=>setNotaText(e.target.value)} rows={3}/>
         <button className="btn-submit" style={{maxWidth:220,marginBottom:notesDB.length>0?16:0}} disabled={saving||!notaText.trim()} onClick={async()=>{
@@ -438,7 +470,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── ARCHIVOS ─────────────────────────────────── */}
-      <SectionCard id="archivos" title="Archivos del proyecto">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["archivos"] = el} id="archivos" title="Archivos del proyecto">
         <div style={{marginBottom:12}}>
           <label className="form-label" style={{marginBottom:6,display:'block'}}>Archivo (opcional)</label>
           <input type="file" accept=".pdf,.dwg,.xlsx,.xls,.png,.jpg,.jpeg,.zip" onChange={e=>setArchivoFile(e.target.files[0])} style={{padding:'8px 0',border:'none',borderBottom:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:12,background:'transparent',color:'var(--g500)',width:'100%',outline:'none'}}/>
@@ -477,7 +509,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── GASTOS ───────────────────────────────────── */}
-      <SectionCard id="gastos" title="Gastos del proyecto">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["gastos"] = el} id="gastos" title="Gastos del proyecto">
         {/* Lista editable de gastos */}
         {costsDB.length > 0 && (
           <div style={{marginBottom:16}}>
@@ -572,7 +604,7 @@ export default function Admin({ project, user, onRefresh }) {
       </SectionCard>
 
       {/* ── MI CUENTA ────────────────────────────────── */}
-      <SectionCard id="cuenta" title="Mi cuenta">
+      <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["cuenta"] = el} id="cuenta" title="Mi cuenta">
         <div style={{marginBottom:20}}>
           <label className="form-label" style={{marginBottom:6,display:'block'}}>Nombre completo</label>
           <div style={{display:'flex',gap:10}}>
