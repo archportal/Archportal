@@ -198,26 +198,26 @@ export default function Admin({ project, user, onRefresh }) {
         </p>
         <div style={{marginBottom:10}}>
           {etapas.map((e,i)=>(
-            <div key={i} draggable onDragStart={()=>{dragIndex.current=i}}
+            <div key={i}
               onDragOver={ev=>{ev.preventDefault();ev.currentTarget.style.borderTop='2px solid var(--ink)'}}
               onDragLeave={ev=>{ev.currentTarget.style.borderTop='none'}}
               onDrop={ev=>{ev.currentTarget.style.borderTop='none';const from=dragIndex.current;if(from===i)return;setEtapas(prev=>{const arr=[...prev];const [item]=arr.splice(from,1);arr.splice(i,0,item);return arr})}}
-              style={{background: e.estatus==='En curso'?'rgba(200,169,110,.06)':e.estatus==='Completado'?'rgba(45,80,22,.04)':'var(--paper)',padding:'12px 14px',marginBottom:8,border:'1px solid',borderColor:e.estatus==='En curso'?'rgba(200,169,110,.3)':e.estatus==='Completado'?'rgba(45,80,22,.2)':'var(--border)',cursor:'grab'}}>
+              style={{background: e.estatus==='En curso'?'rgba(200,169,110,.06)':e.estatus==='Completado'?'rgba(45,80,22,.04)':'var(--paper)',padding:'12px 14px',marginBottom:8,border:'1px solid',borderColor:e.estatus==='En curso'?'rgba(200,169,110,.3)':e.estatus==='Completado'?'rgba(45,80,22,.2)':'var(--border)'}}>
 
-              {/* Fila 1: drag + nombre + periodo + estatus + botones rápidos */}
+              {/* Fila 1: drag + nombre + periodo + estatus + delete */}
               <div style={{display:'grid',gridTemplateColumns:'20px 1fr 1fr auto auto',gap:8,marginBottom:10,alignItems:'start'}}>
-                <div style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
+                <div draggable onDragStart={()=>{dragIndex.current=i}} style={{fontSize:16,color:'var(--g300)',paddingTop:20,cursor:'grab',userSelect:'none',textAlign:'center'}}>⠿</div>
                 <div>
                   <label className="form-label">Nombre</label>
-                  <input style={inputStyle} value={e.nombre} onMouseDown={ev=>ev.stopPropagation()} onKeyDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
+                  <input style={inputStyle} value={e.nombre} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,nombre:ev.target.value}:x))}/>
                 </div>
                 <div>
                   <label className="form-label">Periodo</label>
-                  <input style={inputStyle} value={e.fechas} onMouseDown={ev=>ev.stopPropagation()} onKeyDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
+                  <input style={inputStyle} value={e.fechas} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,fechas:ev.target.value}:x))}/>
                 </div>
                 <div>
                   <label className="form-label">Estatus</label>
-                  <select style={selectStyle} value={e.estatus} onMouseDown={ev=>ev.stopPropagation()} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,estatus:ev.target.value}:x))}>
+                  <select style={selectStyle} value={e.estatus} onChange={ev=>setEtapas(prev=>prev.map((x,idx)=>idx===i?{...x,estatus:ev.target.value}:x))}>
                     {['Pendiente','En curso','Completado'].map(s=><option key={s}>{s}</option>)}
                   </select>
                 </div>
