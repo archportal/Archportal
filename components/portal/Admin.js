@@ -158,7 +158,7 @@ export default function Admin({ project, user, onRefresh }) {
       </div>
 
       {/* ── NAV STICKY ───────────────────────────────── */}
-      <div style={{position:'sticky',top:58,zIndex:90,background:'var(--white)',borderBottom:'1px solid var(--border)',padding:'0 4px',display:'flex',gap:0,overflowX:'auto',scrollbarWidth:'none'}}>
+      <div style={{position:'sticky',top:58,zIndex:90,background:'var(--white)',borderBottom:'1px solid var(--border)',padding:'0 4px',display:'flex',gap:0,overflowX:'auto',scrollbarWidth:'none',WebkitOverflowScrolling:'touch',msOverflowStyle:'none'}}>
         {SECTIONS.map(s => (
           <button key={s.id} onClick={()=>scrollTo(s.id)}
             style={{padding:'10px 16px',background:'none',border:'none',fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap',color:activeSection===s.id?'var(--ink)':'var(--g400)',fontWeight:activeSection===s.id?600:400,borderBottom:activeSection===s.id?'2px solid var(--ink)':'2px solid transparent',transition:'all .2s'}}>
