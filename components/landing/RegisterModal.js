@@ -41,17 +41,14 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTe
     if (!tcAccepted) { setError('Debes aceptar los Términos y Condiciones'); return }
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch('/api/stripe/checkout', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({ ...form, plan })
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error); return }
-      // Enviar correo de bienvenida via EmailJS
-      try { await sendWelcomeEmail(form.nombre, form.email, form.password) } catch(e) { console.warn("EmailJS welcome:", e) }
-      try { await sendMembershipEmail(form.nombre, form.email, plan) } catch(e) { console.warn("EmailJS membership:", e) }
-      setStep(4)
-    } catch(e) { setError('Error al crear la cuenta. Intenta de nuevo.') }
+      if (!res.ok) { setError(data.error || 'Error al procesar el pago'); return }
+      if (data.url) window.location.href = data.url
+    } catch(e) { setError('Error al conectar con el procesador de pagos. Intenta de nuevo.') }
     finally { setLoading(false) }
   }
 
