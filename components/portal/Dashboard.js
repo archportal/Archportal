@@ -160,38 +160,8 @@ export default function Dashboard({ project, user, lang }) {
         ))}
       </div>
 
-      {/* PRESUPUESTO + ETAPAS */}
-      <div className="two-col" style={{marginBottom:16}}>
-        <div className="card">
-          <div className="card-title">Desglose de presupuesto</div>
-          <div style={{marginBottom:16}}>
-            <div className="progress-bar-wrap" style={{marginBottom:8}}>
-              <div className="progress-bar-fill ink" style={{width:pagadoPct+'%'}}/>
-            </div>
-            <div style={{display:'flex',gap:16,flexWrap:'wrap'}}>
-              {[['var(--ink)','Pagado',pagadoPct+'%'],['var(--g300)','Por pagar',porPagarPct+'%'],['var(--g100)','Disponible',Math.max(0,100-pagadoPct-porPagarPct)+'%']].map(([color,label,pct])=>(
-                <div key={label} style={{display:'flex',alignItems:'center',gap:6}}>
-                  <div style={{width:8,height:8,background:color,border:color==='var(--g100)'?'1px solid var(--border)':'none',borderRadius:2,flexShrink:0}}/>
-                  <span style={{fontSize:11,color:'var(--g500)'}}>{label} <strong style={{color:'var(--ink)'}}>{pct}</strong></span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:1,background:'var(--border)'}}>
-            {[
-              ['Presupuesto aprobado', fmt(presupuesto),'var(--g100)','var(--ink)'],
-              ['Gastado hasta hoy',    fmt(totalGastos),'var(--white)','var(--ink)'],
-              ['Liquidado',            fmt(pagado),     'var(--white)','var(--ink)'],
-              ['Por liquidar',         fmt(porPagar),   '#FEF4E4','#7A4A00'],
-            ].map(([label,val,bg,color])=>(
-              <div key={label} style={{background:bg,padding:'16px 18px'}}>
-                <div style={{fontSize:9,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--g400)',marginBottom:6}}>{label}</div>
-                <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:24,fontWeight:300,color}}>{val}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+      {/* ETAPAS */}
+      <div style={{marginBottom:16}}>
         <div className="card">
           <div className="card-title">{t.avEtapa}</div>
           {stages.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>Sin etapas definidas</p> : (
