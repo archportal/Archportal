@@ -9,21 +9,21 @@ const SECTIONS = [
 
   ['4. Planes, pagos y facturación', `ArchPortal ofrece los siguientes planes: Plan Mensual ($499 MXN/mes, hasta 3 proyectos), Plan Trimestral ($1,199 MXN/trimestre, hasta 10 proyectos) y Plan Anual ($3,999 MXN/año, hasta 20 proyectos). Los precios incluyen IVA. Las suscripciones se renuevan automáticamente al término de cada período salvo cancelación previa. Los cobros se realizan por adelantado. Los pagos se procesan a través de Stripe, Inc. ArchPortal no almacena datos de tarjetas en sus sistemas. El Operador se reserva el derecho de modificar los precios con aviso previo de 30 días.`],
 
-  ['5. Cancelación y reembolsos', `El Usuario puede cancelar su suscripción en cualquier momento enviando un correo a soporte@archportal.mx. La cancelación será efectiva al término del período ya pagado. Se ofrece reembolso completo dentro de los primeros 7 días naturales tras el primer pago, siempre que no se hayan creado proyectos o subido archivos. Fuera de dicho período, no se realizan reembolsos por períodos parciales. El Operador podrá suspender o cancelar cuentas sin previo aviso en caso de violación de estos Términos, uso ilícito, falta de pago o información falsa.`],
+  ['5. Cancelación y reembolsos', `El Usuario puede cancelar su suscripción en cualquier momento enviando un correo a hola@archportal.net. La cancelación será efectiva al término del período ya pagado. Se ofrece reembolso completo dentro de los primeros 7 días naturales tras el primer pago, siempre que no se hayan creado proyectos o subido archivos. Fuera de dicho período, no se realizan reembolsos por períodos parciales. El Operador podrá suspender o cancelar cuentas sin previo aviso en caso de violación de estos Términos, uso ilícito, falta de pago o información falsa.`],
 
-  ['6. Propiedad intelectual y datos', `La Plataforma, incluyendo su código fuente, diseño, marcas y logotipos, son propiedad exclusiva del Operador. El Usuario conserva todos los derechos sobre los datos, archivos, planos y fotografías que suba a la Plataforma. Al subir contenido, el Usuario otorga al Operador una licencia limitada y no exclusiva para almacenarlo y mostrarlo exclusivamente para prestar el servicio. El Operador NO venderá, cederá ni compartirá el contenido del Usuario con terceros con fines comerciales. El Usuario puede solicitar la exportación o eliminación de sus datos en cualquier momento escribiendo a soporte@archportal.mx.`],
+  ['6. Propiedad intelectual y datos', `La Plataforma, incluyendo su código fuente, diseño, marcas y logotipos, son propiedad exclusiva del Operador. El Usuario conserva todos los derechos sobre los datos, archivos, planos y fotografías que suba a la Plataforma. Al subir contenido, el Usuario otorga al Operador una licencia limitada y no exclusiva para almacenarlo y mostrarlo exclusivamente para prestar el servicio. El Operador NO venderá, cederá ni compartirá el contenido del Usuario con terceros con fines comerciales. El Usuario puede solicitar la exportación o eliminación de sus datos en cualquier momento escribiendo a hola@archportal.net.`],
 
   ['7. Uso aceptable', `El Usuario se compromete a no utilizar la Plataforma para: subir o compartir contenido ilícito, difamatorio u obsceno; realizar ingeniería inversa o intentar acceder al código fuente; intentar acceder a cuentas o datos de otros usuarios; usar la Plataforma para enviar spam; sobrecargar intencionalmente la infraestructura; ni revender o sublicenciar el acceso sin autorización escrita del Operador.`],
 
   ['8. Limitación de responsabilidad', `ArchPortal se esfuerza por mantener el servicio disponible de manera continua pero no garantiza disponibilidad ininterrumpida. El Operador no será responsable por interrupciones causadas por mantenimiento, fallas de terceros proveedores (Supabase, Vercel, etc.), fuerza mayor o ataques informáticos. El asistente de inteligencia artificial es una herramienta de apoyo y el arquitecto es el único responsable de verificar la información del proyecto. En ningún caso la responsabilidad total del Operador excederá el monto equivalente a los últimos 3 meses de suscripción pagados por el Usuario.`],
 
-  ['9. Privacidad y protección de datos', `El tratamiento de los datos personales de los Usuarios se rige por el Aviso de Privacidad de ArchPortal, disponible en archportal.mx/privacidad, el cual cumple con los requisitos de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su Reglamento. Al aceptar estos Términos, el Usuario declara haber leído y aceptado el Aviso de Privacidad.`],
+  ['9. Privacidad y protección de datos', `El tratamiento de los datos personales de los Usuarios se rige por el Aviso de Privacidad de ArchPortal, disponible en archportal.net/privacidad, el cual cumple con los requisitos de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su Reglamento. Al aceptar estos Términos, el Usuario declara haber leído y aceptado el Aviso de Privacidad.`],
 
   ['10. Modificaciones a los Términos', `El Operador puede modificar estos Términos en cualquier momento. Los cambios serán notificados mediante correo electrónico y aviso en la Plataforma con 30 días de anticipación. Si el Usuario continúa utilizando la Plataforma después de dicho período, se entenderá que ha aceptado los nuevos Términos.`],
 
   ['11. Legislación aplicable y jurisdicción', `Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos. Para cualquier controversia, las partes se someten a la jurisdicción de los Tribunales competentes de la ciudad de Ensenada, Baja California, México, renunciando a cualquier otro fuero que pudiera corresponderles.`],
 
-  ['12. Contacto', `Para cualquier duda, reclamación o solicitud relacionada con estos Términos:\n\nArchPortal — Luis Castañeda\nCorreo: soporte@archportal.mx\nSitio web: archportal.mx\nEnsenada, Baja California, México`],
+  ['12. Contacto', `Para cualquier duda, reclamación o solicitud relacionada con estos Términos:\n\nArchPortal — Luis Castañeda\nCorreo: hola@archportal.net\nSitio web: archportal.net\nEnsenada, Baja California, México`],
 ]
 
 export default function TermsModal({ onClose }) {
@@ -59,7 +59,7 @@ export default function TermsModal({ onClose }) {
 
         {/* Footer */}
         <div style={{ padding: '20px 48px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ fontSize: 11, color: 'var(--g400)', fontWeight: 300 }}>soporte@archportal.mx</p>
+          <p style={{ fontSize: 11, color: 'var(--g400)', fontWeight: 300 }}>hola@archportal.net</p>
           <button className="btn-submit" style={{ maxWidth: 160, marginTop: 0 }} onClick={onClose}>Cerrar</button>
         </div>
       </div>

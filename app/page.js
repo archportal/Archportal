@@ -264,7 +264,6 @@ export default function Home() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
           {t.contactEmail}
         </a>
-        <button className="btn-primary" style={{marginTop:32}} onClick={()=>setShowRegister(true)}>{t.comenzar}</button>
       </section>
 
       {/* FOOTER */}
