@@ -3,6 +3,18 @@ import { useState } from 'react'
 
 function fmt(n) { return '$' + Number(n||0).toLocaleString('es-MX') }
 
+const printStyles = `
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body * { visibility: hidden !important; }
+  #costos-print, #costos-print * { visibility: visible !important; }
+  #costos-print { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
+  .portal-topbar { display: none !important; }
+  @page { margin: 1.5cm; size: A4; }
+}
+`
+
 export default function Costos({ project, user, lang, onRefresh, isArq }) {
   const p = project?.project || project || {}
   const costs = project?.costs || p.costs || []
@@ -38,6 +50,19 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
 
   return (
     <div>
+      <style>{printStyles}</style>
+
+      {/* Export button */}
+      <div className="no-print" style={{display:"flex",justifyContent:"flex-end",padding:"0 0 16px"}}>
+        <button onClick={()=>window.print()} style={{display:"flex",alignItems:"center",gap:8,padding:"9px 20px",background:"var(--white)",border:"1px solid var(--border)",fontFamily:"Jost,sans-serif",fontSize:11,letterSpacing:".08em",textTransform:"uppercase",color:"var(--g500)",cursor:"pointer",transition:"all .2s"}}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--ink)";e.currentTarget.style.color="var(--ink)"}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--g500)"}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Exportar PDF
+        </button>
+      </div>
+
+      <div id="costos-print">
       <div className="section-hero" style={{marginBottom:20}}>
         <div className="section-hero-eyebrow">Proyecto · Finanzas</div>
         <h1 className="section-hero-title">{isArq ? 'Control de costos' : 'Finanzas del proyecto'}</h1>
@@ -127,6 +152,8 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
           </>
         )}
       </div>
+
+      </div>{/* /costos-print */}
 
       {toast && <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'var(--ink)',color:'var(--white)',padding:'12px 28px',fontSize:13,fontWeight:300,zIndex:9999,boxShadow:'0 8px 24px rgba(0,0,0,.2)'}}>{toast}</div>}
     </div>
