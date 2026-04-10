@@ -244,30 +244,34 @@ export default function Dashboard({ project, user, lang }) {
         <div className="card">
           <div className="card-title">{t.notas}</div>
           {posts.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noNotas}</p> : (
-            posts.slice(0,3).map((post,i)=>(
-              <div key={i} className="note-item">
-                <div className="note-accent" style={{background:'var(--ink)'}}/>
-                <div>
-                  <div className="note-date">{post.fecha}</div>
-                  <div className="note-text">{post.texto}</div>
-                  {post.autor && <div style={{fontSize:10,color:'var(--g400)',marginTop:4}}>{post.autor}</div>}
+            <div style={{maxHeight:200,overflowY:'auto',paddingRight:4}}>
+              {posts.map((post,i)=>(
+                <div key={i} className="note-item">
+                  <div className="note-accent" style={{background:'var(--ink)'}}/>
+                  <div>
+                    <div className="note-date">{post.fecha}</div>
+                    <div className="note-text">{post.texto}</div>
+                    {post.autor && <div style={{fontSize:10,color:'var(--g400)',marginTop:4}}>{post.autor}</div>}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
         <div className="card">
           <div className="card-title">{t.notasCli}</div>
           {notes.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noNotasCli}</p> : (
-            notes.slice(0,3).map((nota,i)=>(
-              <div key={i} className="note-item">
-                <div className="note-accent" style={{background:'var(--gold)'}}/>
-                <div>
-                  <div className="note-date">{nota.fecha}</div>
-                  <div className="note-text">{nota.texto}</div>
+            <div style={{maxHeight:200,overflowY:'auto',paddingRight:4}}>
+              {notes.map((nota,i)=>(
+                <div key={i} className="note-item">
+                  <div className="note-accent" style={{background:'var(--gold)'}}/>
+                  <div>
+                    <div className="note-date">{nota.fecha}</div>
+                    <div className="note-text">{nota.texto}</div>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>
