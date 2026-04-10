@@ -10,7 +10,7 @@ import Admin from './Admin'
 const EMAILJS_SERVICE  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE
 const EMAILJS_TEMPLATE = 'template_d2n23nw'
 const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
-const SUPPORT_EMAIL    = 'locastav11@gmail.com'
+const SUPPORT_EMAIL    = 'hola@archportal.net'
 
 const TABS_ARQ = [
   { id:'dashboard',  es:'Dashboard',  en:'Dashboard' },
