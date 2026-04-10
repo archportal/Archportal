@@ -1,17 +1,17 @@
 'use client'
 
 const SECTIONS = [
-  ['I. Identidad y domicilio del Responsable', `Responsable del tratamiento: Luis Castañeda\nDenominación comercial: ArchPortal\nDomicilio: Ensenada, Baja California, México\nCorreo electrónico: privacidad@archportal.net\nSitio web: archportal.net`],
+  ['I. Identidad y domicilio del Responsable', `Responsable del tratamiento: Luis Castañeda\nDenominación comercial: ArchPortal\nDomicilio: Ensenada, Baja California, México\nCorreo electrónico: hola@archportal.net\nSitio web: archportal.net`],
 
   ['II. Datos personales que se recaban', `ArchPortal recaba las siguientes categorías de datos:\n\nA) Datos de identificación: nombre completo, correo electrónico, contraseña (cifrada), nombre del despacho, ciudad y teléfono opcional.\n\nB) Datos de pago: procesados exclusivamente por Stripe, Inc. — ArchPortal NO almacena datos de tarjetas.\n\nC) Datos de clientes finales: ingresados por el arquitecto (nombre, correo y contraseña de acceso al portal). El arquitecto es responsable de contar con el consentimiento de sus clientes.\n\nD) Datos del proyecto: fotografías, planos, documentos, costos, bitácoras y comunicaciones.\n\nE) Datos de navegación: dirección IP, tipo de navegador, páginas visitadas, fecha y hora de acceso.\n\nArchPortal NO recaba datos personales sensibles.`],
 
-  ['III. Finalidades del tratamiento', `Finalidades primarias (necesarias para el servicio):\n• Crear y administrar su cuenta\n• Prestar el servicio de gestión de proyectos\n• Procesar pagos y gestionar suscripción\n• Enviar notificaciones del proyecto\n• Brindar soporte técnico\n• Cumplir obligaciones legales y fiscales\n\nFinalidades secundarias (puede oponerse):\n• Comunicados sobre nuevas funciones\n• Ofertas y promociones\n• Análisis estadísticos de uso\n• Encuestas de satisfacción\n\nPara oponerse a las finalidades secundarias escriba a privacidad@archportal.net.`],
+  ['III. Finalidades del tratamiento', `Finalidades primarias (necesarias para el servicio):\n• Crear y administrar su cuenta\n• Prestar el servicio de gestión de proyectos\n• Procesar pagos y gestionar suscripción\n• Enviar notificaciones del proyecto\n• Brindar soporte técnico\n• Cumplir obligaciones legales y fiscales\n\nFinalidades secundarias (puede oponerse):\n• Comunicados sobre nuevas funciones\n• Ofertas y promociones\n• Análisis estadísticos de uso\n• Encuestas de satisfacción\n\nPara oponerse a las finalidades secundarias escriba a hola@archportal.net.`],
 
   ['IV. Transferencia de datos personales', `ArchPortal transfiere datos a:\n\n• Stripe, Inc. — procesador de pagos\n• Supabase, Inc. — base de datos e infraestructura\n• Vercel, Inc. — alojamiento de la Plataforma\n• Anthropic, PBC — modelo de IA del asistente de soporte\n• Autoridades competentes — cuando la ley lo requiera\n\nArchPortal NO transfiere datos con fines comerciales sin su consentimiento.`],
 
-  ['V. Derechos ARCO', `Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos personales (derechos ARCO).\n\nPara ejercerlos, envíe solicitud a privacidad@archportal.net indicando:\n• Nombre completo y correo registrado\n• Descripción de los datos y derecho a ejercer\n• Copia de identificación oficial\n\nResponderemos en un plazo máximo de 20 días hábiles conforme a la LFPDPPP.`],
+  ['V. Derechos ARCO', `Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos personales (derechos ARCO).\n\nPara ejercerlos, envíe solicitud a hola@archportal.net indicando:\n• Nombre completo y correo registrado\n• Descripción de los datos y derecho a ejercer\n• Copia de identificación oficial\n\nResponderemos en un plazo máximo de 20 días hábiles conforme a la LFPDPPP.`],
 
-  ['VI. Revocación del consentimiento', `Puede revocar su consentimiento para el tratamiento de sus datos en cualquier momento, salvo cuando sea necesario para una obligación legal o contractual. Escriba a privacidad@archportal.net. La revocación para finalidades primarias puede implicar la imposibilidad de continuar el servicio.`],
+  ['VI. Revocación del consentimiento', `Puede revocar su consentimiento para el tratamiento de sus datos en cualquier momento, salvo cuando sea necesario para una obligación legal o contractual. Escriba a hola@archportal.net. La revocación para finalidades primarias puede implicar la imposibilidad de continuar el servicio.`],
 
   ['VII. Uso de cookies', `La Plataforma utiliza cookies estrictamente necesarias para mantener la sesión activa y cookies de rendimiento para mejorar la experiencia. Puede configurar su navegador para rechazar cookies, aunque esto puede afectar la funcionalidad.`],
 
@@ -54,7 +54,7 @@ export default function PrivacyModal({ onClose }) {
 
         {/* Footer */}
         <div style={{ padding: '20px 48px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ fontSize: 11, color: 'var(--g400)', fontWeight: 300 }}>privacidad@archportal.net</p>
+          <p style={{ fontSize: 11, color: 'var(--g400)', fontWeight: 300 }}>hola@archportal.net</p>
           <button className="btn-submit" style={{ maxWidth: 160, marginTop: 0 }} onClick={onClose}>Cerrar</button>
         </div>
       </div>
