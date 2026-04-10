@@ -512,7 +512,7 @@ export default function Admin({ project, user, onRefresh }) {
       <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["gastos"] = el} id="gastos" title="Gastos del proyecto">
         {/* Lista editable de gastos */}
         {costsDB.length > 0 && (
-          <div style={{marginBottom:16}}>
+          <div style={{marginBottom:16,maxHeight:520,overflowY:'auto',paddingRight:4}}>
             <div style={{fontSize:10,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--g400)',marginBottom:8}}>Gastos registrados — clic para editar</div>
             {costsDB.map((c,i)=>(
               <div key={i} style={{padding:'10px 12px',marginBottom:6,border:'1px solid',borderColor:editingCost===i?'var(--ink)':'var(--border)',background:editingCost===i?'var(--off)':'var(--white)',cursor:'pointer'}}
