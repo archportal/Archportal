@@ -19,7 +19,7 @@ export default function Soporte({ project, user, lang, onRefresh, isArq }) {
     const stages = project?.stages || []
     const avg = stages.length ? Math.round(stages.reduce((s,e)=>s+(e.porcentaje||0),0)/stages.length) : 0
     const kbText = kb.map(k=>`${k.tema}: ${k.info}`).join('\n')
-    return `Eres el asistente del proyecto "${p.nombre}" ubicado en ${p.ubicacion}. El arquitecto es ${p.arquitecto}. Avance general: ${avg}%. Etapa actual: ${p.etapa_actual}. Presupuesto aprobado: $${(p.presupuesto||0).toLocaleString('es-MX')} MXN. Monto ejercido: $${(p.pres_ejercido||0).toLocaleString('es-MX')} MXN.${kbText?'\n\nInformación adicional del proyecto:\n'+kbText:''}\n\nResponde SOLO con información del proyecto. Si no tienes el dato exacto, indica que el arquitecto responderá personalmente. Sé conciso y claro.`
+    return `Eres el asistente del proyecto "${p.nombre}" ubicado en ${p.ubicacion}. El arquitecto es ${p.arquitecto}. Avance general: ${avg}%. Etapa actual: ${p.etapa_actual}. Presupuesto aprobado: $${(p.presupuesto||0).toLocaleString('es-MX')} MXN. Monto ejercido: $${(p.pres_ejercido||0).toLocaleString('es-MX')} MXN.${kbText?'\n\nInformación adicional del proyecto:\n'+kbText:''}\n\nPuedes responder dos tipos de preguntas:\n1. Preguntas sobre este proyecto específico: usa los datos del proyecto arriba.\n2. Preguntas generales de arquitectura, construcción, materiales, instalaciones, procesos constructivos, normativas o diseño: respóndelas con tu conocimiento general de manera clara y educativa.\n\nSi la pregunta es sobre el proyecto y no tienes el dato exacto, indica que el arquitecto responderá personalmente. Sé conciso, claro y profesional.`
   }
 
   const enviar = async () => {
