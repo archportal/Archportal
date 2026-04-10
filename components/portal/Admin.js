@@ -279,7 +279,7 @@ export default function Admin({ project, user, onRefresh }) {
         <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',marginBottom:12}}>
           Usa los botones rápidos o mueve el slider. Arrastra <span style={{color:'var(--ink)'}}>⠿</span> para reordenar.
         </p>
-        <div style={{marginBottom:10}}>
+        <div style={{marginBottom:10,maxHeight:560,overflowY:'auto',paddingRight:4}}>
           {etapas.map((e,i)=>(
             <EtapaRow key={i} etapa={e} index={i}
               dragIndexRef={dragIndex}
@@ -299,7 +299,7 @@ export default function Admin({ project, user, onRefresh }) {
       {/* ── PRESUPUESTO ──────────────────────────────── */}
       <SectionCard autoSaving={autoSaving} sectionRef={el => sectionRefs.current["presupuesto"] = el} id="presupuesto" title="Presupuesto del proyecto">
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px 16px',marginBottom:16}}>
-          {[['aprobado','Presupuesto aprobado (MXN)'],['ejercido','Monto ejercido (MXN)'],['pagado','Monto pagado (MXN)']].map(([k,label])=>(
+          {[['aprobado','Presupuesto aprobado (MXN)'],['ejercido','Gastado hasta hoy (MXN)'],['pagado','Monto pagado (MXN)']].map(([k,label])=>(
             <div key={k}>
               <label className="form-label" style={{marginBottom:6,display:'block'}}>{label}</label>
               <input style={inputStyle} type="number" value={pres[k]} onChange={e=>setPres(prev=>({...prev,[k]:e.target.value}))}/>
