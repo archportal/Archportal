@@ -44,6 +44,7 @@ export default function Home() {
       ],
       comenzar:'Comenzar', contactLabel:'Contacto', contactH2:'Hablemos',
       contactDesc:'Tienes preguntas o quieres una demo personalizada para tu despacho.',
+      contactEmail:'hola@archportal.net',
       footerTagline:'Portal de gestion para despachos de arquitectura y construccion.',
       footerLinks:{producto:'Producto',recursos:'Recursos',legal:'Legal'},
       comoFuncionaLabel:'Como funciona', comoFuncionaH2:'Tres minutos para entenderlo todo',
@@ -74,6 +75,7 @@ export default function Home() {
       ],
       comenzar:'Get started', contactLabel:'Contact', contactH2:"Let's talk",
       contactDesc:'Have questions or want a personalized demo for your firm.',
+      contactEmail:'hola@archportal.net',
       footerTagline:'Management portal for architecture and construction firms.',
       footerLinks:{producto:'Product',recursos:'Resources',legal:'Legal'},
       comoFuncionaLabel:'How it works', comoFuncionaH2:'Three minutes to understand it all',
@@ -258,6 +260,10 @@ export default function Home() {
         <span className="section-label">{t.contactLabel}</span>
         <h2 className="section-h2">{t.contactH2}</h2>
         <p style={{marginTop:16,fontSize:15,fontWeight:300,color:'var(--g500)',lineHeight:1.8}}>{t.contactDesc}</p>
+        <a href={`mailto:${t.contactEmail}`} style={{display:'inline-flex',alignItems:'center',gap:10,marginTop:20,marginBottom:8,fontSize:15,color:'var(--ink)',fontWeight:400,textDecoration:'none',borderBottom:'1px solid var(--ink)',paddingBottom:2}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+          {t.contactEmail}
+        </a>
         <button className="btn-primary" style={{marginTop:32}} onClick={()=>setShowRegister(true)}>{t.comenzar}</button>
       </section>
 
