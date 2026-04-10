@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { rateLimit, getIP, rateLimitResponse } from '@/lib/ratelimit'
 
 // Master credentials desde variables de entorno (nunca hardcodeadas)
-const MASTER_EMAIL = process.env.MASTER_EMAIL || 'master@archportal.mx'
+const MASTER_EMAIL = process.env.MASTER_EMAIL || 'master@archportal.net'
 const MASTER_PASS  = process.env.MASTER_PASS
 
 export async function POST(request) {

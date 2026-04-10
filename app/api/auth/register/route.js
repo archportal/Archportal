@@ -54,7 +54,7 @@ export async function POST(request) {
         const { Resend } = await import('resend')
         const resend = new Resend(process.env.RESEND_API_KEY)
         await resend.emails.send({
-          from: 'ArchPortal <noreply@archportal.mx>',
+          from: 'ArchPortal <noreply@archportal.net>',
           to: email,
           subject: 'Bienvenido a ArchPortal — Tus credenciales de acceso',
           html: `
@@ -68,7 +68,7 @@ export async function POST(request) {
                   <p style="margin:0;font-size:14px;color:#0C0C0C;"><strong>Usuario:</strong> ${email}</p>
                   <p style="margin:8px 0 0;font-size:14px;color:#0C0C0C;"><strong>Plan:</strong> ${plan || 'Mensual'}</p>
                 </div>
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://archportal.mx'}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">Entrar al portal</a>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://archportal.net'}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">Entrar al portal</a>
               </div>
               <p style="text-align:center;margin-top:24px;font-size:11px;color:#9A9990;">ArchPortal — Portal para despachos de arquitectura</p>
             </div>`
