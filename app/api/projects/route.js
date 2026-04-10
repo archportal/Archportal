@@ -63,7 +63,7 @@ export async function POST(request) {
     const { stages, costs, photos, files, posts, questions, ...projectData } = body
 
     // Check project limit based on plan
-    const PLAN_LIMITS = { mensual: 3, trimestral: 10, anual: 20, monthly: 3, quarterly: 10, annual: 20 }
+    const PLAN_LIMITS = { mensual: 1, trimestral: 5, anual: 20, monthly: 1, quarterly: 5, annual: 20 }
     if (projectData.user_id) {
       const { data: user } = await supabaseAdmin.from('users').select('plan').eq('id', projectData.user_id).maybeSingle()
       const plan = user?.plan || 'mensual'
