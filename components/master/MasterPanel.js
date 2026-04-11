@@ -130,6 +130,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
             ['Total usuarios', users.length],
             ['Arquitectos', users.filter(u=>u.role==='arq').length],
             ['Plan Básico', users.filter(u=>u.plan==='mensual').length],
+            ['Plan Pro', users.filter(u=>u.plan==='trimestral').length],
             ['Plan Despacho', users.filter(u=>u.plan==='anual').length],
           ].map(([label,val])=>(
             <div key={label} style={{ background: 'var(--white)', padding: '24px 28px' }}>
@@ -217,6 +218,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
               {[
                 { val: 'todos',   label: `Todos (${users.filter(u=>u.role==='arq').length})` },
                 { val: 'mensual', label: `Plan Básico (${users.filter(u=>u.role==='arq'&&u.plan==='mensual').length})` },
+                { val: 'trimestral', label: `Plan Pro (${users.filter(u=>u.role==='arq'&&u.plan==='trimestral').length})` },
                 { val: 'anual',   label: `Plan Despacho (${users.filter(u=>u.role==='arq'&&u.plan==='anual').length})` },
               ].map(opt => (
                 <button key={opt.val} onClick={() => setBFilter(opt.val)} style={{ padding: '7px 16px', fontFamily: 'Jost, sans-serif', fontSize: 11, fontWeight: 500, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', border: bFilter===opt.val ? '1.5px solid var(--ink)' : '1.5px solid var(--border)', background: bFilter===opt.val ? 'var(--ink)' : 'transparent', color: bFilter===opt.val ? 'var(--white)' : 'var(--g500)' }}>
@@ -284,7 +286,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
                     <td style={{ padding: '14px 16px 14px 0', fontSize: 13, fontWeight: 300, color: 'var(--g500)' }}>{u.email}</td>
                     <td style={{ padding: '14px 16px 14px 0' }}>
                       <span style={{ fontSize: 10, padding: '3px 8px', background: u.plan==='anual'?'#EBF2E4':u.plan==='trimestral'?'#E4EBF8':'#F0EFEC', color: u.plan==='anual'?'#2D5016':u.plan==='trimestral'?'#1A3A8B':'#6B6A62', letterSpacing: '.06em', textTransform: 'uppercase' }}>
-                        {u.plan || 'mensual'}
+                        {u.plan==='mensual'?'Básico':u.plan==='trimestral'?'Pro':u.plan==='anual'?'Despacho':u.plan||'Básico'}
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px 14px 0', fontSize: 13, fontWeight: 300, color: 'var(--ink)', textAlign: 'center' }}>{u.project_count || 0}</td>
