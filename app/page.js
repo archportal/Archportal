@@ -22,19 +22,19 @@ export default function Home() {
 
   const t = {
     es: {
-      eyebrow:'Portal para despachos de arquitectura y construccion',
+      eyebrow:'Portal para despachos de arquitectura y construcción',
       h1:'ArchPortal conecta a arquitectos y clientes en tiempo real.',
       desc:'Avances, costos, planos y soporte inteligente en un solo lugar.',
-      cta1:'Entrar al portal', cta2:'Conocer mas',
+      cta1:'Entrar al portal', cta2:'Conocer más',
       s1label:'Minutos de setup', s1val:'3', s2label:'Transparencia', s2val:'100%', s3label:'Malentendidos', s3val:'0',
-      queEsLabel:'Que es ArchPortal',
+      queEsLabel:'¿Qué es ArchPortal?',
       queEsH2:'Un portal que alimentas una vez, tu cliente consulta siempre',
       queEsDesc:'El arquitecto actualiza el sistema cada semana. El cliente lo consulta cuando quiera, desde cualquier dispositivo.',
       features:[
         {num:'01',title:'Dashboard en tiempo real',desc:'Avance por etapa, presupuesto, gastos y entrega estimada visible para el cliente en todo momento.'},
-        {num:'02',title:'Bitacora visual',desc:'Sube fotos de avance de obra. El cliente ve la evolucion de su proyecto semana a semana.'},
-        {num:'03',title:'Control de costos',desc:'Registra gastos por categoria y etapa. El cliente ve exactamente en que se gasta su presupuesto.'},
-        {num:'04',title:'Soporte con IA',desc:'El asistente responde preguntas del cliente usando la informacion del proyecto. Si no sabe, te notifica.'}
+        {num:'02',title:'Bitácora visual',desc:'Sube fotos de avance de obra. El cliente ve la evolución de su proyecto semana a semana.'},
+        {num:'03',title:'Control de costos',desc:'Registra gastos por categoría y etapa. El cliente ve exactamente en qué se gasta su presupuesto.'},
+        {num:'04',title:'Soporte con IA',desc:'El asistente responde preguntas del cliente usando la información del proyecto. Si no sabe, te notifica.'}
       ],
       pricingLabel:'Planes', pricingH2:'Comienza hoy',
       plans:[
@@ -45,11 +45,11 @@ export default function Home() {
       comenzar:'Comenzar', contactLabel:'Contacto', contactH2:'Hablemos',
       contactDesc:'Tienes preguntas o quieres una demo personalizada para tu despacho.',
       contactEmail:'hola@archportal.net',
-      footerTagline:'Portal de gestion para despachos de arquitectura y construccion.',
+      footerTagline:'Portal de gestión para despachos de arquitectura y construcción.',
       footerLinks:{producto:'Producto',recursos:'Recursos',legal:'Legal'},
-      comoFuncionaLabel:'Como funciona', comoFuncionaH2:'Tres minutos para entenderlo todo',
+      comoFuncionaLabel:'¿Cómo funciona?', comoFuncionaH2:'Tres minutos para entenderlo todo',
       comoFuncionaDesc:'Un recorrido completo por el portal desde la perspectiva del arquitecto y del cliente.',
-      comoFuncionaItems:['Arquitecto actualiza el portal','Cliente consulta en tiempo real','IA responde preguntas automaticamente','Notificaciones cuando algo es urgente'],
+      comoFuncionaItems:['Arquitecto actualiza el portal','Cliente consulta en tiempo real','IA responde preguntas automáticamente','Notificaciones cuando algo es urgente'],
       tickerItems:['Bitácora visual','Archivos y planos','Multi-proyecto','Dashboard en tiempo real','Control de costos','Cronograma de obra','Notificaciones automáticas','Soporte con IA','Transparencia total','Acceso 24/7'],
     },
     en: {
@@ -229,9 +229,9 @@ export default function Home() {
           {[{src:'/img1.jpg',num:'01',label:'Diseño arquitectónico'},{src:'/img2.jpg',num:'02',label:'Seguimiento de obra'},{src:'/img3.jpg',num:'03',label:'Documentación'},{src:'/img4.jpg',num:'04',label:'Presupuesto'}].map((img,i)=>(
             <div key={i} style={{position:'relative',overflow:'hidden'}}>
               <img src={img.src} style={{width:'100%',height:'100%',objectFit:'cover'}} alt={img.label}/>
-              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'20px 24px',background:'linear-gradient(to top, rgba(12,12,12,.8) 0%, transparent 100%)'}}>
-                <div style={{fontSize:10,letterSpacing:'.15em',textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginBottom:4}}>{img.num}</div>
-                <div style={{fontFamily:'Cormorant Garamond, serif',fontSize:22,fontWeight:400,color:'#fff'}}>{img.label}</div>
+              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'12px 14px',background:'linear-gradient(to top, rgba(12,12,12,.8) 0%, transparent 100%)'}}>
+                <div style={{fontSize:9,letterSpacing:'.15em',textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginBottom:2}}>{img.num}</div>
+                <div style={{fontFamily:'Cormorant Garamond, serif',fontSize:16,fontWeight:400,color:'#fff',lineHeight:1.2}}>{img.label}</div>
               </div>
             </div>
           ))}
