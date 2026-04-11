@@ -129,12 +129,11 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTe
               </div>
 
               {/* Card fields */}
-              <div className="form-field"><label className="form-label">{lang==='en'?'Card number':'Número de tarjeta'}</label><input className="form-input" placeholder="1234 5678 9012 3456" maxLength={19}/></div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0 20px',marginBottom:24}}>
-                <div className="form-field" style={{marginBottom:0}}><label className="form-label">{lang==='en'?'Expiry':'Vencimiento'}</label><input className="form-input" placeholder="MM / AA" maxLength={7}/></div>
-                <div className="form-field" style={{marginBottom:0}}><label className="form-label">CVV</label><input className="form-input" placeholder="123" maxLength={4}/></div>
+              <div style={{background:'var(--paper)',border:'1px solid var(--border)',padding:'20px 24px',marginBottom:24,textAlign:'center'}}>
+                <div style={{fontSize:32,marginBottom:12}}>🔒</div>
+                <p style={{fontSize:13,fontWeight:400,color:'var(--ink)',marginBottom:6}}>{lang==='en'?'Secure payment via Stripe':'Pago seguro a través de Stripe'}</p>
+                <p style={{fontSize:12,fontWeight:300,color:'var(--g400)',margin:0}}>{lang==='en'?'You will be redirected to Stripe to complete your payment safely.':'Serás redirigido a Stripe para completar tu pago de forma segura.'}</p>
               </div>
-              <p style={{fontSize:11,color:'var(--g400)',marginBottom:24}}>🔒 {lang==='en'?'Secure payment processed by Stripe.':'Pago seguro procesado por Stripe.'}</p>
               {error&&<p className="form-error" style={{marginBottom:16}}>{error}</p>}
               <div style={{display:'flex',gap:10}}>
                 <button onClick={()=>setStep(2)} style={{padding:'14px 24px',background:'transparent',color:'var(--g500)',border:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:12,letterSpacing:'.08em',textTransform:'uppercase',cursor:'pointer'}}>{lang==='en'?'Back':'Atrás'}</button>
