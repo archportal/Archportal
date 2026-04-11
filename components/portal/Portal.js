@@ -36,6 +36,21 @@ const PLAN_ORDER  = ['mensual','trimestral','anual']
 function ProfilePanel({ user, onClose }) {
   const plan = user.plan || 'mensual'
   const upgrades = PLAN_ORDER.filter(p => PLAN_ORDER.indexOf(p) > PLAN_ORDER.indexOf(plan))
+  const [portalLoading, setPortalLoading] = useState(false)
+
+  const openStripePortal = async () => {
+    setPortalLoading(true)
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else alert('No se pudo abrir el portal. Escribe a ' + SUPPORT_EMAIL)
+    } catch { alert('Error al conectar con Stripe. Escribe a ' + SUPPORT_EMAIL) }
+    finally { setPortalLoading(false) }
+  }
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000 }} onClick={onClose}>
@@ -59,29 +74,20 @@ function ProfilePanel({ user, onClose }) {
           </p>
         </div>
 
-        {/* Upgrade */}
-        {upgrades.length > 0 && (
-          <div style={{ padding:'20px 24px', borderBottom:'1px solid var(--border)' }}>
-            <p style={{ fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--g400)', margin:'0 0 12px' }}>Mejorar plan</p>
-            {upgrades.map(p => (
-              <div key={p} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:'1px solid var(--border)' }}>
-                <div>
-                  <p style={{ fontSize:13, fontWeight:400, color:'var(--ink)', margin:'0 0 2px' }}>{PLAN_LABELS[p]}</p>
-                  <p style={{ fontSize:11, fontWeight:300, color:'var(--g400)', margin:0 }}>{PLAN_PRICES[p]} · {PLAN_LIMITS[p]} proyectos</p>
-                </div>
-                <button
-                  onClick={() => { alert('Integración con Stripe próximamente. Por ahora escribe a soporte para cambiar tu plan.'); onClose() }}
-                  style={{ padding:'6px 14px', background:'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:10, fontWeight:500, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer' }}>
-                  Cambiar
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Gestionar suscripción */}
+        <div style={{ padding:'16px 24px', borderBottom:'1px solid var(--border)' }}>
+          <button onClick={openStripePortal} disabled={portalLoading}
+            style={{ width:'100%', padding:'10px', background:'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost,sans-serif', fontSize:11, fontWeight:500, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer', opacity: portalLoading ? .6 : 1 }}>
+            {portalLoading ? 'Cargando...' : 'Gestionar suscripción'}
+          </button>
+          <p style={{ fontSize:11, fontWeight:300, color:'var(--g400)', margin:'10px 0 0', lineHeight:1.6, textAlign:'center' }}>
+            Cambia de plan, cancela o actualiza tu método de pago
+          </p>
+        </div>
 
         <div style={{ padding:'16px 24px' }}>
           <p style={{ fontSize:11, fontWeight:300, color:'var(--g400)', margin:0, lineHeight:1.6 }}>
-            Para cambios de plan o cancelaciones escribe a{' '}
+            ¿Dudas? Escribe a{' '}
             <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color:'var(--ink)' }}>{SUPPORT_EMAIL}</a>
           </p>
         </div>
