@@ -74,6 +74,27 @@ export async function POST(request) {
     }
   }
 
+  // Handle subscription update (plan change from customer portal)
+  if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object
+    try {
+      // Get the price ID from the subscription
+      const priceId = subscription.items.data[0]?.price?.id
+      const PRICE_TO_PLAN = {
+        [process.env.STRIPE_PRICE_BASICO]: 'mensual',
+        [process.env.STRIPE_PRICE_PRO]: 'trimestral',
+        [process.env.STRIPE_PRICE_DESPACHO]: 'anual',
+      }
+      const newPlan = PRICE_TO_PLAN[priceId] || 'mensual'
+      await supabaseAdmin.from('users')
+        .update({ plan: newPlan })
+        .eq('stripe_subscription_id', subscription.id)
+      console.log('Plan updated to:', newPlan, 'for subscription:', subscription.id)
+    } catch (err) {
+      console.error('Error updating plan:', err)
+    }
+  }
+
   // Handle subscription cancellation
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object
