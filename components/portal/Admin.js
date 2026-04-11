@@ -431,6 +431,7 @@ export default function Admin({ project, user, onRefresh }) {
         {postsDB.length>0 && (
           <div style={{borderTop:'1px solid var(--border)',paddingTop:12,marginTop:4}}>
             <div style={{fontSize:10,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--g400)',marginBottom:8}}>Notas anteriores</div>
+            <div style={{maxHeight:200,overflowY:'auto',paddingRight:4}}>
             {postsDB.map((post,i)=>(
               <div key={i} style={{padding:'10px 0',borderBottom:'1px solid var(--g100)',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
                 <div style={{flex:1}}>
@@ -440,6 +441,7 @@ export default function Admin({ project, user, onRefresh }) {
                 <button onClick={()=>deletePost(i)} style={{fontSize:10,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'3px 8px',cursor:'pointer',flexShrink:0,fontFamily:'Jost,sans-serif'}}>✕</button>
               </div>
             ))}
+            </div>
           </div>
         )}
       </SectionCard>
@@ -456,6 +458,7 @@ export default function Admin({ project, user, onRefresh }) {
         {notesDB.length>0 && (
           <div style={{borderTop:'1px solid var(--border)',paddingTop:12,marginTop:4}}>
             <div style={{fontSize:10,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--g400)',marginBottom:8}}>Enviadas anteriormente</div>
+            <div style={{maxHeight:200,overflowY:'auto',paddingRight:4}}>
             {notesDB.map((n,i)=>(
               <div key={i} style={{padding:'8px 0',borderBottom:'1px solid var(--g100)',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
                 <div style={{flex:1}}>
@@ -465,6 +468,7 @@ export default function Admin({ project, user, onRefresh }) {
                 <button onClick={()=>deleteNota(i)} style={{fontSize:10,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'3px 8px',cursor:'pointer',flexShrink:0,fontFamily:'Jost,sans-serif'}}>✕</button>
               </div>
             ))}
+            </div>
           </div>
         )}
       </SectionCard>
