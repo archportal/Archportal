@@ -100,7 +100,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
         })
       } catch(e) { console.warn('EmailJS welcome:', e) }
 
-      setCSuccess(`Acceso creado para ${cForm.email} con Plan Anual`)
+      setCSuccess(`Acceso creado para ${cForm.email} con Plan Despacho`)
       setCForm({ nombre:'', email:'', password:'' })
       // Refrescar lista
       fetch('/api/master').then(r => r.json()).then(d => setUsers(d.users || []))
@@ -129,8 +129,8 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
           {[
             ['Total usuarios', users.length],
             ['Arquitectos', users.filter(u=>u.role==='arq').length],
-            ['Plan mensual', users.filter(u=>u.plan==='mensual').length],
-            ['Plan anual', users.filter(u=>u.plan==='anual').length],
+            ['Plan Básico', users.filter(u=>u.plan==='mensual').length],
+            ['Plan Despacho', users.filter(u=>u.plan==='anual').length],
           ].map(([label,val])=>(
             <div key={label} style={{ background: 'var(--white)', padding: '24px 28px' }}>
               <div style={{ fontSize: 9, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--g400)', marginBottom: 12 }}>{label}</div>
@@ -162,7 +162,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: showCreate ? 24 : 0 }}>
             <div>
               <div className="card-title" style={{ marginBottom: 4 }}>Crear acceso</div>
-              {!showCreate && <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--g500)', margin: 0 }}>Otorga acceso a un correo con Plan Anual sin pasar por el registro.</p>}
+              {!showCreate && <p style={{ fontSize: 13, fontWeight: 300, color: 'var(--g500)', margin: 0 }}>Otorga acceso a un correo con Plan Despacho sin pasar por el registro.</p>}
             </div>
             <button onClick={() => { setShowCreate(!showCreate); setCError(''); setCSuccess('') }} style={{ padding: '8px 20px', background: showCreate ? 'transparent' : 'var(--ink)', color: showCreate ? 'var(--g500)' : 'var(--white)', border: '1px solid var(--border)', fontFamily: 'Jost, sans-serif', fontSize: 11, fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {showCreate ? 'Cancelar' : '+ Nuevo acceso'}
@@ -191,7 +191,7 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
               </div>
 
               <div style={{ padding: '12px 16px', background: '#EBF2E4', borderLeft: '3px solid #2D5016', marginBottom: 20 }}>
-                <p style={{ fontSize: 12, color: '#2D5016', margin: 0 }}>Este acceso tendrá <strong>Plan Anual</strong> — hasta 20 proyectos activos.</p>
+                <p style={{ fontSize: 12, color: '#2D5016', margin: 0 }}>Este acceso tendrá <strong>Plan Despacho</strong> — hasta 20 proyectos activos.</p>
               </div>
 
               {cError   && <p style={{ fontSize: 12, color: '#B83232', marginBottom: 12, padding: '10px 14px', background: '#FBE4E4' }}>{cError}</p>}
@@ -216,8 +216,8 @@ export default function MasterPanel({ onImpersonate, onLogout }) {
             <div style={{ display: 'flex', gap: 8 }}>
               {[
                 { val: 'todos',   label: `Todos (${users.filter(u=>u.role==='arq').length})` },
-                { val: 'mensual', label: `Plan mensual (${users.filter(u=>u.role==='arq'&&u.plan==='mensual').length})` },
-                { val: 'anual',   label: `Plan anual (${users.filter(u=>u.role==='arq'&&u.plan==='anual').length})` },
+                { val: 'mensual', label: `Plan Básico (${users.filter(u=>u.role==='arq'&&u.plan==='mensual').length})` },
+                { val: 'anual',   label: `Plan Despacho (${users.filter(u=>u.role==='arq'&&u.plan==='anual').length})` },
               ].map(opt => (
                 <button key={opt.val} onClick={() => setBFilter(opt.val)} style={{ padding: '7px 16px', fontFamily: 'Jost, sans-serif', fontSize: 11, fontWeight: 500, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', border: bFilter===opt.val ? '1.5px solid var(--ink)' : '1.5px solid var(--border)', background: bFilter===opt.val ? 'var(--ink)' : 'transparent', color: bFilter===opt.val ? 'var(--white)' : 'var(--g500)' }}>
                   {opt.label}
