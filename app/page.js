@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Nav from '@/components/landing/Nav'
 import LoginModal from '@/components/landing/LoginModal'
 import RegisterModal from '@/components/landing/RegisterModal'
@@ -19,6 +19,18 @@ export default function Home() {
   const [projects, setProjects] = useState([])
   const [isMaster, setIsMaster] = useState(false)
   const [clientProjectData, setClientProjectData] = useState(null)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('payment') === 'success') {
+        setPaymentSuccess(true)
+        window.history.replaceState({}, '', '/')
+        setTimeout(() => setPaymentSuccess(false), 8000)
+      }
+    }
+  }, [])
 
   const t = {
     es: {
@@ -123,6 +135,17 @@ export default function Home() {
   return (
     <>
       <Nav onLogin={() => setShowLogin(true)} lang={lang} setLang={setLang} />
+
+      {paymentSuccess && (
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999,background:'#2D5016',color:'#fff',padding:'16px 24px',display:'flex',alignItems:'center',justifyContent:'center',gap:12}}>
+          <span style={{fontSize:20}}>✓</span>
+          <div>
+            <div style={{fontSize:14,fontWeight:500}}>¡Pago exitoso! Tu cuenta ha sido creada.</div>
+            <div style={{fontSize:12,opacity:.8}}>Revisa tu correo para ver tus credenciales de acceso.</div>
+          </div>
+          <button onClick={()=>setShowLogin(true)} style={{marginLeft:16,padding:'8px 20px',background:'rgba(255,255,255,.2)',border:'1px solid rgba(255,255,255,.4)',color:'#fff',fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',cursor:'pointer'}}>Entrar al portal</button>
+        </div>
+      )}
 
       {/* HERO */}
       <section className="hero">
