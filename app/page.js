@@ -231,14 +231,14 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{background:'var(--ink)',aspectRatio:'16/9',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,position:'relative',overflow:'hidden'}}>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4,opacity:.15,position:'absolute',inset:20}}>
-              {Array.from({length:8}).map((_,i)=><div key={i} style={{background:'var(--g400)',aspectRatio:'1'}}/>)}
-            </div>
-            <div style={{width:56,height:56,borderRadius:'50%',border:'2px solid rgba(255,255,255,.4)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1}}>
-              <div style={{width:0,height:0,borderTop:'10px solid transparent',borderBottom:'10px solid transparent',borderLeft:'16px solid rgba(255,255,255,.7)',marginLeft:4}}/>
-            </div>
-            <span style={{fontSize:10,letterSpacing:'.15em',textTransform:'uppercase',color:'rgba(255,255,255,.4)',zIndex:1}}>Video disponible pronto</span>
+          <div style={{position:'relative',paddingBottom:'56.25%',height:0,overflow:'hidden',background:'var(--ink)'}}>
+            <iframe
+              src="https://www.youtube.com/embed/-f9nZ8APZjo"
+              title="ArchPortal — Cómo funciona"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'}}
+            />
           </div>
         </div>
       </section>
