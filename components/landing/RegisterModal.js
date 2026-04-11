@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react'
 
 const PLANS = {
-  mensual:{label:'Plan Mensual',price:'$499 MXN / mes',limit:'Hasta 3 proyectos'},
-  trimestral:{label:'Plan Trimestral',price:'$1,199 MXN / trimestre',limit:'Hasta 10 proyectos'},
-  anual:{label:'Plan Anual',price:'$3,999 MXN / año',limit:'Hasta 20 proyectos'},
-  monthly:{label:'Monthly Plan',price:'$499 MXN / month',limit:'Up to 3 projects'},
-  quarterly:{label:'Quarterly Plan',price:'$1,199 MXN / quarter',limit:'Up to 10 projects'},
-  annual:{label:'Annual Plan',price:'$3,999 MXN / year',limit:'Up to 20 projects'},
+  mensual:{label:'Plan Básico',price:'$700 MXN / mes',limit:'1 proyecto activo'},
+  trimestral:{label:'Plan Pro',price:'$1,500 MXN / mes',limit:'Hasta 5 proyectos'},
+  anual:{label:'Plan Despacho',price:'$2,500 MXN / mes',limit:'Hasta 20 proyectos'},
+  monthly:{label:'Basic Plan',price:'$700 MXN / month',limit:'1 active project'},
+  quarterly:{label:'Pro Plan',price:'$1,500 MXN / month',limit:'Up to 5 projects'},
+  annual:{label:'Firm Plan',price:'$2,500 MXN / month',limit:'Up to 20 projects'},
 }
 
 import { sendWelcomeEmail, sendMembershipEmail } from "@/lib/emailjs"
