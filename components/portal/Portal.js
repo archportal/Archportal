@@ -335,6 +335,24 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
   const ini   = (user.name||user.email||'U').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()
 
+  // Cuenta inactiva — mostrar pantalla de pausa
+  if (isArq && user.plan === 'inactivo') {
+    return (
+      <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--off)',padding:24}}>
+        <div style={{maxWidth:480,textAlign:'center'}}>
+          <div style={{fontSize:48,marginBottom:24}}>⏸</div>
+          <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:36,fontWeight:400,color:'var(--ink)',marginBottom:12}}>Tu suscripción está pausada</h1>
+          <p style={{fontSize:14,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:32}}>Tu cuenta está inactiva por un pago fallido o cancelación. Tus proyectos y datos están seguros — solo reactiva tu plan para continuar.</p>
+          <a href="https://www.archportal.net" style={{display:'inline-block',padding:'14px 32px',background:'var(--ink)',color:'var(--white)',textDecoration:'none',fontFamily:'Jost,sans-serif',fontSize:11,fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:16}}>Reactivar suscripción</a>
+          <br/>
+          <a href={`mailto:hola@archportal.net`} style={{fontSize:12,color:'var(--g400)'}}>¿Necesitas ayuda? hola@archportal.net</a>
+          <br/><br/>
+          <button onClick={onLogout} style={{fontSize:11,color:'var(--g400)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Cerrar sesión</button>
+        </div>
+      </div>
+    )
+  }
+
   // Back button interception
   useEffect(() => {
     if (!activeProject) return

@@ -22,9 +22,15 @@ export async function POST(request) {
 
     try {
       // Check if user already exists
-      const { data: existing } = await supabaseAdmin.from('users').select('id').eq('email', email).maybeSingle()
+      const { data: existing } = await supabaseAdmin.from('users').select('id, plan').eq('email', email).maybeSingle()
       if (existing) {
-        console.log('User already exists:', email)
+        // Reactivate plan if account was inactive
+        await supabaseAdmin.from('users').update({
+          plan: plan || 'mensual',
+          stripe_customer_id: session.customer,
+          stripe_subscription_id: session.subscription,
+        }).eq('id', existing.id)
+        console.log('Account reactivated:', email)
         return NextResponse.json({ received: true })
       }
 
