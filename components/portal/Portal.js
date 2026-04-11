@@ -28,9 +28,9 @@ const TABS_CLI = [
   { id:'soporte',    es:'Soporte',    en:'Support' },
 ]
 
-const PLAN_LABELS = { mensual:'Plan Mensual', trimestral:'Plan Trimestral', anual:'Plan Anual' }
-const PLAN_PRICES = { mensual:'$499 MXN / mes', trimestral:'$1,199 MXN / trimestre', anual:'$3,999 MXN / año' }
-const PLAN_LIMITS = { mensual:3, trimestral:10, anual:20 }
+const PLAN_LABELS = { mensual:'Plan Básico', trimestral:'Plan Pro', anual:'Plan Despacho', inactivo:'Cuenta pausada' }
+const PLAN_PRICES = { mensual:'$700 MXN / mes', trimestral:'$1,500 MXN / mes', anual:'$2,500 MXN / mes' }
+const PLAN_LIMITS = { mensual:1, trimestral:5, anual:20 }
 const PLAN_ORDER  = ['mensual','trimestral','anual']
 
 function ProfilePanel({ user, onClose }) {
