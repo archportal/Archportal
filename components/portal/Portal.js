@@ -29,7 +29,7 @@ const TABS_CLI = [
 ]
 
 const PLAN_LABELS = { mensual:'Plan Básico', trimestral:'Plan Pro', anual:'Plan Despacho', inactivo:'Cuenta pausada' }
-const PLAN_PRICES = { mensual:'$700 MXN / mes', trimestral:'$1,500 MXN / mes', anual:'$2,500 MXN / mes' }
+const PLAN_PRICES = { mensual:'$840 MXN / mes', trimestral:'$1,800 MXN / mes', anual:'$3,000 MXN / mes' }
 const PLAN_LIMITS = { mensual:1, trimestral:5, anual:20 }
 const PLAN_ORDER  = ['mensual','trimestral','anual']
 
