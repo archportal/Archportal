@@ -132,7 +132,7 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTe
               {/* Coupon */}
               <div className="form-field" style={{marginBottom:16}}>
                 <label className="form-label">{lang==='en'?'Coupon code (optional)':'Código de descuento (opcional)'}</label>
-                <input className="form-input" placeholder={lang==='en'?'E.g. ARQJUAN10':'Ej. COTAPAREDES'} value={coupon} onChange={e=>setCoupon(e.target.value)} style={{textTransform:'uppercase'}}/>
+                <input className="form-input" placeholder={lang==='en'?'Coupon code':'Código de cupón'} value={coupon} onChange={e=>setCoupon(e.target.value)} style={{textTransform:'uppercase'}}/>
               </div>
 
               {/* Card fields */}
