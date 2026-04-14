@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react'
 
 const PLANS = {
-  mensual:{label:'Plan Básico',price:'$700 MXN / mes',limit:'1 proyecto activo'},
-  trimestral:{label:'Plan Pro',price:'$1,500 MXN / mes',limit:'Hasta 5 proyectos'},
-  anual:{label:'Plan Despacho',price:'$2,500 MXN / mes',limit:'Hasta 20 proyectos'},
-  monthly:{label:'Basic Plan',price:'$700 MXN / month',limit:'1 active project'},
-  quarterly:{label:'Pro Plan',price:'$1,500 MXN / month',limit:'Up to 5 projects'},
-  annual:{label:'Firm Plan',price:'$2,500 MXN / month',limit:'Up to 20 projects'},
+  mensual:{label:'Plan Básico',price:'$840 MXN / mes',limit:'1 proyecto activo'},
+  trimestral:{label:'Plan Pro',price:'$1,800 MXN / mes',limit:'Hasta 5 proyectos'},
+  anual:{label:'Plan Despacho',price:'$3,000 MXN / mes',limit:'Hasta 20 proyectos'},
+  monthly:{label:'Basic Plan',price:'$840 MXN / month',limit:'1 active project'},
+  quarterly:{label:'Pro Plan',price:'$1,800 MXN / month',limit:'Up to 5 projects'},
+  annual:{label:'Firm Plan',price:'$3,000 MXN / month',limit:'Up to 20 projects'},
 }
 
 import { sendWelcomeEmail, sendMembershipEmail } from "@/lib/emailjs"
@@ -17,6 +17,7 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTe
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [tcAccepted, setTcAccepted] = useState(false)
+  const [coupon, setCoupon] = useState('')
   const [form, setForm] = useState({ nombre:'', email:'', password:'', password2:'', despacho:'', ciudad:'', tel:'' })
   const planInfo = PLANS[plan] || PLANS.mensual
   const update = (k,v) => setForm(f=>({...f,[k]:v}))
@@ -43,7 +44,7 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTe
     try {
       const res = await fetch('/api/stripe/checkout', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ ...form, plan })
+        body:JSON.stringify({ ...form, plan, coupon: coupon.trim().toUpperCase() || undefined })
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Error al procesar el pago'); return }
@@ -126,6 +127,12 @@ export default function RegisterModal({ onClose, plan, onSuccess, lang, onShowTe
                     {lang==='en'?' of ArchPortal.':', de ArchPortal.'}
                   </span>
                 </label>
+              </div>
+
+              {/* Coupon */}
+              <div className="form-field" style={{marginBottom:16}}>
+                <label className="form-label">{lang==='en'?'Coupon code (optional)':'Código de descuento (opcional)'}</label>
+                <input className="form-input" placeholder={lang==='en'?'E.g. ARQJUAN10':'Ej. COTAPAREDES'} value={coupon} onChange={e=>setCoupon(e.target.value)} style={{textTransform:'uppercase'}}/>
               </div>
 
               {/* Card fields */}

@@ -12,16 +12,24 @@ const PRICE_IDS = {
   annual:     process.env.STRIPE_PRICE_DESPACHO,
 }
 
+async function getPromotionCodeId(code) {
+  try {
+    const promoCodes = await stripe.promotionCodes.list({ code, active: true, limit: 1 })
+    return promoCodes.data[0]?.id || null
+  } catch { return null }
+}
+
 export async function POST(request) {
   try {
-    const { plan, nombre, email, password, despacho, ciudad } = await request.json()
+    const { plan, nombre, email, password, despacho, ciudad, coupon } = await request.json()
 
     const priceId = PRICE_IDS[plan]
     if (!priceId) {
       return NextResponse.json({ error: 'Plan no válido' }, { status: 400 })
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Build session params
+    const sessionParams = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
@@ -30,7 +38,14 @@ export async function POST(request) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}`,
       locale: 'es',
-    })
+    }
+
+    // Apply coupon if provided
+    if (coupon) {
+      sessionParams.discounts = [{ promotion_code: await getPromotionCodeId(coupon) }].filter(d => d.promotion_code)
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams)
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
