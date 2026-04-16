@@ -10,7 +10,7 @@ import Admin from './Admin'
 const EMAILJS_SERVICE  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE
 const EMAILJS_TEMPLATE = 'template_d2n23nw'
 const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
-const SUPPORT_EMAIL    = 'hola@archportal.net'
+const SUPPORT_EMAIL    = 'lcarq01@gmail.com'
 
 const TABS_ARQ = [
   { id:'dashboard',  es:'Dashboard',  en:'Dashboard' },
@@ -351,7 +351,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
           <p style={{fontSize:14,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:32}}>Tu cuenta está inactiva por un pago fallido o cancelación. Tus proyectos y datos están seguros — solo reactiva tu plan para continuar.</p>
           <a href="https://www.archportal.net" style={{display:'inline-block',padding:'14px 32px',background:'var(--ink)',color:'var(--white)',textDecoration:'none',fontFamily:'Jost,sans-serif',fontSize:11,fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:16}}>Reactivar suscripción</a>
           <br/>
-          <a href={`mailto:hola@archportal.net`} style={{fontSize:12,color:'var(--g400)'}}>¿Necesitas ayuda? hola@archportal.net</a>
+          <a href={`mailto:lcarq01@gmail.com`} style={{fontSize:12,color:'var(--g400)'}}>¿Necesitas ayuda? lcarq01@gmail.com</a>
           <br/><br/>
           <button onClick={onLogout} style={{fontSize:11,color:'var(--g400)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Cerrar sesión</button>
         </div>
