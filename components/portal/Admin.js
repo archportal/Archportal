@@ -3,6 +3,30 @@ import { useState, useRef, useEffect } from 'react'
 import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/lib/emailjs'
 import { supabase } from '@/lib/supabase'
 
+// Comprime imágenes en el navegador antes de subirlas.
+// Usa carga dinámica para no inflar el bundle inicial.
+async function compressImage(file, onProgress) {
+  // Si no es imagen o ya pesa menos de 500KB, devolvemos tal cual
+  if (!file.type.startsWith('image/') || file.size < 500 * 1024) return file
+  try {
+    const imageCompression = (await import('browser-image-compression')).default
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 0.5,              // objetivo ~500KB
+      maxWidthOrHeight: 1920,      // suficiente para cualquier pantalla
+      useWebWorker: true,          // no bloquea la UI
+      fileType: 'image/jpeg',
+      initialQuality: 0.8,
+      onProgress: (p) => onProgress?.(Math.round(p * 0.3)) // 0-30% = compresión
+    })
+    // Preserva el nombre original pero cambia extensión a .jpg
+    const originalName = file.name.replace(/\.[^.]+$/, '.jpg')
+    return new File([compressed], originalName, { type: 'image/jpeg' })
+  } catch (e) {
+    console.warn('Compression failed, using original:', e.message)
+    return file
+  }
+}
+
 async function extractPdfTextClient(file) {
   try {
     const pdfjsLib = await import('pdfjs-dist')
@@ -21,11 +45,15 @@ async function extractPdfTextClient(file) {
 
 async function uploadFile(file, projectId, bucket, onProgress) {
   if (!file) return null
-  const fileName = file.name.replace(/\s/g, '_')
+  // Comprime si es imagen (no afecta PDFs/DWG/otros)
+  onProgress?.(5)
+  const processed = await compressImage(file, onProgress)
+  onProgress?.(35)
+  const fileName = processed.name.replace(/\s/g, '_')
   const path = `${projectId}/${Date.now()}_${fileName}`
-  const arrayBuffer = await file.arrayBuffer()
-  onProgress?.(30)
-  const { error } = await supabase.storage.from(bucket).upload(path, arrayBuffer, { contentType: file.type, upsert: true })
+  const arrayBuffer = await processed.arrayBuffer()
+  onProgress?.(50)
+  const { error } = await supabase.storage.from(bucket).upload(path, arrayBuffer, { contentType: processed.type, upsert: true })
   if (error) { console.warn('Upload error:', error.message); return null }
   onProgress?.(90)
   const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path)
