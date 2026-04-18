@@ -4,25 +4,36 @@ import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/li
 import { supabase } from '@/lib/supabase'
 
 // Comprime imágenes en el navegador antes de subirlas.
-// Usa carga dinámica para no inflar el bundle inicial.
+// Optimizado para funcionar en móviles (menos memoria, sin web worker por defecto).
 async function compressImage(file, onProgress) {
   // Si no es imagen o ya pesa menos de 500KB, devolvemos tal cual
   if (!file.type.startsWith('image/') || file.size < 500 * 1024) return file
+
+  // Detecta si estamos en móvil para usar config más conservadora
+  const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
   try {
     const imageCompression = (await import('browser-image-compression')).default
-    const compressed = await imageCompression(file, {
-      maxSizeMB: 0.5,              // objetivo ~500KB
-      maxWidthOrHeight: 1920,      // suficiente para cualquier pantalla
-      useWebWorker: true,          // no bloquea la UI
+
+    // Timeout de seguridad: si no comprime en 25s, abandona y usa el original
+    const compressionPromise = imageCompression(file, {
+      maxSizeMB: isMobile ? 1 : 0.5,        // móvil: menos agresivo
+      maxWidthOrHeight: isMobile ? 1600 : 1920,
+      useWebWorker: !isMobile,              // web workers son frágiles en móvil
       fileType: 'image/jpeg',
-      initialQuality: 0.8,
-      onProgress: (p) => onProgress?.(Math.round(p * 0.3)) // 0-30% = compresión
+      initialQuality: 0.75,
+      onProgress: (p) => onProgress?.(Math.round(p * 0.3))
     })
-    // Preserva el nombre original pero cambia extensión a .jpg
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Compression timeout')), 25000)
+    )
+    const compressed = await Promise.race([compressionPromise, timeoutPromise])
+
     const originalName = file.name.replace(/\.[^.]+$/, '.jpg')
     return new File([compressed], originalName, { type: 'image/jpeg' })
   } catch (e) {
     console.warn('Compression failed, using original:', e.message)
+    onProgress?.(30)
     return file
   }
 }
@@ -53,9 +64,25 @@ async function uploadFile(file, projectId, bucket, onProgress) {
   const path = `${projectId}/${Date.now()}_${fileName}`
   const arrayBuffer = await processed.arrayBuffer()
   onProgress?.(50)
-  const { error } = await supabase.storage.from(bucket).upload(path, arrayBuffer, { contentType: processed.type, upsert: true })
-  if (error) { console.warn('Upload error:', error.message); return null }
-  onProgress?.(90)
+
+  // Simula progreso durante el upload (Supabase no reporta progreso real)
+  // Sube de 50 a 85 lentamente para que el usuario sienta avance
+  let simulated = 50
+  const progressInterval = setInterval(() => {
+    if (simulated < 85) {
+      simulated += 2
+      onProgress?.(simulated)
+    }
+  }, 400)
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(path, arrayBuffer, { contentType: processed.type, upsert: true })
+
+  clearInterval(progressInterval)
+
+  if (error) { console.warn('Upload error:', error.message); onProgress?.(0); return null }
+  onProgress?.(95)
   const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path)
   onProgress?.(100)
   return { url: publicUrl }
