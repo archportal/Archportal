@@ -3,39 +3,87 @@ import { useState, useRef, useEffect } from 'react'
 import { sendBitacoraEmail, sendNotaArqEmail, sendClientAccessEmail } from '@/lib/emailjs'
 import { supabase } from '@/lib/supabase'
 
-// Comprime imágenes en el navegador antes de subirlas.
-// Optimizado para funcionar en móviles (menos memoria, sin web worker por defecto).
+// Comprime imágenes usando Canvas nativo del navegador.
+// Esta implementación es más ligera y compatible que browser-image-compression
+// especialmente en móviles Android con memoria limitada.
 async function compressImage(file, onProgress) {
   // Si no es imagen o ya pesa menos de 500KB, devolvemos tal cual
   if (!file.type.startsWith('image/') || file.size < 500 * 1024) return file
 
-  // Detecta si estamos en móvil para usar config más conservadora
-  const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    const timeout = setTimeout(() => {
+      console.warn('Compression timeout, using original')
+      onProgress?.(30)
+      resolve(file)
+    }, 20000)
 
-  try {
-    const imageCompression = (await import('browser-image-compression')).default
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        try {
+          onProgress?.(15)
 
-    // Timeout de seguridad: si no comprime en 25s, abandona y usa el original
-    const compressionPromise = imageCompression(file, {
-      maxSizeMB: isMobile ? 1 : 0.5,        // móvil: menos agresivo
-      maxWidthOrHeight: isMobile ? 1600 : 1920,
-      useWebWorker: !isMobile,              // web workers son frágiles en móvil
-      fileType: 'image/jpeg',
-      initialQuality: 0.75,
-      onProgress: (p) => onProgress?.(Math.round(p * 0.3))
-    })
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Compression timeout')), 25000)
-    )
-    const compressed = await Promise.race([compressionPromise, timeoutPromise])
+          // Calcular nuevas dimensiones (máx 1600px en su lado mayor)
+          const MAX_SIZE = 1600
+          let { width, height } = img
+          if (width > height && width > MAX_SIZE) {
+            height = Math.round(height * (MAX_SIZE / width))
+            width = MAX_SIZE
+          } else if (height > MAX_SIZE) {
+            width = Math.round(width * (MAX_SIZE / height))
+            height = MAX_SIZE
+          }
 
-    const originalName = file.name.replace(/\.[^.]+$/, '.jpg')
-    return new File([compressed], originalName, { type: 'image/jpeg' })
-  } catch (e) {
-    console.warn('Compression failed, using original:', e.message)
-    onProgress?.(30)
-    return file
-  }
+          // Crear canvas y dibujar la imagen redimensionada
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, width, height)
+
+          onProgress?.(25)
+
+          // Convertir a JPEG con calidad 0.75
+          canvas.toBlob(
+            (blob) => {
+              clearTimeout(timeout)
+              if (!blob) {
+                console.warn('toBlob failed, using original')
+                resolve(file)
+                return
+              }
+              const newName = file.name.replace(/\.[^.]+$/, '.jpg')
+              const newFile = new File([blob], newName, { type: 'image/jpeg' })
+              // Liberar memoria
+              canvas.width = 0
+              canvas.height = 0
+              onProgress?.(30)
+              resolve(newFile)
+            },
+            'image/jpeg',
+            0.75
+          )
+        } catch (err) {
+          clearTimeout(timeout)
+          console.warn('Canvas compression error:', err.message)
+          resolve(file)
+        }
+      }
+      img.onerror = () => {
+        clearTimeout(timeout)
+        console.warn('Image load failed, using original')
+        resolve(file)
+      }
+      img.src = e.target.result
+    }
+    reader.onerror = () => {
+      clearTimeout(timeout)
+      console.warn('FileReader failed, using original')
+      resolve(file)
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 async function extractPdfTextClient(file) {
