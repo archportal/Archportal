@@ -5,6 +5,7 @@ import Costos from './Costos'
 import Archivos from './Archivos'
 import Soporte from './Soporte'
 import Cronograma from './Cronograma'
+import Autorizaciones from './Autorizaciones'
 import Admin from './Admin'
 
 const EMAILJS_SERVICE  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE
@@ -13,19 +14,21 @@ const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
 const SUPPORT_EMAIL    = 'lcarq01@gmail.com'
 
 const TABS_ARQ = [
-  { id:'dashboard',  es:'Dashboard',  en:'Dashboard' },
-  { id:'archivos',   es:'Archivos',   en:'Files' },
-  { id:'costos',     es:'Costos',     en:'Costs' },
-  { id:'cronograma', es:'Cronograma', en:'Schedule' },
-  { id:'soporte',    es:'Soporte',    en:'Support' },
-  { id:'admin',      es:'Admin',      en:'Admin' },
+  { id:'dashboard',      es:'Dashboard',      en:'Dashboard' },
+  { id:'archivos',       es:'Archivos',       en:'Files' },
+  { id:'costos',         es:'Costos',         en:'Costs' },
+  { id:'cronograma',     es:'Cronograma',     en:'Schedule' },
+  { id:'autorizaciones', es:'Autorizaciones', en:'Approvals' },
+  { id:'soporte',        es:'Soporte',        en:'Support' },
+  { id:'admin',          es:'Admin',          en:'Admin' },
 ]
 const TABS_CLI = [
-  { id:'dashboard',  es:'Dashboard',  en:'Dashboard' },
-  { id:'archivos',   es:'Archivos',   en:'Files' },
-  { id:'costos',     es:'Costos',     en:'Costs' },
-  { id:'cronograma', es:'Cronograma', en:'Schedule' },
-  { id:'soporte',    es:'Soporte',    en:'Support' },
+  { id:'dashboard',      es:'Dashboard',      en:'Dashboard' },
+  { id:'archivos',       es:'Archivos',       en:'Files' },
+  { id:'costos',         es:'Costos',         en:'Costs' },
+  { id:'cronograma',     es:'Cronograma',     en:'Schedule' },
+  { id:'autorizaciones', es:'Autorizaciones', en:'Approvals' },
+  { id:'soporte',        es:'Soporte',        en:'Support' },
 ]
 
 const PLAN_LABELS = { mensual:'Plan Básico', trimestral:'Plan Pro', anual:'Plan Despacho', inactivo:'Cuenta pausada' }
@@ -336,6 +339,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const [showHelp, setShowHelp]       = useState(false)
   const [menuOpen, setMenuOpen]       = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [pendingAuthCount, setPendingAuthCount] = useState(0)
 
   const isArq = user.role === 'arq' || user.impersonated
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
@@ -382,6 +386,18 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
     }
   }, [activeProject, isArq])
 
+  // Conteo de autorizaciones pendientes (para badge)
+  useEffect(() => {
+    if (!activeProject?.id) { setPendingAuthCount(0); return }
+    fetch(`/api/authorizations?project_id=${activeProject.id}`)
+      .then(r => r.ok ? r.json() : { authorizations: [] })
+      .then(d => {
+        const list = d.authorizations || []
+        setPendingAuthCount(list.filter(a => a.status === 'pending').length)
+      })
+      .catch(() => {})
+  }, [activeProject?.id])
+
   const handleSelect = useCallback(async (proj) => {
     const res = await fetch(`/api/projects?id=${proj.id}`)
     const data = await res.json()
@@ -411,13 +427,14 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
 
   const renderTab = () => {
     switch(activeTab) {
-      case 'dashboard':  return <Dashboard {...props} />
-      case 'costos':     return <Costos {...props} isArq={isArq} />
-      case 'archivos':   return <Archivos {...props} isArq={isArq} />
-      case 'cronograma': return <Cronograma {...props} />
-      case 'soporte':    return <Soporte {...props} isArq={isArq} />
-      case 'admin':      return isArq ? <Admin {...props} /> : <Dashboard {...props} />
-      default:           return <Dashboard {...props} />
+      case 'dashboard':      return <Dashboard {...props} />
+      case 'costos':         return <Costos {...props} isArq={isArq} />
+      case 'archivos':       return <Archivos {...props} isArq={isArq} />
+      case 'cronograma':     return <Cronograma {...props} />
+      case 'autorizaciones': return <Autorizaciones {...props} isArq={isArq} onCountChange={setPendingAuthCount} />
+      case 'soporte':        return <Soporte {...props} isArq={isArq} />
+      case 'admin':          return isArq ? <Admin {...props} /> : <Dashboard {...props} />
+      default:               return <Dashboard {...props} />
     }
   }
 
@@ -446,8 +463,24 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
         {/* Tabs: centro en desktop, dropdown en móvil */}
         <div className={`portal-tabs${menuOpen ? ' open' : ''}`}>
           {tabs.map(tab => (
-            <button key={tab.id} className={`portal-tab ${activeTab===tab.id?'active':''}`} onClick={() => { setActiveTab(tab.id); setMenuOpen(false) }}>
+            <button
+              key={tab.id}
+              className={`portal-tab ${activeTab===tab.id?'active':''}`}
+              onClick={() => { setActiveTab(tab.id); setMenuOpen(false) }}
+              style={{ position:'relative' }}
+            >
               {lang==='en' ? tab.en : tab.es}
+              {tab.id === 'autorizaciones' && pendingAuthCount > 0 && (
+                <span style={{
+                  position:'absolute', top:2, right:2,
+                  minWidth:16, height:16, padding:'0 5px',
+                  background:'#B83232', color:'#fff',
+                  fontSize:9, fontWeight:700, fontFamily:'Jost, sans-serif',
+                  borderRadius:8, display:'inline-flex',
+                  alignItems:'center', justifyContent:'center',
+                  lineHeight:1
+                }}>{pendingAuthCount}</span>
+              )}
             </button>
           ))}
         </div>
