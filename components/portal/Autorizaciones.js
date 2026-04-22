@@ -3,6 +3,13 @@ import { useState, useEffect, useRef } from 'react'
 import { sendAuthRequestEmail, sendAuthResponseEmail } from '@/lib/emailjs'
 
 export default function Autorizaciones({ project, user, isArq, onCountChange }) {
+  // Normaliza la estructura del proyecto — puede venir plana (arquitecto) o anidada (cliente)
+  const proj = (project && project.project) ? project.project : (project || {})
+  const projectId    = proj?.id
+  const projectName  = proj?.nombre       || 'Tu proyecto'
+  const clientName   = proj?.cliente      || 'Cliente'
+  const clientEmail  = proj?.client_email || proj?.cliente_email || ''
+
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -18,14 +25,19 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    if (project?.id) loadItems()
+    if (projectId) {
+      loadItems()
+    } else {
+      setLoading(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project?.id])
+  }, [projectId])
 
   const loadItems = async () => {
+    if (!projectId) { setLoading(false); return }
     setLoading(true)
     try {
-      const res = await fetch(`/api/authorizations?project_id=${project.id}`)
+      const res = await fetch(`/api/authorizations?project_id=${projectId}`)
       const data = await res.json()
       if (res.ok) {
         const list = data.authorizations || []
@@ -33,6 +45,8 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
         if (onCountChange) {
           onCountChange(list.filter(a => a.status === 'pending').length)
         }
+      } else {
+        console.error('Error al cargar autorizaciones:', data.error)
       }
     } catch (e) {
       console.error('Error cargando autorizaciones:', e)
@@ -97,6 +111,7 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
 
   const handleSubmitRequest = async () => {
     if (!formTitle.trim()) { alert('El título es obligatorio'); return }
+    if (!projectId) { alert('No se encontró el proyecto. Recarga la página.'); return }
     setSubmitting(true)
     try {
       let photo_url = null
@@ -104,7 +119,7 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
         setUploadProgress(25)
         const fd = new FormData()
         fd.append('file', formPhoto, `auth_${Date.now()}.jpg`)
-        fd.append('projectId', project.id)
+        fd.append('projectId', projectId)
         fd.append('bucket', 'project-photos')
         const upRes = await fetch('/api/upload', { method: 'POST', body: fd })
         setUploadProgress(75)
@@ -118,7 +133,7 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          project_id: project.id,
+          project_id: projectId,
           title: formTitle.trim(),
           message: formMessage.trim(),
           photo_url,
@@ -130,11 +145,11 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
       // Email al cliente (no bloqueante)
       try {
         await sendAuthRequestEmail({
-          clientEmail: project.client_email,
+          clientEmail,
           arquitectoNombre: user.name || user.email,
           arquitectoEmail: user.email,
-          proyecto: project.nombre || 'Tu proyecto',
-          cliente: project.cliente || 'Cliente',
+          proyecto: projectName,
+          cliente: clientName,
           titulo: formTitle.trim(),
           mensaje: formMessage.trim(),
         })
@@ -174,9 +189,9 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
         try {
           await sendAuthResponseEmail({
             arquitectoEmail: data.architect_email,
-            clienteNombre: project.cliente || user.name || 'Cliente',
-            clienteEmail: project.client_email || user.email || '',
-            proyecto: project.nombre || 'Tu proyecto',
+            clienteNombre: clientName || user.name || 'Cliente',
+            clienteEmail: clientEmail || user.email || '',
+            proyecto: projectName,
             titulo: auth.title,
             decision,
             observaciones: observations[auth.id] || '',
@@ -215,6 +230,10 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
 
   if (loading) {
     return <div style={{ padding:'80px 0', textAlign:'center', color:'var(--g400)', fontSize:14, fontWeight:300 }}>Cargando autorizaciones…</div>
+  }
+
+  if (!projectId) {
+    return <div style={{ padding:'80px 0', textAlign:'center', color:'var(--g400)', fontSize:14, fontWeight:300 }}>No se pudo cargar la información del proyecto. Recarga la página.</div>
   }
 
   return (
