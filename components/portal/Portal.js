@@ -13,6 +13,11 @@ const EMAILJS_TEMPLATE = 'template_d2n23nw'
 const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
 const SUPPORT_EMAIL    = 'lcarq01@gmail.com'
 
+// ===== Constantes visuales =====
+const CARD_RADIUS = 12
+const INPUT_RADIUS = 6
+const BTN_RADIUS = 6
+
 const TABS_ARQ = [
   { id:'dashboard',      es:'Dashboard',      en:'Dashboard' },
   { id:'archivos',       es:'Archivos',       en:'Files' },
@@ -36,9 +41,27 @@ const PLAN_PRICES = { mensual:'$840 MXN / mes', trimestral:'$1,800 MXN / mes', a
 const PLAN_LIMITS = { mensual:1, trimestral:5, anual:20 }
 const PLAN_ORDER  = ['mensual','trimestral','anual']
 
+// ===== Íconos SVG =====
+const IconPlus = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+)
+const IconSearch = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <line x1="21" y1="21" x2="16.5" y2="16.5"/>
+  </svg>
+)
+const IconEmpty = ({ size = 56 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>
+  </svg>
+)
+
 function ProfilePanel({ user, onClose }) {
   const plan = user.plan || 'mensual'
-  const upgrades = PLAN_ORDER.filter(p => PLAN_ORDER.indexOf(p) > PLAN_ORDER.indexOf(plan))
   const [portalLoading, setPortalLoading] = useState(false)
 
   const openStripePortal = async () => {
@@ -57,30 +80,30 @@ function ProfilePanel({ user, onClose }) {
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000 }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ position:'absolute', top:60, right:32, width:320, background:'var(--white)', border:'1px solid var(--border)', boxShadow:'0 8px 32px rgba(0,0,0,.1)' }}>
+      <div onClick={e => e.stopPropagation()} style={{ position:'absolute', top:60, right:32, width:320, background:'var(--white)', border:'1px solid var(--border)', boxShadow:'0 12px 40px rgba(0,0,0,.12)', borderRadius:CARD_RADIUS, overflow:'hidden' }}>
         {/* Header */}
-        <div style={{ background:'var(--ink)', padding:'20px 24px' }}>
-          <p style={{ fontSize:10, letterSpacing:'.16em', textTransform:'uppercase', color:'rgba(255,255,255,.4)', margin:'0 0 4px' }}>Mi cuenta</p>
-          <p style={{ fontFamily:'Cormorant Garamond, serif', fontSize:20, fontWeight:400, color:'var(--white)', margin:0 }}>{user.name || user.email}</p>
-          <p style={{ fontSize:12, fontWeight:300, color:'rgba(255,255,255,.5)', margin:'4px 0 0' }}>{user.email}</p>
+        <div style={{ background:'var(--ink)', padding:'22px 24px' }}>
+          <p style={{ fontSize:10, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--gold)', fontWeight:500, margin:'0 0 4px' }}>Mi cuenta</p>
+          <p style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--white)', margin:0, lineHeight:1.2 }}>{user.name || user.email}</p>
+          <p style={{ fontSize:12, fontWeight:300, color:'rgba(255,255,255,.6)', margin:'4px 0 0' }}>{user.email}</p>
         </div>
 
         {/* Plan actual */}
         <div style={{ padding:'20px 24px', borderBottom:'1px solid var(--border)' }}>
-          <p style={{ fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--g400)', margin:'0 0 12px' }}>Membresía activa</p>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-            <span style={{ fontFamily:'Cormorant Garamond, serif', fontSize:20, fontWeight:400, color:'var(--ink)' }}>{PLAN_LABELS[plan] || plan}</span>
-            <span style={{ fontSize:10, padding:'3px 8px', background:'#F0EFEC', color:'var(--g600)', letterSpacing:'.06em', textTransform:'uppercase' }}>{PLAN_PRICES[plan]}</span>
+          <p style={{ fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--gold)', fontWeight:600, margin:'0 0 12px' }}>Membresía activa</p>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, gap:8, flexWrap:'wrap' }}>
+            <span style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--ink)' }}>{PLAN_LABELS[plan] || plan}</span>
+            <span style={{ fontSize:10, padding:'3px 10px', background:'#F0EFEC', color:'var(--g600)', letterSpacing:'.08em', textTransform:'uppercase', fontWeight:500, borderRadius:999 }}>{PLAN_PRICES[plan]}</span>
           </div>
-          <p style={{ fontSize:12, fontWeight:300, color:'var(--g400)', margin:0 }}>
-            Límite: {PLAN_LIMITS[plan] || 3} proyectos activos
+          <p style={{ fontSize:12, fontWeight:300, color:'var(--g500)', margin:0 }}>
+            Límite: {PLAN_LIMITS[plan] || 3} proyecto{(PLAN_LIMITS[plan]||3)!==1?'s':''} activo{(PLAN_LIMITS[plan]||3)!==1?'s':''}
           </p>
         </div>
 
         {/* Gestionar suscripción */}
-        <div style={{ padding:'16px 24px', borderBottom:'1px solid var(--border)' }}>
+        <div style={{ padding:'18px 24px', borderBottom:'1px solid var(--border)' }}>
           <button onClick={openStripePortal} disabled={portalLoading}
-            style={{ width:'100%', padding:'10px', background:'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost,sans-serif', fontSize:11, fontWeight:500, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer', opacity: portalLoading ? .6 : 1 }}>
+            style={{ width:'100%', padding:'11px', background:'var(--ink)', color:'var(--white)', border:'none', borderRadius:BTN_RADIUS, fontFamily:'Jost,sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor:'pointer', opacity: portalLoading ? .6 : 1 }}>
             {portalLoading ? 'Cargando...' : 'Gestionar suscripción'}
           </button>
           <p style={{ fontSize:11, fontWeight:300, color:'var(--g400)', margin:'10px 0 0', lineHeight:1.6, textAlign:'center' }}>
@@ -138,46 +161,46 @@ function HelpModal({ user, onClose }) {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.4)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background:'var(--white)', width:'100%', maxWidth:480, padding:0, boxShadow:'0 16px 48px rgba(0,0,0,.15)' }}>
-        <div style={{ background:'var(--ink)', padding:'20px 28px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.4)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background:'var(--white)', width:'100%', maxWidth:480, padding:0, boxShadow:'0 16px 48px rgba(0,0,0,.18)', borderRadius:CARD_RADIUS, overflow:'hidden' }}>
+        <div style={{ background:'var(--ink)', padding:'22px 28px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
-            <p style={{ fontSize:10, letterSpacing:'.16em', textTransform:'uppercase', color:'rgba(255,255,255,.4)', margin:'0 0 2px' }}>ArchPortal</p>
-            <p style={{ fontFamily:'Cormorant Garamond, serif', fontSize:20, fontWeight:400, color:'var(--white)', margin:0 }}>Centro de ayuda</p>
+            <p style={{ fontSize:10, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--gold)', fontWeight:500, margin:'0 0 3px' }}>ArchPortal</p>
+            <p style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--white)', margin:0 }}>Centro de ayuda</p>
           </div>
-          <button onClick={onClose} style={{ background:'none', border:'none', color:'rgba(255,255,255,.5)', fontSize:18, cursor:'pointer' }}>✕</button>
+          <button onClick={onClose} style={{ background:'none', border:'none', color:'rgba(255,255,255,.5)', fontSize:20, cursor:'pointer' }}>✕</button>
         </div>
 
         <div style={{ padding:'28px' }}>
           {sent ? (
             <div style={{ textAlign:'center', padding:'20px 0' }}>
-              <div style={{ fontSize:32, marginBottom:12 }}>✓</div>
-              <p style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:300, color:'var(--ink)', marginBottom:8 }}>Mensaje enviado</p>
-              <p style={{ fontSize:13, fontWeight:300, color:'var(--g400)', lineHeight:1.7 }}>Nuestro equipo te responderá a <strong>{user.email}</strong> en breve.</p>
-              <button onClick={onClose} style={{ marginTop:24, padding:'10px 28px', background:'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer' }}>Cerrar</button>
+              <div style={{ fontSize:32, marginBottom:12, color:'var(--success)' }}>✓</div>
+              <p style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:400, color:'var(--ink)', marginBottom:8 }}>Mensaje enviado</p>
+              <p style={{ fontSize:13, fontWeight:400, color:'var(--g500)', lineHeight:1.7 }}>Nuestro equipo te responderá a <strong>{user.email}</strong> en breve.</p>
+              <button onClick={onClose} style={{ marginTop:24, padding:'10px 28px', background:'var(--ink)', color:'var(--white)', border:'none', borderRadius:BTN_RADIUS, fontFamily:'Jost, sans-serif', fontSize:11, letterSpacing:'.1em', textTransform:'uppercase', fontWeight:600, cursor:'pointer' }}>Cerrar</button>
             </div>
           ) : (
             <>
-              <p style={{ fontSize:13, fontWeight:300, color:'var(--g500)', lineHeight:1.7, marginBottom:24 }}>
+              <p style={{ fontSize:13, fontWeight:400, color:'var(--g500)', lineHeight:1.7, marginBottom:24 }}>
                 ¿Tienes alguna duda o problema? Escríbenos y te respondemos a la brevedad.
               </p>
-              <div style={{ marginBottom:8 }}>
-                <label style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--g400)', marginBottom:8, display:'block' }}>Tu mensaje</label>
+              <div style={{ marginBottom:10 }}>
+                <label style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--g400)', marginBottom:8, display:'block', fontWeight:500 }}>Tu mensaje</label>
                 <textarea
                   value={msg}
                   onChange={e => setMsg(e.target.value)}
                   placeholder="Describe tu duda o problema..."
                   rows={5}
-                  style={{ width:'100%', padding:12, border:'1.5px solid var(--border)', fontFamily:'Jost, sans-serif', fontSize:13, fontWeight:300, color:'var(--ink)', outline:'none', resize:'vertical', lineHeight:1.7, boxSizing:'border-box', background:'transparent' }}
+                  style={{ width:'100%', padding:12, border:'1px solid var(--border)', borderRadius:INPUT_RADIUS, fontFamily:'Jost, sans-serif', fontSize:13, fontWeight:400, color:'var(--ink)', outline:'none', resize:'vertical', lineHeight:1.6, boxSizing:'border-box', background:'var(--white)' }}
                 />
               </div>
-              <p style={{ fontSize:11, color:'var(--g400)', marginBottom:20 }}>
-                Responderemos a <strong>{user.email}</strong>
+              <p style={{ fontSize:11, color:'var(--g400)', marginBottom:20, fontWeight:300 }}>
+                Responderemos a <strong style={{color:'var(--ink)'}}>{user.email}</strong>
               </p>
               {err && <p style={{ fontSize:12, color:'#B83232', marginBottom:12 }}>{err}</p>}
-              <div style={{ display:'flex', gap:10 }}>
-                <button onClick={onClose} style={{ padding:'11px 20px', background:'transparent', border:'1px solid var(--border)', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Cancelar</button>
-                <button onClick={send} disabled={sending || !msg.trim()} style={{ flex:1, padding:'11px 20px', background: sending || !msg.trim() ? 'var(--g200)' : 'var(--ink)', color: sending || !msg.trim() ? 'var(--g400)' : 'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:500, letterSpacing:'.08em', textTransform:'uppercase', cursor: sending || !msg.trim() ? 'not-allowed' : 'pointer' }}>
+              <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                <button onClick={onClose} style={{ padding:'11px 22px', background:'transparent', border:'1px solid var(--border)', borderRadius:BTN_RADIUS, fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>Cancelar</button>
+                <button onClick={send} disabled={sending || !msg.trim()} style={{ flex:1, padding:'11px 22px', background: sending || !msg.trim() ? 'var(--g200)' : 'var(--ink)', color: sending || !msg.trim() ? 'var(--g400)' : 'var(--white)', border:'none', borderRadius:BTN_RADIUS, fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor: sending || !msg.trim() ? 'not-allowed' : 'pointer' }}>
                   {sending ? 'Enviando…' : 'Enviar mensaje'}
                 </button>
               </div>
@@ -191,23 +214,70 @@ function HelpModal({ user, onClose }) {
 
 function ProjectCard({ proj, onSelect, onDelete }) {
   return (
-    <div onClick={() => onSelect(proj)} style={{ background:'var(--white)', border:'1px solid var(--border)', padding:28, cursor:'pointer', transition:'all .2s' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor='var(--ink)'; e.currentTarget.style.transform='translateY(-2px)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.transform='none' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
-        <div>
-          <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--ink)', marginBottom:4 }}>{proj.nombre}</div>
-          <div style={{ fontSize:12, fontWeight:300, color:'var(--g400)' }}>{proj.cliente || '—'}</div>
+    <div onClick={() => onSelect(proj)} style={{
+      background:'var(--white)',
+      border:'1px solid var(--border)',
+      borderRadius: CARD_RADIUS,
+      padding:'24px 26px',
+      cursor:'pointer',
+      transition:'all .2s ease',
+      display:'flex',
+      flexDirection:'column',
+    }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor='var(--ink)'; e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.06)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none' }}>
+
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16, gap:10 }}>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:400, color:'var(--ink)', marginBottom:4, lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{proj.nombre}</div>
+          <div style={{ fontSize:12, fontWeight:400, color:'var(--g500)' }}>{proj.cliente || '—'}</div>
         </div>
-        <span style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'var(--g400)', border:'1px solid var(--border)', padding:'3px 8px', whiteSpace:'nowrap' }}>{proj.etapa_actual || 'Por iniciar'}</span>
+        <span style={{
+          fontSize:9,
+          letterSpacing:'.12em',
+          textTransform:'uppercase',
+          color:'var(--gold)',
+          background:'rgba(197,164,109,0.12)',
+          border:'1px solid rgba(197,164,109,0.3)',
+          padding:'4px 10px',
+          whiteSpace:'nowrap',
+          fontWeight:600,
+          borderRadius:999,
+          flexShrink:0,
+        }}>
+          {proj.etapa_actual || 'Por iniciar'}
+        </span>
       </div>
+
+      {/* Separador */}
       <div style={{ height:1, background:'var(--border)', marginBottom:16 }} />
-      <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontWeight:300, color:'var(--g400)', marginBottom:14 }}>
+
+      {/* Metadata */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:11, fontWeight:400, color:'var(--g500)', marginBottom:16, gap:8, flexWrap:'wrap' }}>
         <span>{proj.ubicacion?.split(',')[0] || '—'}</span>
-        <span>Entrega: {proj.entrega || 'Por definir'}</span>
+        <span style={{color:'var(--g400)',fontWeight:300}}>Entrega: {proj.entrega || 'Por definir'}</span>
       </div>
-      <div style={{ display:'flex', justifyContent:'flex-end', paddingTop:14, borderTop:'1px solid var(--border)' }}>
-        <button onClick={e => { e.stopPropagation(); onDelete(proj.id) }} style={{ padding:'5px 14px', background:'transparent', border:'1px solid var(--border)', color:'var(--g400)', fontSize:10, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer', fontFamily:'Jost, sans-serif' }}>
+
+      {/* Footer con botón */}
+      <div style={{ display:'flex', justifyContent:'flex-end', paddingTop:14, borderTop:'1px solid var(--g100)', marginTop:'auto' }}>
+        <button onClick={e => { e.stopPropagation(); onDelete(proj.id) }}
+          style={{
+            padding:'5px 14px',
+            background:'transparent',
+            border:'1px solid var(--border)',
+            borderRadius: BTN_RADIUS,
+            color:'var(--g400)',
+            fontSize:10,
+            letterSpacing:'.1em',
+            textTransform:'uppercase',
+            cursor:'pointer',
+            fontFamily:'Jost, sans-serif',
+            fontWeight:500,
+            transition:'all .15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor='var(--danger)'; e.currentTarget.style.color='var(--danger)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--g400)' }}>
           Eliminar
         </button>
       </div>
@@ -244,79 +314,169 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
     } catch(e) { setError('Error al crear') } finally { setLoading(false) }
   }
 
+  const inputStyle = {
+    width:'100%',
+    padding:'12px 14px',
+    border:'1px solid var(--border)',
+    borderRadius: INPUT_RADIUS,
+    fontFamily:'Jost, sans-serif',
+    fontSize:13,
+    fontWeight:400,
+    color:'var(--ink)',
+    outline:'none',
+    boxSizing:'border-box',
+    background:'var(--white)',
+  }
+
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
+
+      {/* TOP BAR */}
       <div className="portal-topbar" style={{ height:'auto' }}>
-      <div className="portal-topbar-row1">
-        <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:20, fontWeight:400, color:'var(--ink)' }}>ArchPortal</div>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid var(--border)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>
-          <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer' }} onClick={() => setShowProfile(true)}>
-            <div style={{ width:32, height:32, borderRadius:'50%', background:'var(--g200)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:600, color:'var(--g600)' }}>{ini}</div>
-            <span style={{ fontSize:13, fontWeight:300, color:'var(--g500)' }}>{user.name||user.email}</span>
-            <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>
+        <div className="portal-topbar-row1">
+          <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--ink)' }}>ArchPortal</div>
+          <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+            <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:BTN_RADIUS, padding:'6px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>Ayuda</button>
+            <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer' }} onClick={() => setShowProfile(true)}>
+              <div style={{ width:32, height:32, borderRadius:'50%', background:'var(--ink)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:600, color:'var(--white)', letterSpacing:'.04em' }}>{ini}</div>
+              <span style={{ fontSize:13, fontWeight:400, color:'var(--g500)' }}>{user.name||user.email}</span>
+              <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>
+            </div>
+            {user.impersonated && <span style={{ fontSize:10, padding:'3px 10px', background:'#FEF4E4', color:'#7A4A00', letterSpacing:'.08em', textTransform:'uppercase', fontWeight:600, borderRadius:999 }}>Impersonando</span>}
+            <button onClick={() => window.location.reload()} style={{ background:'none', border:'1px solid var(--border)', borderRadius:BTN_RADIUS, padding:'6px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>Salir</button>
           </div>
-          {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00', letterSpacing:'.06em', textTransform:'uppercase' }}>Impersonando</span>}
-          <button onClick={() => window.location.reload()} style={{ background:'none', border:'1px solid var(--border)', padding:'6px 12px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Salir</button>
         </div>
-      </div>
       </div>
 
       <div style={{ padding:'32px 20px', maxWidth:1100, margin:'0 auto' }}>
-        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:40, flexWrap:'wrap', gap:16 }}>
-          <div>
-            <p style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'var(--g400)', marginBottom:8 }}>Tus proyectos</p>
-            <h1 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:48, fontWeight:300, color:'var(--ink)', lineHeight:1.1 }}>Selecciona un<br/><em style={{ fontStyle:'italic' }}>proyecto</em></h1>
-            <div style={{ marginTop:12, display:'flex', alignItems:'center', gap:8 }}>
-              <div style={{ height:4, width:120, background:'var(--g100)', borderRadius:2, overflow:'hidden' }}>
-                <div style={{ height:4, background: atLimit ? '#B83232' : 'var(--ink)', width: Math.min(100,(used/limit)*100)+'%', transition:'width .6s' }}/>
+
+        {/* HERO con CTA */}
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:36, flexWrap:'wrap', gap:16 }}>
+          <div style={{flex:'1 1 auto', minWidth:0}}>
+            <p style={{ fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:'var(--gold)', fontWeight:600, marginBottom:10 }}>Tus proyectos</p>
+            <h1 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:48, fontWeight:300, color:'var(--ink)', lineHeight:1.05, margin:0 }}>
+              Selecciona un<br/><em style={{ fontStyle:'italic' }}>proyecto</em>
+            </h1>
+            <div style={{ marginTop:14, display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+              <div style={{ height:5, width:140, background:'var(--g100)', borderRadius:3, overflow:'hidden' }}>
+                <div style={{ height:5, background: atLimit ? '#B83232' : 'var(--gold)', width: Math.min(100,(used/limit)*100)+'%', transition:'width .6s' }}/>
               </div>
-              <span style={{ fontSize:11, color: atLimit ? '#B83232' : 'var(--g400)', fontWeight:300 }}>
-                {used} de {limit} proyectos · Plan {plan}
+              <span style={{ fontSize:11, color: atLimit ? '#B83232' : 'var(--g500)', fontWeight:400, letterSpacing:'.02em' }}>
+                <strong style={{color: atLimit ? '#B83232' : 'var(--ink)',fontWeight:600}}>{used}</strong> de {limit} proyectos · {PLAN_LABELS[plan] || plan}
               </span>
             </div>
           </div>
-          <button onClick={() => { if(atLimit){ setError(`Tu plan ${plan} permite máximo ${limit} proyecto(s). Actualiza tu plan para agregar más.`); setShowForm(false); return; } setShowForm(!showForm) }} style={{ padding:'12px 24px', background: atLimit ? 'var(--g300)' : 'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor: atLimit ? 'not-allowed' : 'pointer' }}>+ Nuevo proyecto</button>
-        </div>
-        {error && <p style={{ fontSize:12, color:'#B83232', marginBottom:16, padding:'12px 16px', background:'#FBE4E4' }}>{error}</p>}
 
+          <button onClick={() => {
+            if(atLimit){ setError(`Tu plan ${PLAN_LABELS[plan]||plan} permite máximo ${limit} proyecto(s). Actualiza tu plan para agregar más.`); setShowForm(false); return; }
+            setError(''); setShowForm(!showForm)
+          }}
+            style={{
+              display:'inline-flex',
+              alignItems:'center',
+              gap:8,
+              padding:'12px 22px',
+              background: atLimit ? 'var(--g300)' : 'var(--ink)',
+              color:'var(--white)',
+              border:'none',
+              borderRadius: BTN_RADIUS,
+              fontFamily:'Jost, sans-serif',
+              fontSize:11,
+              fontWeight:600,
+              letterSpacing:'.1em',
+              textTransform:'uppercase',
+              cursor: atLimit ? 'not-allowed' : 'pointer',
+              flexShrink:0,
+            }}>
+            <IconPlus /> Nuevo proyecto
+          </button>
+        </div>
+
+        {error && (
+          <p style={{ fontSize:12, color:'#B83232', marginBottom:16, padding:'12px 16px', background:'#FBE4E4', borderRadius:INPUT_RADIUS, border:'1px solid #E8BABA' }}>{error}</p>
+        )}
+
+        {/* Formulario Nuevo proyecto */}
         {showForm && (
-          <div style={{ background:'var(--white)', border:'1px solid var(--border)', padding:32, marginBottom:32 }}>
-            <h3 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:400, color:'var(--ink)', marginBottom:24 }}>Nuevo proyecto</h3>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'0 24px' }}>
+          <div style={{ background:'var(--white)', border:'1px solid var(--border)', borderRadius:CARD_RADIUS, padding:28, marginBottom:28 }}>
+            <h3 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:400, color:'var(--ink)', marginTop:0, marginBottom:20 }}>Nuevo proyecto</h3>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:'14px 16px', marginBottom:16 }}>
               {[['nombre','Nombre *','Casa López'],['cliente','Cliente','Familia López'],['ubicacion','Ubicación','Ensenada, BC']].map(([k,label,ph]) => (
-                <div key={k} className="form-field">
-                  <label className="form-label">{label}</label>
-                  <input className="form-input" placeholder={ph} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}/>
+                <div key={k}>
+                  <label style={{fontSize:10,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--g400)',marginBottom:6,display:'block',fontWeight:500}}>{label}</label>
+                  <input placeholder={ph} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} style={inputStyle}/>
                 </div>
               ))}
             </div>
             {error && !atLimit && <p style={{ fontSize:12, color:'#B83232', marginBottom:12 }}>{error}</p>}
-            <div style={{ display:'flex', gap:10, marginTop:8 }}>
-              <button onClick={() => setShowForm(false)} style={{ padding:'10px 24px', background:'transparent', border:'1px solid var(--border)', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Cancelar</button>
-              <button className="btn-submit" onClick={crear} disabled={loading} style={{ maxWidth:180, marginTop:0 }}>{loading?'...':'Crear proyecto'}</button>
+            <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+              <button onClick={() => { setShowForm(false); setError('') }}
+                style={{ padding:'11px 22px', background:'transparent', border:'1px solid var(--border)', borderRadius:BTN_RADIUS, fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>
+                Cancelar
+              </button>
+              <button onClick={crear} disabled={loading}
+                style={{
+                  padding:'11px 22px',
+                  background: loading ? 'var(--g200)' : 'var(--ink)',
+                  color: loading ? 'var(--g400)' : 'var(--white)',
+                  border:'none',
+                  borderRadius: BTN_RADIUS,
+                  fontFamily:'Jost, sans-serif',
+                  fontSize:11,
+                  fontWeight:600,
+                  letterSpacing:'.1em',
+                  textTransform:'uppercase',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                }}>
+                {loading?'Creando…':'Crear proyecto'}
+              </button>
             </div>
           </div>
         )}
 
         {/* Search */}
         {projects.length > 3 && (
-          <div style={{ marginBottom:24, position:'relative' }}>
+          <div style={{ marginBottom:20, position:'relative' }}>
             <input
               placeholder="Buscar proyecto o cliente..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width:'100%', padding:'12px 16px 12px 40px', border:'1px solid var(--border)', fontFamily:'Jost,sans-serif', fontSize:13, fontWeight:300, color:'var(--ink)', background:'var(--white)', outline:'none', boxSizing:'border-box' }}
+              style={{ width:'100%', padding:'12px 16px 12px 40px', border:'1px solid var(--border)', borderRadius:INPUT_RADIUS, fontFamily:'Jost,sans-serif', fontSize:13, fontWeight:400, color:'var(--ink)', background:'var(--white)', outline:'none', boxSizing:'border-box' }}
             />
-            <span style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', fontSize:14, color:'var(--g300)' }}>🔍</span>
-            {search && <button onClick={()=>setSearch('')} style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, color:'var(--g400)' }}>✕</button>}
+            <span style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--g400)', display:'inline-flex' }}><IconSearch /></span>
+            {search && (
+              <button onClick={()=>setSearch('')}
+                style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, color:'var(--g400)', padding:8, lineHeight:1 }}>✕</button>
+            )}
           </div>
         )}
 
+        {/* Lista / estado vacío */}
         {projects.length === 0 ? (
-          <div style={{ padding:'80px 0', textAlign:'center', color:'var(--g400)', fontSize:14, fontWeight:300 }}>No tienes proyectos aún. Crea tu primer proyecto arriba.</div>
+          <div style={{
+            background:'var(--white)',
+            border:'1px solid var(--border)',
+            borderRadius: CARD_RADIUS,
+            padding:'72px 24px',
+            textAlign:'center',
+          }}>
+            <div style={{color:'var(--g300)',marginBottom:14,display:'inline-flex'}}><IconEmpty /></div>
+            <p style={{fontSize:16,fontWeight:400,color:'var(--g500)',marginBottom:6}}>Aún no tienes proyectos</p>
+            <p style={{fontSize:13,color:'var(--g400)',fontWeight:300,margin:0}}>Crea tu primer proyecto con el botón de arriba.</p>
+          </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding:'48px 0', textAlign:'center', color:'var(--g400)', fontSize:14, fontWeight:300 }}>Sin resultados para "{search}"</div>
+          <div style={{
+            background:'var(--white)',
+            border:'1px solid var(--border)',
+            borderRadius: CARD_RADIUS,
+            padding:'48px 24px',
+            textAlign:'center',
+            color:'var(--g500)',
+            fontSize:14,
+            fontWeight:400,
+          }}>
+            Sin resultados para "<strong>{search}</strong>"
+          </div>
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:16 }}>
             {filtered.map((proj,i) => <ProjectCard key={proj.id||i} proj={proj} onSelect={onSelect} onDelete={onDelete} />)}
@@ -352,10 +512,10 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
         <div style={{maxWidth:480,textAlign:'center'}}>
           <div style={{fontSize:48,marginBottom:24}}>⏸</div>
           <h1 style={{fontFamily:'Cormorant Garamond,serif',fontSize:36,fontWeight:400,color:'var(--ink)',marginBottom:12}}>Tu suscripción está pausada</h1>
-          <p style={{fontSize:14,fontWeight:300,color:'var(--g500)',lineHeight:1.8,marginBottom:32}}>Tu cuenta está inactiva por un pago fallido o cancelación. Tus proyectos y datos están seguros — solo reactiva tu plan para continuar.</p>
-          <a href="https://www.archportal.net" style={{display:'inline-block',padding:'14px 32px',background:'var(--ink)',color:'var(--white)',textDecoration:'none',fontFamily:'Jost,sans-serif',fontSize:11,fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:16}}>Reactivar suscripción</a>
+          <p style={{fontSize:14,fontWeight:400,color:'var(--g500)',lineHeight:1.8,marginBottom:32}}>Tu cuenta está inactiva por un pago fallido o cancelación. Tus proyectos y datos están seguros — solo reactiva tu plan para continuar.</p>
+          <a href="https://www.archportal.net" style={{display:'inline-block',padding:'14px 32px',background:'var(--ink)',color:'var(--white)',textDecoration:'none',fontFamily:'Jost,sans-serif',fontSize:11,fontWeight:600,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:16,borderRadius:BTN_RADIUS}}>Reactivar suscripción</a>
           <br/>
-          <a href={`mailto:lcarq01@gmail.com`} style={{fontSize:12,color:'var(--g400)'}}>¿Necesitas ayuda? lcarq01@gmail.com</a>
+          <a href={`mailto:lcarq01@gmail.com`} style={{fontSize:12,color:'var(--g500)'}}>¿Necesitas ayuda? lcarq01@gmail.com</a>
           <br/><br/>
           <button onClick={onLogout} style={{fontSize:11,color:'var(--g400)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Cerrar sesión</button>
         </div>
@@ -450,17 +610,17 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
             <span style={menuOpen?{transform:'rotate(-45deg) translate(5px,-5px)'}:{}}/>
           </button>
           <div className="portal-user">
-            {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>}
+            {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', borderRadius:BTN_RADIUS, padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>Ayuda</button>}
             <div style={{ display:'flex', alignItems:'center', gap:6, cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
               <div className="portal-avatar">{ini}</div>
-              <span className="portal-username" style={{ fontSize:12, color:'var(--g400)' }}>{activeProject?.nombre || '—'}</span>
+              <span className="portal-username" style={{ fontSize:12, color:'var(--g500)' }}>{activeProject?.nombre || '—'}</span>
               {isArq && <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>}
             </div>
-            {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00' }}>Admin</span>}
+            {user.impersonated && <span style={{ fontSize:10, padding:'3px 10px', background:'#FEF4E4', color:'#7A4A00', borderRadius:999, fontWeight:600, letterSpacing:'.08em', textTransform:'uppercase' }}>Admin</span>}
             <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
           </div>
         </div>
-        {/* Tabs: centro en desktop, dropdown en móvil */}
+        {/* Tabs */}
         <div className={`portal-tabs${menuOpen ? ' open' : ''}`}>
           {tabs.map(tab => (
             <button
@@ -487,15 +647,15 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
       </div>
       {/* Welcome banner for client */}
       {showWelcome && !isArq && (
-        <div style={{ background:'var(--ink)', padding:'14px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16 }}>
+        <div style={{ background:'var(--ink)', padding:'14px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
             <span style={{ fontSize:20 }}>👋</span>
             <div>
               <span style={{ fontSize:13, color:'var(--white)', fontWeight:400 }}>Bienvenido, {activeProject?.cliente || user.email}</span>
-              <span style={{ fontSize:12, color:'rgba(255,255,255,.5)', marginLeft:8 }}>— Proyecto: {activeProject?.nombre}</span>
+              <span style={{ fontSize:12, color:'rgba(255,255,255,.6)', marginLeft:8 }}>— Proyecto: {activeProject?.nombre}</span>
             </div>
           </div>
-          <button onClick={() => setShowWelcome(false)} style={{ background:'none', border:'none', color:'rgba(255,255,255,.4)', fontSize:16, cursor:'pointer' }}>✕</button>
+          <button onClick={() => setShowWelcome(false)} style={{ background:'none', border:'none', color:'rgba(255,255,255,.5)', fontSize:16, cursor:'pointer' }}>✕</button>
         </div>
       )}
       <div className="page-content">{renderTab()}</div>

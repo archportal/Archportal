@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from 'react'
 
 const fmt = n => '$' + Number(n||0).toLocaleString('es-MX')
 
-// Convierte fecha "YYYY-MM-DD" (u otros formatos) a timestamp para ordenar.
-// Si la fecha es inválida o falta, devuelve 0 para que se vaya hasta atrás.
 function fechaTs(f) {
   if (!f) return 0
   const t = new Date(f).getTime()
   return isNaN(t) ? 0 : t
 }
+
+const CARD_RADIUS = 12
 
 const printStyles = `
 @media print {
@@ -21,6 +21,185 @@ const printStyles = `
   .portal-topbar { display: none !important; }
   .section-hero { background: #0C0C0C !important; }
   @page { margin: 1.5cm; size: A4; }
+}
+`
+
+const dashStyles = `
+#dashboard-print .card {
+  border-radius: ${CARD_RADIUS}px !important;
+  overflow: hidden;
+}
+#dashboard-print .section-hero {
+  border-radius: ${CARD_RADIUS}px !important;
+  overflow: hidden;
+}
+
+/* Título de tarjeta con ícono */
+#dashboard-print .dash-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#dashboard-print .dash-card-title-icon {
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Info discreta del proyecto dentro del hero */
+#dashboard-print .dash-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: rgba(255,255,255,.5);
+  font-weight: 300;
+  letter-spacing: .02em;
+}
+#dashboard-print .dash-hero-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#dashboard-print .dash-hero-meta-label {
+  color: rgba(255,255,255,.35);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: 9px;
+  font-weight: 500;
+}
+#dashboard-print .dash-hero-meta-sep {
+  color: rgba(255,255,255,.2);
+}
+
+/* Grid de métricas */
+#dashboard-print .dash-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1024px) {
+  #dashboard-print .dash-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  #dashboard-print .dash-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grid 2 columnas */
+#dashboard-print .dash-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+  #dashboard-print .dash-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hero responsivo */
+#dashboard-print .dash-hero {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  flex-wrap: wrap;
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+#dashboard-print .dash-hero-info {
+  flex: 1 1 420px;
+  min-width: 0;
+  padding: 32px 36px;
+}
+#dashboard-print .dash-hero-image {
+  flex: 0 1 380px;
+  align-self: stretch;
+  min-height: 260px;
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: rgba(255,255,255,.05);
+}
+@media (max-width: 780px) {
+  #dashboard-print .dash-hero-info {
+    padding: 24px 22px;
+    flex: 1 1 100%;
+  }
+  #dashboard-print .dash-hero-image {
+    flex: 1 1 100%;
+    min-height: 220px;
+  }
+}
+
+/* Grid de fotos */
+#dashboard-print .dash-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+@media (max-width: 420px) {
+  #dashboard-print .dash-photos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Bitácora: tipografía */
+#dashboard-print .dash-log-item {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+#dashboard-print .dash-log-item:last-child {
+  border-bottom: none;
+}
+#dashboard-print .dash-log-accent {
+  flex-shrink: 0;
+  width: 3px;
+  background: var(--ink);
+  border-radius: 2px;
+}
+#dashboard-print .dash-log-body {
+  flex: 1;
+  min-width: 0;
+}
+#dashboard-print .dash-log-date {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+#dashboard-print .dash-log-text {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  font-weight: 400;
+  margin-bottom: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+#dashboard-print .dash-log-author {
+  font-size: 11px;
+  color: var(--g500);
+  font-weight: 500;
+  letter-spacing: .04em;
+}
+@media (max-width: 560px) {
+  #dashboard-print .dash-log-text {
+    font-size: 14px;
+  }
 }
 `
 
@@ -41,6 +220,77 @@ function progressMessage(avg, lang) {
   return 'Proyecto completado ✓'
 }
 
+// ========== ÍCONOS ==========
+const IconChart = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 20h18"/>
+    <rect x="5" y="13" width="3" height="6"/>
+    <rect x="10.5" y="9" width="3" height="10"/>
+    <rect x="16" y="5" width="3" height="14"/>
+  </svg>
+)
+
+const IconMoney = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M14.5 9.5c-.5-.9-1.5-1.5-2.5-1.5-1.7 0-3 1-3 2.3 0 1.2 1 1.9 2.5 2.2l1 .2c1.5.3 2.5 1 2.5 2.2 0 1.3-1.3 2.3-3 2.3-1 0-2-.6-2.5-1.5"/>
+    <path d="M12 7v1M12 16v1"/>
+  </svg>
+)
+
+const IconWallet = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2"/>
+    <path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2z"/>
+    <circle cx="16.5" cy="13.5" r="1.2" fill="currentColor"/>
+  </svg>
+)
+
+const IconCalendar = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="5" width="18" height="16" rx="2"/>
+    <path d="M3 10h18"/>
+    <path d="M8 3v4M16 3v4"/>
+  </svg>
+)
+
+const IconPercent = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="5" x2="5" y2="19"/>
+    <circle cx="7.5" cy="7.5" r="2.5"/>
+    <circle cx="16.5" cy="16.5" r="2.5"/>
+  </svg>
+)
+
+const IconCamera = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1z" transform="translate(0, -0.5)"/>
+    <circle cx="12" cy="13" r="3.5"/>
+  </svg>
+)
+
+const IconNotebook = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
+    <line x1="9" y1="8" x2="16" y2="8"/>
+    <line x1="9" y1="12" x2="16" y2="12"/>
+    <line x1="9" y1="16" x2="13" y2="16"/>
+    <line x1="5" y1="7" x2="3" y2="7"/>
+    <line x1="5" y1="12" x2="3" y2="12"/>
+    <line x1="5" y1="17" x2="3" y2="17"/>
+  </svg>
+)
+
+function getFotoReciente(photos) {
+  if (!photos || photos.length === 0) return null
+  const conFecha = photos.filter(f => f.fecha && !isNaN(new Date(f.fecha).getTime()))
+  if (conFecha.length > 0) {
+    const ordenadas = [...conFecha].sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+    return ordenadas[0]
+  }
+  return photos[photos.length - 1]
+}
+
 export default function Dashboard({ project, user, lang }) {
   const data = project || {}
   const p = data.project || data || {}
@@ -49,25 +299,23 @@ export default function Dashboard({ project, user, lang }) {
   const posts   = data.posts   || []
   const photos  = data.photos  || []
   const isArq   = user?.role === 'arq' || user?.impersonated
-  const parseJson = (v) => { try { return typeof v==='string'?JSON.parse(v):(Array.isArray(v)?v:[]) } catch { return [] } }
-  const notes = parseJson(p.notes)
 
   const avg          = stages.length ? Math.round(stages.reduce((s,e)=>s+(e.porcentaje||0),0)/stages.length) : 0
   const presupuesto  = p.presupuesto || 0
   const totalGastos  = costs.reduce((s,c)=>s+(parseInt(c.monto)||0),0)
-  const pagado       = p.pres_pagado || 0
-  const porPagar     = Math.max(0, (p.pres_ejercido||0) - pagado)
   const etapaActual  = stages.find(e=>e.estatus==='En curso')?.nombre || p.etapa_actual || 'Por iniciar'
   const siguienteEtapa = stages.find(e=>e.estatus==='Pendiente')?.nombre || '—'
   const etapasCompletadas = stages.filter(e=>e.estatus==='Completado').length
-  const pagadoPct    = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
-  const porPagarPct  = presupuesto > 0 ? Math.round(porPagar/presupuesto*100) : 0
 
-  // Costos recientes: los 5 más recientes por fecha (descendente).
-  // Los que no tienen fecha quedan al final.
-  const costsRecientes = [...costs]
-    .sort((a, b) => fechaTs(b.fecha) - fechaTs(a.fecha))
-    .slice(0, 5)
+  const fotoReciente = getFotoReciente(photos)
+
+  // Meta info del proyecto (para la línea discreta del hero)
+  const metaItems = [
+    p.superficie ? { label: lang==='en'?'Area':'Superficie', val: p.superficie + ' m²' } : null,
+    p.niveles ? { label: lang==='en'?'Levels':'Niveles', val: p.niveles } : null,
+    p.arquitecto ? { label: lang==='en'?'Architect':'Arquitecto', val: p.arquitecto } : null,
+    p.inicio ? { label: lang==='en'?'Start':'Inicio', val: p.inicio } : null,
+  ].filter(Boolean)
 
   const [lightbox, setLightbox] = useState(null)
   const [barW, setBarW] = useState(0)
@@ -85,18 +333,62 @@ export default function Dashboard({ project, user, lang }) {
   }, [lightbox, photos])
 
   const t = lang==='en'
-    ? {av:'Overall progress',pres:'Budget',ej:'Total spent',pp:'To pay',ent:'Est. delivery',avEtapa:'Progress by stage',bitacora:'Visual log',cosRec:'Recent costs',info:'Project info',notas:'Resident log',notasCli:'Architect notes',noFotos:'No photos yet',noCostos:'No expenses yet',noNotas:'No notes published.',noNotasCli:'No notes yet.'}
-    : {av:'Avance general',pres:'Presupuesto',ej:'Gastado hasta hoy',pp:'Por pagar',ent:'Entrega estimada',avEtapa:'Avance por etapa',bitacora:'Bitácora visual',cosRec:'Costos recientes',info:'Información del proyecto',notas:'Bitácora del residente',notasCli:'Notas del arquitecto',noFotos:'Sin fotos aún',noCostos:'Sin gastos aún',noNotas:'Sin notas publicadas.',noNotasCli:'Sin notas del arquitecto.'}
+    ? {av:'Overall progress',pres:'Budget',ej:'Total spent',ent:'Est. delivery',avEtapa:'Progress by stage',bitacora:'Visual log',bitacoraNotas:'Log',noFotos:'No photos yet',noNotas:'No notes published.'}
+    : {av:'Avance general',pres:'Presupuesto',ej:'Gastado hasta hoy',ent:'Entrega estimada',avEtapa:'Avance por etapa',bitacora:'Bitácora visual',bitacoraNotas:'Bitácora',noFotos:'Sin fotos aún',noNotas:'Sin notas publicadas.'}
 
   if (!p.id) return <div style={{padding:48,color:'var(--g400)',fontSize:14,fontWeight:300}}>Cargando proyecto...</div>
 
+  const metricCard = {
+    background:'var(--white)',
+    border:'1px solid var(--border)',
+    borderRadius: CARD_RADIUS,
+    padding:'22px 24px',
+    display:'flex',
+    alignItems:'flex-start',
+    gap:18,
+    minWidth:0,
+  }
+  const metricIconWrap = {
+    flexShrink:0,
+    width:48,
+    height:48,
+    borderRadius:'50%',
+    background:'rgba(197,164,109,0.12)',
+    color:'var(--gold)',
+    display:'flex',
+    alignItems:'center',
+    justifyContent:'center',
+  }
+  const metricLabel = {
+    fontSize:10,
+    letterSpacing:'.14em',
+    textTransform:'uppercase',
+    color:'var(--g400)',
+    marginBottom:6,
+  }
+  const metricValue = {
+    fontFamily:'Cormorant Garamond, serif',
+    fontSize:34,
+    fontWeight:400,
+    color:'var(--ink)',
+    lineHeight:1.1,
+    marginBottom:4,
+    overflow:'hidden',
+    textOverflow:'ellipsis',
+    whiteSpace:'nowrap',
+  }
+  const metricSub = {
+    fontSize:12,
+    color:'var(--g400)',
+    fontWeight:300,
+  }
+
   return (
     <div>
-      <style>{printStyles}</style>
+      <style>{printStyles + dashStyles}</style>
 
-      {/* Export button */}
       <div className="no-print" style={{display:'flex',justifyContent:'flex-end',padding:'0 0 16px'}}>
-        <button onClick={()=>window.print()} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 20px',background:'var(--white)',border:'1px solid var(--border)',fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--g500)',cursor:'pointer',transition:'all .2s'}}
+        <button onClick={()=>window.print()} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 20px',background:'var(--white)',border:'1px solid var(--border)',borderRadius:CARD_RADIUS,fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--g500)',cursor:'pointer',transition:'all .2s'}}
           onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--ink)';e.currentTarget.style.color='var(--ink)'}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--g500)'}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -109,114 +401,198 @@ export default function Dashboard({ project, user, lang }) {
       {/* LIGHTBOX */}
       {lightbox && (
         <div onClick={()=>setLightbox(null)} style={{position:'fixed',inset:0,background:'rgba(12,12,12,.96)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out'}}>
-          <button onClick={e=>{e.stopPropagation();const prev=(lightbox.index-1+photos.length)%photos.length;setLightbox({...photos[prev],index:prev})}} style={{position:'absolute',left:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:28,width:48,height:48,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
+          <button onClick={e=>{e.stopPropagation();const prev=(lightbox.index-1+photos.length)%photos.length;setLightbox({...photos[prev],index:prev})}} style={{position:'absolute',left:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:28,width:48,height:48,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'50%'}}>‹</button>
           <div onClick={e=>e.stopPropagation()} style={{maxWidth:'85vw',maxHeight:'85vh',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
-            <img src={lightbox.url||lightbox.remoteUrl} alt={lightbox.nombre} style={{maxWidth:'100%',maxHeight:'78vh',objectFit:'contain'}}/>
+            <img src={lightbox.url||lightbox.remoteUrl} alt={lightbox.nombre} style={{maxWidth:'100%',maxHeight:'78vh',objectFit:'contain',borderRadius:CARD_RADIUS}}/>
             <div style={{display:'flex',alignItems:'center',gap:16}}>
               <span style={{fontSize:12,color:'rgba(255,255,255,.5)'}}>{lightbox.nombre}</span>
               {lightbox.fecha && <span style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>{lightbox.fecha}</span>}
               <span style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>{lightbox.index+1} / {photos.length}</span>
             </div>
           </div>
-          <button onClick={e=>{e.stopPropagation();const next=(lightbox.index+1)%photos.length;setLightbox({...photos[next],index:next})}} style={{position:'absolute',right:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:28,width:48,height:48,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
+          <button onClick={e=>{e.stopPropagation();const next=(lightbox.index+1)%photos.length;setLightbox({...photos[next],index:next})}} style={{position:'absolute',right:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:28,width:48,height:48,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'50%'}}>›</button>
           <button onClick={()=>setLightbox(null)} style={{position:'absolute',top:20,right:20,background:'transparent',border:'none',color:'rgba(255,255,255,.5)',fontSize:20,cursor:'pointer',padding:8}}>✕</button>
         </div>
       )}
 
       {/* HERO */}
-      <div className="section-hero" style={{marginBottom:20}}>
-        <div className="section-hero-eyebrow">Proyecto activo</div>
-        <h1 className="section-hero-title">{p.nombre}</h1>
-        <p className="section-hero-sub">{p.arquitecto} · {p.ubicacion}</p>
+      <div className="section-hero dash-hero">
 
-        {/* Barra de progreso prominente */}
-        <div style={{marginTop:24,marginBottom:4}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:10}}>
-            <div>
-              <div style={{fontSize:10,letterSpacing:'.14em',textTransform:'uppercase',color:'rgba(255,255,255,.35)',marginBottom:4}}>
-                {lang==='en' ? 'Current stage' : 'Etapa actual'}
-              </div>
-              <div style={{fontSize:14,color:'rgba(255,255,255,.85)',fontWeight:400}}>{etapaActual}</div>
+        <div className="dash-hero-info">
+          <div style={{fontSize:10,letterSpacing:'.2em',textTransform:'uppercase',color:'var(--gold)',fontWeight:500,marginBottom:8}}>
+            Proyecto activo
+          </div>
+          <h1 className="section-hero-title" style={{color:'var(--white)',margin:0}}>{p.nombre}</h1>
+          <p style={{fontSize:13,color:'rgba(255,255,255,.75)',fontWeight:300,marginTop:4,marginBottom:0}}>
+            {p.cliente || p.arquitecto} · {p.ubicacion}
+          </p>
+
+          {/* Meta info discreta del proyecto */}
+          {metaItems.length > 0 && (
+            <div className="dash-hero-meta">
+              {metaItems.map((item, i) => (
+                <span key={item.label} className="dash-hero-meta-item">
+                  {i > 0 && <span className="dash-hero-meta-sep">·</span>}
+                  <span className="dash-hero-meta-label">{item.label}</span>
+                  <span>{item.val}</span>
+                </span>
+              ))}
             </div>
-            <div style={{textAlign:'right'}}>
-              <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:48,fontWeight:300,color:'var(--white)',lineHeight:1}}>{avg}%</div>
-              <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginTop:2}}>
-                {etapasCompletadas} {lang==='en'?'of':'de'} {stages.length} {lang==='en'?'stages':'etapas'}
+          )}
+
+          <div style={{marginTop:20,marginBottom:4}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:10,gap:12}}>
+              <div style={{minWidth:0,flex:1}}>
+                <div style={{fontSize:10,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--gold)',fontWeight:500,marginBottom:4}}>
+                  {lang==='en' ? 'Current stage' : 'Etapa actual'}
+                </div>
+                <div style={{fontSize:16,color:'var(--white)',fontWeight:400,overflow:'hidden',textOverflow:'ellipsis'}}>{etapaActual}</div>
               </div>
+              <div style={{textAlign:'right',flexShrink:0}}>
+                <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:52,fontWeight:300,color:'var(--white)',lineHeight:1}}>{avg}%</div>
+                <div style={{fontSize:12,color:'rgba(255,255,255,.75)',marginTop:4,fontWeight:300}}>
+                  {etapasCompletadas} {lang==='en'?'of':'de'} {stages.length} {lang==='en'?'etapas':'etapas'}
+                </div>
+              </div>
+            </div>
+            <div style={{height:10,background:'rgba(255,255,255,.15)',borderRadius:5,overflow:'hidden',marginBottom:14}}>
+              <div style={{height:10,background:'linear-gradient(90deg,var(--gold),#e8c27a)',borderRadius:5,width:barW+'%',transition:'width 1.4s ease'}}/>
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+              <span style={{fontSize:13,color:'rgba(255,255,255,.9)',fontStyle:'italic',fontWeight:300}}>{progressMessage(avg, lang)}</span>
+              <span style={{fontSize:11,color:'var(--gold)',letterSpacing:'.1em',textTransform:'uppercase',fontWeight:500}}>
+                {lang==='en'?'Delivery:':'Entrega:'} {p.entrega||'Por definir'}
+              </span>
             </div>
           </div>
-          <div style={{height:10,background:'rgba(255,255,255,.1)',borderRadius:5,overflow:'hidden',marginBottom:12}}>
-            <div style={{height:10,background:'linear-gradient(90deg,var(--gold),#e8c27a)',borderRadius:5,width:barW+'%',transition:'width 1.4s ease'}}/>
+        </div>
+
+        {fotoReciente && (
+          <div
+            className="dash-hero-image"
+            onClick={() => {
+              const idx = photos.findIndex(f => (f.url||f.remoteUrl) === (fotoReciente.url||fotoReciente.remoteUrl))
+              setLightbox({...fotoReciente, index: idx >= 0 ? idx : 0})
+            }}
+          >
+            <img
+              src={fotoReciente.url || fotoReciente.remoteUrl}
+              alt={fotoReciente.nombre || 'Foto del proyecto'}
+              style={{width:'100%',height:'100%',objectFit:'cover',position:'absolute',inset:0,transition:'transform .5s ease'}}
+              onError={e => { e.target.style.display = 'none' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            />
+            <div style={{
+              position:'absolute',
+              bottom:0, left:0, right:0,
+              background:'linear-gradient(to top, rgba(0,0,0,.8) 0%, rgba(0,0,0,0) 100%)',
+              padding:'20px 22px 16px',
+              pointerEvents:'none',
+            }}>
+              <div style={{fontSize:9,letterSpacing:'.22em',textTransform:'uppercase',color:'#ffffff',fontWeight:500,marginBottom:4,opacity:.85}}>
+                Última foto de obra
+              </div>
+              {fotoReciente.fecha && (
+                <div style={{fontSize:12,color:'#ffffff',fontWeight:300,letterSpacing:'.02em'}}>
+                  {fotoReciente.fecha}
+                </div>
+              )}
+            </div>
           </div>
-          {/* Mensaje motivacional */}
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <span style={{fontSize:12,color:'rgba(255,255,255,.5)',fontStyle:'italic'}}>{progressMessage(avg, lang)}</span>
-            <span style={{fontSize:10,color:'rgba(255,255,255,.35)',letterSpacing:'.06em',textTransform:'uppercase'}}>
-              {lang==='en'?'Delivery:':'Entrega:'} {p.entrega||'Por definir'}
-            </span>
+        )}
+
+      </div>
+
+      {/* MÉTRICAS */}
+      <div className="dash-metrics-grid">
+        <div style={metricCard}>
+          <div style={metricIconWrap}><IconChart /></div>
+          <div style={{minWidth:0,flex:1}}>
+            <div style={metricLabel}>{t.av}</div>
+            <div style={metricValue}>{avg}%</div>
+            <div style={metricSub}>{etapaActual} en curso</div>
+          </div>
+        </div>
+
+        <div style={metricCard}>
+          <div style={metricIconWrap}><IconMoney /></div>
+          <div style={{minWidth:0,flex:1}}>
+            <div style={metricLabel}>{t.pres}</div>
+            <div style={metricValue}>{fmt(presupuesto)}</div>
+            <div style={metricSub}>MXN aprobado</div>
+          </div>
+        </div>
+
+        <div style={metricCard}>
+          <div style={metricIconWrap}><IconWallet /></div>
+          <div style={{minWidth:0,flex:1}}>
+            <div style={metricLabel}>{t.ej}</div>
+            <div style={metricValue}>{fmt(totalGastos)}</div>
+            <div style={metricSub}>
+              {presupuesto>0 ? Math.round(totalGastos/presupuesto*100)+'% del presupuesto' : '—'}
+            </div>
+          </div>
+        </div>
+
+        <div style={metricCard}>
+          <div style={metricIconWrap}><IconCalendar /></div>
+          <div style={{minWidth:0,flex:1}}>
+            <div style={metricLabel}>{t.ent}</div>
+            <div style={{...metricValue, fontSize:28}}>{p.entrega||'—'}</div>
+            <div style={metricSub}>Siguiente: {siguienteEtapa}</div>
           </div>
         </div>
       </div>
 
-      {/* MÉTRICAS — labels amigables para cliente */}
-      <div className="metrics-grid" style={{marginBottom:20}}>
-        {[
-          {label:t.av,   val:avg+'%',           sub:etapaActual+' en curso'},
-          {label:t.pres, val:fmt(presupuesto),   sub:'MXN aprobado'},
-          {label:t.ej,   val:fmt(totalGastos),   sub:presupuesto>0?Math.round(totalGastos/presupuesto*100)+'% del presupuesto':'—'},
-          {label:t.ent,  val:p.entrega||'—',     sub:'Siguiente: '+siguienteEtapa, small:true},
-        ].map(({label,val,sub,accent,small})=>(
-          <div key={label} className={`metric-card${accent?' accent':''}`}>
-            <div className="metric-label">{label}</div>
-            <div className="metric-value" style={small?{fontSize:22}:{}}>{val}</div>
-            <div className="metric-sub">{sub}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ETAPAS */}
-      <div style={{marginBottom:16}}>
+      {/* AVANCE POR ETAPA + BITÁCORA VISUAL */}
+      <div className="dash-two-col">
         <div className="card">
-          <div className="card-title">{t.avEtapa}</div>
+          <div className="card-title dash-card-title">
+            <span className="dash-card-title-icon"><IconPercent /></span>
+            {t.avEtapa}
+          </div>
           {stages.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>Sin etapas definidas</p> : (
-            stages.map((e,i)=>{
-              const pct = e.porcentaje||0
-              const color = pct===100?'var(--success)':pct>0?'var(--ink)':'var(--g200)'
-              return (
-                <div key={i} className="stage-row">
-                  <div className="stage-dot" style={{background:color}}/>
-                  <span className="stage-name" style={{fontWeight:pct>0?400:300}}>{e.nombre}</span>
-                  <div style={{flex:2,minWidth:60}}>
-                    <div className="progress-bar-wrap" style={{height:6}}>
-                      <div className="progress-bar-fill" style={{background:color,width:pct+'%',height:6,borderRadius:3,transition:'width .8s'}}/>
+            <div style={{maxHeight:360, overflowY: stages.length > 7 ? 'auto' : 'visible', paddingRight: stages.length > 7 ? 4 : 0}}>
+              {stages.map((e,i)=>{
+                const pct = e.porcentaje||0
+                const color = pct===100?'var(--success)':pct>0?'var(--ink)':'var(--g200)'
+                return (
+                  <div key={i} className="stage-row">
+                    <div className="stage-dot" style={{background:color}}/>
+                    <span className="stage-name" style={{fontWeight:pct>0?400:300}}>{e.nombre}</span>
+                    <div style={{flex:2,minWidth:60}}>
+                      <div className="progress-bar-wrap" style={{height:6}}>
+                        <div className="progress-bar-fill" style={{background:color,width:pct+'%',height:6,borderRadius:3,transition:'width .8s'}}/>
+                      </div>
                     </div>
+                    <span className="stage-pct">{pct}%</span>
                   </div>
-                  <span className="stage-pct">{pct}%</span>
-                </div>
-              )
-            })
+                )
+              })}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* FOTOS + COSTOS */}
-      <div className="two-col" style={{marginBottom:16}}>
         <div className="card">
           <div className="card-header">
-            <div className="card-title">{t.bitacora}</div>
+            <div className="card-title dash-card-title">
+              <span className="dash-card-title-icon"><IconCamera /></span>
+              {t.bitacora}
+            </div>
             {photos.length>0 && <span style={{fontSize:12,color:'var(--g400)',fontWeight:300}}>{photos.length} fotos</span>}
           </div>
           {photos.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noFotos}</p> : (
-            <div style={{overflowY:'scroll',maxHeight:320,marginTop:4}}>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:4}}>
+            <div style={{overflowY:'auto',maxHeight:360,marginTop:4}}>
+              <div className="dash-photos-grid">
                 {photos.map((f,i)=>(
-                  <div key={i} onClick={()=>setLightbox({...f,index:i})} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative',cursor:'zoom-in',borderRadius:2}}>
+                  <div key={i} onClick={()=>setLightbox({...f,index:i})} style={{aspectRatio:'1',background:'var(--g100)',overflow:'hidden',position:'relative',cursor:'zoom-in',borderRadius:6}}>
                     <img src={f.url||f.remoteUrl} alt={f.nombre} style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform .3s'}}
                       onError={e=>e.target.style.display='none'}
                       onMouseEnter={e=>e.target.style.transform='scale(1.06)'}
                       onMouseLeave={e=>e.target.style.transform='scale(1)'}
                     />
-                    <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(to top,rgba(12,12,12,.65) 0%,transparent 100%)',padding:'8px'}}>
+                    <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(to top,rgba(12,12,12,.65) 0%,transparent 100%)',padding:'6px 8px'}}>
                       <div style={{fontSize:9,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.nombre}</div>
                     </div>
                   </div>
@@ -225,72 +601,28 @@ export default function Dashboard({ project, user, lang }) {
             </div>
           )}
         </div>
-
-        <div className="card">
-          <div className="card-title">{t.cosRec}</div>
-          {costs.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noCostos}</p> : (
-            costsRecientes.map((c,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid var(--g100)',gap:8}}>
-                <div style={{minWidth:0,flex:1,overflow:'hidden'}}>
-                  <div style={{fontSize:13,fontWeight:300,color:'var(--ink)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.concepto}</div>
-                  {c.fecha && <div style={{fontSize:10,color:'var(--g400)',marginTop:2}}>{c.fecha}</div>}
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-                  <span style={{fontSize:13,fontWeight:500,color:'var(--ink)'}}>{fmt(c.monto)}</span>
-                  <span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus}</span>
-                </div>
-              </div>
-            ))
-          )}
-          <div style={{marginTop:20,paddingTop:16,borderTop:'1px solid var(--border)'}}>
-            <div className="card-title" style={{marginBottom:12}}>{t.info}</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 16px'}}>
-              {[['Superficie',p.superficie?p.superficie+' m²':null],['Niveles',p.niveles],['Arquitecto',p.arquitecto],['Inicio',p.inicio]].map(([label,val])=>val?(
-                <div key={label}>
-                  <div style={{fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--g400)',marginBottom:3}}>{label}</div>
-                  <div style={{fontSize:13,fontWeight:400,color:'var(--ink)'}}>{val}</div>
-                </div>
-              ):null)}
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* NOTAS */}
-      <div className="two-col">
-        <div className="card">
-          <div className="card-title">{t.notas}</div>
-          {posts.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noNotas}</p> : (
-            <div style={{maxHeight:200,overflowY:'auto',paddingRight:4}}>
-              {posts.map((post,i)=>(
-                <div key={i} className="note-item">
-                  <div className="note-accent" style={{background:'var(--ink)'}}/>
-                  <div>
-                    <div className="note-date">{post.fecha}</div>
-                    <div className="note-text">{post.texto}</div>
-                    {post.autor && <div style={{fontSize:10,color:'var(--g400)',marginTop:4}}>{post.autor}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* BITÁCORA (notas) */}
+      <div className="card">
+        <div className="card-title dash-card-title">
+          <span className="dash-card-title-icon"><IconNotebook /></span>
+          {t.bitacoraNotas}
         </div>
-        <div className="card">
-          <div className="card-title">{t.notasCli}</div>
-          {notes.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noNotasCli}</p> : (
-            <div style={{maxHeight:200,overflowY:'auto',paddingRight:4}}>
-              {notes.map((nota,i)=>(
-                <div key={i} className="note-item">
-                  <div className="note-accent" style={{background:'var(--gold)'}}/>
-                  <div>
-                    <div className="note-date">{nota.fecha}</div>
-                    <div className="note-text">{nota.texto}</div>
-                  </div>
+        {posts.length===0 ? <p style={{fontSize:14,color:'var(--g400)',fontWeight:400}}>{t.noNotas}</p> : (
+          <div style={{maxHeight:420,overflowY:'auto',paddingRight:4,marginTop:8}}>
+            {posts.map((post,i)=>(
+              <div key={i} className="dash-log-item">
+                <div className="dash-log-accent"/>
+                <div className="dash-log-body">
+                  <div className="dash-log-date">{post.fecha}</div>
+                  <div className="dash-log-text">{post.texto}</div>
+                  {post.autor && <div className="dash-log-author">— {post.autor}</div>}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       </div>
