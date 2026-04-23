@@ -3,6 +3,14 @@ import { useState } from 'react'
 
 function fmt(n) { return '$' + Number(n||0).toLocaleString('es-MX') }
 
+// Convierte fecha "YYYY-MM-DD" (u otros formatos) a timestamp para ordenar.
+// Si la fecha es inválida o falta, devuelve 0 para que se vaya hasta arriba (más viejo).
+function fechaTs(f) {
+  if (!f) return 0
+  const t = new Date(f).getTime()
+  return isNaN(t) ? 0 : t
+}
+
 const printStyles = `
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -30,12 +38,20 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
   const pagadoPct   = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
   const ejercidoPct = presupuesto > 0 ? Math.round(ejercido/presupuesto*100) : 0
 
+  // Indexamos los costos con su posición original ANTES de ordenar,
+  // para que el delete pueda borrar el correcto del array real en BD.
+  const costsConIndice = costs.map((c, originalIdx) => ({ ...c, _originalIdx: originalIdx }))
+
+  // Orden: más viejo arriba → más reciente abajo (ascendente por fecha).
+  // Los que no tienen fecha (ts=0) salen primero, igualmente arriba.
+  const costsOrdenados = [...costsConIndice].sort((a, b) => fechaTs(a.fecha) - fechaTs(b.fecha))
+
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
-  const deleteCost = async (i) => {
+  const deleteCost = async (originalIdx) => {
     if (!confirm('¿Eliminar este gasto?')) return
-    setDeleting(i)
-    const newCosts = costs.filter((_, idx) => idx !== i)
+    setDeleting(originalIdx)
+    const newCosts = costs.filter((_, idx) => idx !== originalIdx)
     try {
       const res = await fetch('/api/projects', {
         method: 'PATCH',
@@ -102,7 +118,7 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
       <div className="card">
         <div className="card-header">
           <div className="card-title">Detalle de gastos</div>
-          <span style={{fontSize:12,color:'var(--g400)',fontWeight:300}}>{costs.length} registro{costs.length!==1?'s':''}</span>
+          <span style={{fontSize:12,color:'var(--g400)',fontWeight:300}}>{costs.length} registro{costs.length!==1?'s':''} · ordenados por fecha</span>
         </div>
         {costs.length===0 ? (
           <div style={{padding:'40px 0',textAlign:'center'}}>
@@ -112,8 +128,8 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
         ) : (
           <>
             <div style={{display:'grid',gap:8,marginBottom:8}}>
-              {costs.map((c,i)=>(
-                <div key={i} style={{background:'var(--off)',border:'1px solid var(--border)',padding:'14px 16px'}}>
+              {costsOrdenados.map((c)=>(
+                <div key={c._originalIdx} style={{background:'var(--off)',border:'1px solid var(--border)',padding:'14px 16px'}}>
                   {/* Fila superior: concepto + monto */}
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8,gap:8}}>
                     <span style={{fontSize:14,fontWeight:500,color:'var(--ink)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.concepto}</span>
@@ -128,11 +144,11 @@ export default function Costos({ project, user, lang, onRefresh, isArq }) {
                       {c.fecha && <span style={{fontSize:11,color:'var(--g300)'}}>{c.fecha}</span>}
                     </div>
                     {isArq && (
-                      <button onClick={() => deleteCost(i)} disabled={deleting===i}
-                        style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'5px 12px',fontFamily:'Jost,sans-serif',cursor:'pointer',opacity:deleting===i?.4:1,flexShrink:0}}
+                      <button onClick={() => deleteCost(c._originalIdx)} disabled={deleting===c._originalIdx}
+                        style={{fontSize:11,color:'var(--danger)',background:'transparent',border:'1px solid var(--danger)',padding:'5px 12px',fontFamily:'Jost,sans-serif',cursor:'pointer',opacity:deleting===c._originalIdx?.4:1,flexShrink:0}}
                         onMouseEnter={e=>{e.currentTarget.style.background='var(--danger)';e.currentTarget.style.color='#fff'}}
                         onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--danger)'}}>
-                        {deleting===i?'...':'✕ Eliminar'}
+                        {deleting===c._originalIdx?'...':'✕ Eliminar'}
                       </button>
                     )}
                   </div>
