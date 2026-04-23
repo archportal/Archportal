@@ -34,7 +34,6 @@ const dashStyles = `
   overflow: hidden;
 }
 
-/* Título de tarjeta con ícono */
 #dashboard-print .dash-card-title {
   display: flex;
   align-items: center;
@@ -48,7 +47,6 @@ const dashStyles = `
   flex-shrink: 0;
 }
 
-/* Info discreta del proyecto dentro del hero */
 #dashboard-print .dash-hero-meta {
   display: flex;
   flex-wrap: wrap;
@@ -75,7 +73,6 @@ const dashStyles = `
   color: rgba(255,255,255,.2);
 }
 
-/* Grid de métricas */
 #dashboard-print .dash-metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -93,7 +90,6 @@ const dashStyles = `
   }
 }
 
-/* Grid 2 columnas */
 #dashboard-print .dash-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -106,7 +102,6 @@ const dashStyles = `
   }
 }
 
-/* Hero responsivo */
 #dashboard-print .dash-hero {
   display: flex;
   gap: 0;
@@ -141,7 +136,6 @@ const dashStyles = `
   }
 }
 
-/* Grid de fotos */
 #dashboard-print .dash-photos-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -153,7 +147,6 @@ const dashStyles = `
   }
 }
 
-/* Bitácora: tipografía */
 #dashboard-print .dash-log-item {
   display: flex;
   gap: 16px;
@@ -220,7 +213,6 @@ function progressMessage(avg, lang) {
   return 'Proyecto completado ✓'
 }
 
-// ========== ÍCONOS ==========
 const IconChart = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 20h18"/>
@@ -229,7 +221,6 @@ const IconChart = ({ size = 28 }) => (
     <rect x="16" y="5" width="3" height="14"/>
   </svg>
 )
-
 const IconMoney = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="9"/>
@@ -237,7 +228,6 @@ const IconMoney = ({ size = 28 }) => (
     <path d="M12 7v1M12 16v1"/>
   </svg>
 )
-
 const IconWallet = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2"/>
@@ -245,7 +235,6 @@ const IconWallet = ({ size = 28 }) => (
     <circle cx="16.5" cy="13.5" r="1.2" fill="currentColor"/>
   </svg>
 )
-
 const IconCalendar = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="5" width="18" height="16" rx="2"/>
@@ -253,7 +242,6 @@ const IconCalendar = ({ size = 28 }) => (
     <path d="M8 3v4M16 3v4"/>
   </svg>
 )
-
 const IconPercent = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <line x1="19" y1="5" x2="5" y2="19"/>
@@ -261,14 +249,12 @@ const IconPercent = ({ size = 22 }) => (
     <circle cx="16.5" cy="16.5" r="2.5"/>
   </svg>
 )
-
 const IconCamera = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1z" transform="translate(0, -0.5)"/>
     <circle cx="12" cy="13" r="3.5"/>
   </svg>
 )
-
 const IconNotebook = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
@@ -281,14 +267,55 @@ const IconNotebook = ({ size = 22 }) => (
   </svg>
 )
 
+// ========== FIX: Parsea fechas en formato DD/MM/YYYY (es-MX) ==========
+function parseFechaMX(str) {
+  if (!str) return 0
+  if (typeof str === 'string' && str.includes('/')) {
+    const parts = str.split('/').map(n => parseInt(n, 10))
+    if (parts.length === 3 && !parts.some(isNaN)) {
+      const [dd, mm, yyyy] = parts
+      const year = yyyy < 100 ? 2000 + yyyy : yyyy
+      const t = new Date(year, mm - 1, dd).getTime()
+      if (!isNaN(t)) return t
+    }
+  }
+  const t = new Date(str).getTime()
+  return isNaN(t) ? 0 : t
+}
+
+// ========== FIX: getFotoReciente ==========
+// El backend ya devuelve las fotos ordenadas por created_at DESC
+// (ver /api/projects/route.js → .order('created_at', { ascending: false }))
+// Así que photos[0] SIEMPRE es la más reciente.
+// Como respaldo extra, si alguna tiene created_at, lo usamos para confirmar orden.
 function getFotoReciente(photos) {
   if (!photos || photos.length === 0) return null
-  const conFecha = photos.filter(f => f.fecha && !isNaN(new Date(f.fecha).getTime()))
-  if (conFecha.length > 0) {
-    const ordenadas = [...conFecha].sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+
+  // Si alguna foto tiene created_at (timestamp ISO del backend), usamos ese
+  // para ordenar con máxima precisión (incluye hora/minuto/segundo)
+  const conCreatedAt = photos.filter(f => f.created_at)
+  if (conCreatedAt.length > 0) {
+    const ordenadas = [...conCreatedAt].sort((a, b) => {
+      const ta = new Date(a.created_at).getTime() || 0
+      const tb = new Date(b.created_at).getTime() || 0
+      return tb - ta // Más reciente primero
+    })
     return ordenadas[0]
   }
-  return photos[photos.length - 1]
+
+  // Sin created_at: intentamos ordenar por el campo "fecha" (DD/MM/YYYY)
+  const conFecha = photos
+    .map((f, idx) => ({ ...f, _ts: parseFechaMX(f.fecha), _idx: idx }))
+    .filter(f => f._ts > 0)
+
+  if (conFecha.length > 0) {
+    const ordenadas = [...conFecha].sort((a, b) => b._ts - a._ts)
+    const { _ts, _idx, ...limpia } = ordenadas[0]
+    return limpia
+  }
+
+  // Último fallback: photos[0] porque el backend ordena DESC
+  return photos[0]
 }
 
 export default function Dashboard({ project, user, lang }) {
@@ -309,7 +336,6 @@ export default function Dashboard({ project, user, lang }) {
 
   const fotoReciente = getFotoReciente(photos)
 
-  // Meta info del proyecto (para la línea discreta del hero)
   const metaItems = [
     p.superficie ? { label: lang==='en'?'Area':'Superficie', val: p.superficie + ' m²' } : null,
     p.niveles ? { label: lang==='en'?'Levels':'Niveles', val: p.niveles } : null,
@@ -388,7 +414,7 @@ export default function Dashboard({ project, user, lang }) {
       <style>{printStyles + dashStyles}</style>
 
       <div className="no-print" style={{display:'flex',justifyContent:'flex-end',padding:'0 0 16px'}}>
-        <button onClick={()=>window.print()} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 20px',background:'var(--white)',border:'1px solid var(--border)',borderRadius:CARD_RADIUS,fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--g500)',cursor:'pointer',transition:'all .2s'}}
+        <button onClick={()=>window.print()} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 20px',background:'var(--white)',border:'1px solid var(--border)',borderRadius:6,fontFamily:'Jost,sans-serif',fontSize:11,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--g500)',cursor:'pointer',transition:'all .2s'}}
           onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--ink)';e.currentTarget.style.color='var(--ink)'}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--g500)'}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -398,7 +424,6 @@ export default function Dashboard({ project, user, lang }) {
 
       <div id="dashboard-print">
 
-      {/* LIGHTBOX */}
       {lightbox && (
         <div onClick={()=>setLightbox(null)} style={{position:'fixed',inset:0,background:'rgba(12,12,12,.96)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out'}}>
           <button onClick={e=>{e.stopPropagation();const prev=(lightbox.index-1+photos.length)%photos.length;setLightbox({...photos[prev],index:prev})}} style={{position:'absolute',left:24,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',border:'none',color:'#fff',fontSize:28,width:48,height:48,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'50%'}}>‹</button>
@@ -427,7 +452,6 @@ export default function Dashboard({ project, user, lang }) {
             {p.cliente || p.arquitecto} · {p.ubicacion}
           </p>
 
-          {/* Meta info discreta del proyecto */}
           {metaItems.length > 0 && (
             <div className="dash-hero-meta">
               {metaItems.map((item, i) => (
@@ -603,7 +627,7 @@ export default function Dashboard({ project, user, lang }) {
         </div>
       </div>
 
-      {/* BITÁCORA (notas) */}
+      {/* BITÁCORA */}
       <div className="card">
         <div className="card-title dash-card-title">
           <span className="dash-card-title-icon"><IconNotebook /></span>
