@@ -13,7 +13,6 @@ const EMAILJS_TEMPLATE = 'template_d2n23nw'
 const EMAILJS_PUBLIC   = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC
 const SUPPORT_EMAIL    = 'lcarq01@gmail.com'
 
-// ===== Constantes visuales =====
 const CARD_RADIUS = 12
 const INPUT_RADIUS = 6
 const BTN_RADIUS = 6
@@ -60,6 +59,123 @@ const IconEmpty = ({ size = 56 }) => (
   </svg>
 )
 
+// Estilos del header de ProjectsScreen (fix mobile)
+const projectsHeaderStyles = `
+.projects-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+}
+.projects-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1100px;
+  margin: 0 auto;
+  flex-wrap: nowrap;
+}
+.projects-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.projects-user-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.projects-help-btn,
+.projects-logout-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: ${BTN_RADIUS}px;
+  padding: 6px 14px;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  color: var(--g500);
+  cursor: pointer;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.projects-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.projects-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: .04em;
+  flex-shrink: 0;
+}
+.projects-user-name {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--g500);
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.projects-user-caret {
+  font-size: 10px;
+  color: var(--g400);
+  flex-shrink: 0;
+}
+
+/* === MOBILE: todo en UNA sola fila, compacta === */
+@media (max-width: 640px) {
+  .projects-topbar {
+    padding: 12px 14px;
+  }
+  .projects-topbar-inner {
+    gap: 8px;
+  }
+  .projects-user-block {
+    gap: 6px;
+  }
+  .projects-help-btn,
+  .projects-logout-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+    letter-spacing: .06em;
+  }
+  /* En móvil escondemos el nombre del usuario para dejar espacio a los botones */
+  .projects-user-name,
+  .projects-user-caret {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  /* Pantallas muy chicas: padding aún más reducido */
+  .projects-topbar {
+    padding: 10px 12px;
+  }
+  .projects-help-btn,
+  .projects-logout-btn {
+    padding: 6px 8px;
+  }
+  .projects-logo {
+    font-size: 18px;
+  }
+}
+`
+
 function ProfilePanel({ user, onClose }) {
   const plan = user.plan || 'mensual'
   const [portalLoading, setPortalLoading] = useState(false)
@@ -80,7 +196,7 @@ function ProfilePanel({ user, onClose }) {
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:1000 }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ position:'absolute', top:60, right:32, width:320, background:'var(--white)', border:'1px solid var(--border)', boxShadow:'0 12px 40px rgba(0,0,0,.12)', borderRadius:CARD_RADIUS, overflow:'hidden' }}>
+      <div onClick={e => e.stopPropagation()} style={{ position:'absolute', top:60, right:32, width:320, maxWidth:'calc(100vw - 24px)', background:'var(--white)', border:'1px solid var(--border)', boxShadow:'0 12px 40px rgba(0,0,0,.12)', borderRadius:CARD_RADIUS, overflow:'hidden' }}>
         {/* Header */}
         <div style={{ background:'var(--ink)', padding:'22px 24px' }}>
           <p style={{ fontSize:10, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--gold)', fontWeight:500, margin:'0 0 4px' }}>Mi cuenta</p>
@@ -227,7 +343,6 @@ function ProjectCard({ proj, onSelect, onDelete }) {
       onMouseEnter={e => { e.currentTarget.style.borderColor='var(--ink)'; e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.06)' }}
       onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none' }}>
 
-      {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16, gap:10 }}>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:400, color:'var(--ink)', marginBottom:4, lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{proj.nombre}</div>
@@ -250,16 +365,13 @@ function ProjectCard({ proj, onSelect, onDelete }) {
         </span>
       </div>
 
-      {/* Separador */}
       <div style={{ height:1, background:'var(--border)', marginBottom:16 }} />
 
-      {/* Metadata */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:11, fontWeight:400, color:'var(--g500)', marginBottom:16, gap:8, flexWrap:'wrap' }}>
         <span>{proj.ubicacion?.split(',')[0] || '—'}</span>
         <span style={{color:'var(--g400)',fontWeight:300}}>Entrega: {proj.entrega || 'Por definir'}</span>
       </div>
 
-      {/* Footer con botón */}
       <div style={{ display:'flex', justifyContent:'flex-end', paddingTop:14, borderTop:'1px solid var(--g100)', marginTop:'auto' }}>
         <button onClick={e => { e.stopPropagation(); onDelete(proj.id) }}
           style={{
@@ -285,7 +397,7 @@ function ProjectCard({ proj, onSelect, onDelete }) {
   )
 }
 
-function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
+function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete, onLogout }) {
   const [showForm, setShowForm]   = useState(false)
   const [form, setForm]           = useState({ nombre:'', cliente:'', ubicacion:'' })
   const [loading, setLoading]     = useState(false)
@@ -314,6 +426,11 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
     } catch(e) { setError('Error al crear') } finally { setLoading(false) }
   }
 
+  const handleLogout = () => {
+    if (onLogout) onLogout()
+    else window.location.reload()
+  }
+
   const inputStyle = {
     width:'100%',
     padding:'12px 14px',
@@ -330,20 +447,21 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
 
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
+      <style>{projectsHeaderStyles}</style>
 
-      {/* TOP BAR */}
-      <div className="portal-topbar" style={{ height:'auto' }}>
-        <div className="portal-topbar-row1">
-          <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--ink)' }}>ArchPortal</div>
-          <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-            <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:BTN_RADIUS, padding:'6px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>Ayuda</button>
-            <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer' }} onClick={() => setShowProfile(true)}>
-              <div style={{ width:32, height:32, borderRadius:'50%', background:'var(--ink)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:600, color:'var(--white)', letterSpacing:'.04em' }}>{ini}</div>
-              <span style={{ fontSize:13, fontWeight:400, color:'var(--g500)' }}>{user.name||user.email}</span>
-              <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>
+      {/* TOP BAR — una sola fila, responsive */}
+      <div className="projects-topbar">
+        <div className="projects-topbar-inner">
+          <div className="projects-logo">ArchPortal</div>
+          <div className="projects-user-block">
+            <button className="projects-help-btn" onClick={() => setShowHelp(true)}>Ayuda</button>
+            <div className="projects-user-info" onClick={() => setShowProfile(true)}>
+              <div className="projects-user-avatar">{ini}</div>
+              <span className="projects-user-name">{user.name||user.email}</span>
+              <span className="projects-user-caret">▾</span>
             </div>
-            {user.impersonated && <span style={{ fontSize:10, padding:'3px 10px', background:'#FEF4E4', color:'#7A4A00', letterSpacing:'.08em', textTransform:'uppercase', fontWeight:600, borderRadius:999 }}>Impersonando</span>}
-            <button onClick={() => window.location.reload()} style={{ background:'none', border:'1px solid var(--border)', borderRadius:BTN_RADIUS, padding:'6px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.1em', textTransform:'uppercase', fontWeight:500 }}>Salir</button>
+            {user.impersonated && <span style={{ fontSize:10, padding:'3px 10px', background:'#FEF4E4', color:'#7A4A00', letterSpacing:'.08em', textTransform:'uppercase', fontWeight:600, borderRadius:999, whiteSpace:'nowrap' }}>Admin</span>}
+            <button className="projects-logout-btn" onClick={handleLogout}>Salir</button>
           </div>
         </div>
       </div>
@@ -505,7 +623,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   const tabs  = isArq ? TABS_ARQ : TABS_CLI
   const ini   = (user.name||user.email||'U').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()
 
-  // Cuenta inactiva — mostrar pantalla de pausa
+  // Cuenta inactiva
   if (isArq && user.plan === 'inactivo') {
     return (
       <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--off)',padding:24}}>
@@ -523,7 +641,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
     )
   }
 
-  // Back button interception
   useEffect(() => {
     if (!activeProject) return
     window.history.pushState({ portal: true }, '')
@@ -535,7 +652,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
     return () => window.removeEventListener('popstate', handlePop)
   }, [activeProject, isArq])
 
-  // Welcome banner for client (once per day)
   useEffect(() => {
     if (isArq || !activeProject) return
     const key = `welcomed_${activeProject.id}_${new Date().toDateString()}`
@@ -546,7 +662,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
     }
   }, [activeProject, isArq])
 
-  // Conteo de autorizaciones pendientes (para badge)
   useEffect(() => {
     if (!activeProject?.id) { setPendingAuthCount(0); return }
     fetch(`/api/authorizations?project_id=${activeProject.id}`)
@@ -580,7 +695,7 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   }
 
   if (!activeProject) {
-    return <ProjectsScreen user={user} projects={projects} onSelect={handleSelect} onCreate={p => setProjects(prev=>[...prev,p])} onDelete={handleDelete} />
+    return <ProjectsScreen user={user} projects={projects} onSelect={handleSelect} onCreate={p => setProjects(prev=>[...prev,p])} onDelete={handleDelete} onLogout={onLogout} />
   }
 
   const props = { project:projectData, user, lang, onRefresh:refreshProject }
@@ -601,7 +716,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
   return (
     <div style={{ minHeight:'100vh', background:'var(--off)' }}>
       <div className="portal-topbar">
-        {/* Row 1: logo | tabs (desktop center) | usuario */}
         <div className="portal-topbar-row1">
           <div className="portal-logo" onClick={() => { setActiveProject(null); setProjectData(null) }}>ArchPortal</div>
           <button className="portal-hamburger" onClick={() => setMenuOpen(p => !p)} aria-label="Menú">
@@ -620,7 +734,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
             <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
           </div>
         </div>
-        {/* Tabs */}
         <div className={`portal-tabs${menuOpen ? ' open' : ''}`}>
           {tabs.map(tab => (
             <button
@@ -645,7 +758,6 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
           ))}
         </div>
       </div>
-      {/* Welcome banner for client */}
       {showWelcome && !isArq && (
         <div style={{ background:'var(--ink)', padding:'14px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
