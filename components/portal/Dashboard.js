@@ -3,6 +3,14 @@ import { useEffect, useRef, useState } from 'react'
 
 const fmt = n => '$' + Number(n||0).toLocaleString('es-MX')
 
+// Convierte fecha "YYYY-MM-DD" (u otros formatos) a timestamp para ordenar.
+// Si la fecha es inválida o falta, devuelve 0 para que se vaya hasta atrás.
+function fechaTs(f) {
+  if (!f) return 0
+  const t = new Date(f).getTime()
+  return isNaN(t) ? 0 : t
+}
+
 const printStyles = `
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -54,6 +62,12 @@ export default function Dashboard({ project, user, lang }) {
   const etapasCompletadas = stages.filter(e=>e.estatus==='Completado').length
   const pagadoPct    = presupuesto > 0 ? Math.round(pagado/presupuesto*100) : 0
   const porPagarPct  = presupuesto > 0 ? Math.round(porPagar/presupuesto*100) : 0
+
+  // Costos recientes: los 5 más recientes por fecha (descendente).
+  // Los que no tienen fecha quedan al final.
+  const costsRecientes = [...costs]
+    .sort((a, b) => fechaTs(b.fecha) - fechaTs(a.fecha))
+    .slice(0, 5)
 
   const [lightbox, setLightbox] = useState(null)
   const [barW, setBarW] = useState(0)
@@ -215,9 +229,12 @@ export default function Dashboard({ project, user, lang }) {
         <div className="card">
           <div className="card-title">{t.cosRec}</div>
           {costs.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>{t.noCostos}</p> : (
-            costs.slice(0,5).map((c,i)=>(
+            costsRecientes.map((c,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid var(--g100)',gap:8}}>
-                <span style={{fontSize:13,fontWeight:300,color:'var(--ink)',minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.concepto}</span>
+                <div style={{minWidth:0,flex:1,overflow:'hidden'}}>
+                  <div style={{fontSize:13,fontWeight:300,color:'var(--ink)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.concepto}</div>
+                  {c.fecha && <div style={{fontSize:10,color:'var(--g400)',marginTop:2}}>{c.fecha}</div>}
+                </div>
                 <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
                   <span style={{fontSize:13,fontWeight:500,color:'var(--ink)'}}>{fmt(c.monto)}</span>
                   <span className={`chip chip-${c.estatus==='Pagado'?'green':c.estatus==='Parcial'?'warn':'red'}`}>{c.estatus}</span>
