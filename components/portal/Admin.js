@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { sendBitacoraEmail, sendClientAccessEmail } from '@/lib/emailjs'
 import { supabase } from '@/lib/supabase'
+import { uploadToSupabaseWithRetry } from '@/lib/uploadWithRetry'
 
 // ===== Constantes visuales (mismo lenguaje que Dashboard) =====
 const CARD_RADIUS = 12
@@ -141,24 +142,22 @@ async function extractPdfTextClient(file) {
   } catch (e) { console.warn('PDF client extraction error:', e.message); return null }
 }
 
-async function uploadFile(file, projectId, bucket, onProgress) {
+async function uploadFile(file, projectId, bucket, onProgress, onRetry) {
   if (!file) return null
   onProgress?.(5)
   const processed = await compressImage(file, onProgress)
   onProgress?.(35)
   const fileName = processed.name.replace(/\s/g, '_')
   const path = `${projectId}/${Date.now()}_${fileName}`
-  const arrayBuffer = await processed.arrayBuffer()
-  onProgress?.(50)
-  let simulated = 50
-  const progressInterval = setInterval(() => { if (simulated < 85) { simulated += 2; onProgress?.(simulated) } }, 400)
-  const { error } = await supabase.storage.from(bucket).upload(path, arrayBuffer, { contentType: processed.type, upsert: true })
-  clearInterval(progressInterval)
-  if (error) { console.warn('Upload error:', error.message); onProgress?.(0); return null }
-  onProgress?.(95)
-  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path)
-  onProgress?.(100)
-  return { url: publicUrl }
+
+  return uploadToSupabaseWithRetry(supabase, processed, bucket, path, {
+    contentType: processed.type,
+    upsert: true,
+    onProgress,
+    onRetry,
+    timeoutMs: 60000,
+    maxRetries: 3,
+  })
 }
 
 // Secciones sin "notas" (eliminada)
@@ -555,17 +554,30 @@ export default function Admin({ project, user, onRefresh }) {
           setSaving(true)
           const newPhotos=[...photosDB]
           const newProgress = {}
+          const failedFiles = []
           for(const file of fotoFiles){
             newProgress[file.name] = 0
             setUploadProgress({...newProgress})
-            const result = await uploadFile(file, p.id, 'project-photos', pct => {
-              newProgress[file.name] = pct
-              setUploadProgress({...newProgress})
-            })
+            const result = await uploadFile(
+              file, p.id, 'project-photos',
+              pct => { newProgress[file.name] = pct; setUploadProgress({...newProgress}) },
+              (attempt, max) => { showToast(`Conexión inestable, reintentando (${attempt}/${max})…`) }
+            )
             if(result?.url) newPhotos.unshift({nombre:file.name,url:result.url,fecha:new Date().toLocaleDateString('es-MX')})
+            else failedFiles.push(file.name)
           }
-          const ok=await api({photos:newPhotos})
-          if(ok){ setFotoFiles([]); setUploadProgress({}); showToast('Fotos subidas ✓') }
+          if(failedFiles.length === 0) {
+            const ok=await api({photos:newPhotos})
+            if(ok){ setFotoFiles([]); setUploadProgress({}); showToast('Fotos subidas ✓') }
+          } else {
+            // Guarda las que sí subieron y avisa de las que fallaron
+            if(newPhotos.length > photosDB.length) {
+              await api({photos:newPhotos})
+            }
+            showToast(`${failedFiles.length} foto(s) no se pudieron subir. Intenta de nuevo con mejor señal.`)
+            setFotoFiles(fotoFiles.filter(f => failedFiles.includes(f.name)))
+            setUploadProgress({})
+          }
           setSaving(false)
         }}>Subir fotos</button>
       </SectionCard>
@@ -625,7 +637,16 @@ export default function Admin({ project, user, onRefresh }) {
           setSaving(true)
           let extractedText = null
           if(archivoFile&&(archivoFile.type==='application/pdf'||archivoFile.name.toLowerCase().endsWith('.pdf'))) { showToast('Extrayendo texto del PDF...'); extractedText=await extractPdfTextClient(archivoFile) }
-          const result=archivoFile?await uploadFile(archivoFile,p.id,'project-files'):{url:null}
+          const result=archivoFile?await uploadFile(
+            archivoFile, p.id, 'project-files',
+            null,
+            (attempt, max) => { showToast(`Conexión inestable, reintentando (${attempt}/${max})…`) }
+          ):{url:null}
+          if(archivoFile && !result?.url) {
+            showToast('No se pudo subir el archivo. Revisa tu conexión e intenta de nuevo.')
+            setSaving(false)
+            return
+          }
           const newFiles=[...filesDB,{...archivoForm,url:result?.url||null,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
           let extraPatches={}
           if(extractedText){ const currentKb=(()=>{try{return typeof p.knowledge_base==='string'?JSON.parse(p.knowledge_base):(Array.isArray(p.knowledge_base)?p.knowledge_base:[])}catch{return[]}})(); extraPatches={knowledge_base:[...currentKb,{tema:archivoForm.nombre,info:extractedText}]} }

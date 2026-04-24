@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { sendAuthRequestEmail, sendAuthResponseEmail } from '@/lib/emailjs'
+import { uploadToApiWithRetry } from '@/lib/uploadWithRetry'
 
 // ===== Constantes visuales =====
 const CARD_RADIUS = 12
@@ -48,6 +49,7 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
   const [respondingId, setRespondingId] = useState(null)
   const [observations, setObservations] = useState({})
   const [lightbox, setLightbox] = useState(null)
+  const [retryMsg, setRetryMsg] = useState('')
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -130,7 +132,7 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
 
   const resetForm = () => {
     setFormTitle(''); setFormMessage(''); setFormPhoto(null); setFormPreview(null)
-    setShowForm(false); setUploadProgress(0)
+    setShowForm(false); setUploadProgress(0); setRetryMsg('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -141,16 +143,24 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
     try {
       let photo_url = null
       if (formPhoto) {
-        setUploadProgress(25)
-        const fd = new FormData()
-        fd.append('file', formPhoto, `auth_${Date.now()}.jpg`)
-        fd.append('projectId', projectId)
-        fd.append('bucket', 'project-photos')
-        const upRes = await fetch('/api/upload', { method: 'POST', body: fd })
-        setUploadProgress(75)
-        const upData = await upRes.json()
-        if (!upRes.ok) throw new Error(upData.error || 'Error subiendo la foto')
-        photo_url = upData.url
+        try {
+          const upData = await uploadToApiWithRetry(
+            formPhoto,
+            { projectId, bucket: 'project-photos' },
+            {
+              onProgress: (pct) => setUploadProgress(pct),
+              onRetry: (attempt, max) => {
+                setRetryMsg(`Conexión inestable, reintentando (${attempt}/${max})…`)
+                setTimeout(() => setRetryMsg(''), 3000)
+              },
+              timeoutMs: 60000,
+              maxRetries: 3,
+            }
+          )
+          photo_url = upData.url
+        } catch (uploadErr) {
+          throw new Error('No se pudo subir la foto. Revisa tu conexión e intenta de nuevo.')
+        }
       }
 
       setUploadProgress(90)
@@ -188,7 +198,7 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
       alert(err.message)
     } finally {
       setSubmitting(false)
-      setTimeout(() => setUploadProgress(0), 400)
+      setTimeout(() => { setUploadProgress(0); setRetryMsg('') }, 400)
     }
   }
 
@@ -364,9 +374,17 @@ export default function Autorizaciones({ project, user, isArq, onCountChange }) 
           </div>
 
           {uploadProgress > 0 && (
-            <div style={{ height:4, background:'var(--g100)', marginBottom:16, overflow:'hidden', borderRadius:2 }}>
-              <div style={{ height:'100%', background:'var(--gold)', width:`${uploadProgress}%`, transition:'width .3s' }} />
-            </div>
+            <>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+                <span style={{ fontSize:11, color:'var(--g500)', fontWeight:300 }}>
+                  {retryMsg || (uploadProgress < 100 ? `Subiendo… ${uploadProgress}%` : 'Listo')}
+                </span>
+                <span style={{ fontSize:11, color:retryMsg ? 'var(--gold)' : 'var(--g400)' }}>{uploadProgress}%</span>
+              </div>
+              <div style={{ height:4, background:'var(--g100)', marginBottom:16, overflow:'hidden', borderRadius:2 }}>
+                <div style={{ height:'100%', background: retryMsg ? 'var(--gold)' : 'var(--ink)', width:`${uploadProgress}%`, transition:'width .3s' }} />
+              </div>
+            </>
           )}
 
           <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
