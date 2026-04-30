@@ -1,18 +1,17 @@
 'use client'
 
 // =============================================================
-// PARA AGREGAR EL VIDEO:
+// PARA CAMBIAR EL VIDEO EN EL FUTURO:
 // 1. Sube tu video a YouTube (puede ser "no listado" si quieres
 //    que solo lo vean los arquitectos con el link).
-// 2. Copia el ID del video (la parte después de "v=" en la URL).
-//    Ejemplo: https://www.youtube.com/watch?v=ABC123xyz
-//             el ID es: ABC123xyz
-// 3. Reemplaza la línea `const YOUTUBE_VIDEO_ID = ''` con tu ID.
-//    Ejemplo: const YOUTUBE_VIDEO_ID = 'ABC123xyz'
+// 2. Copia el ID del video (la parte después de "v=" o después
+//    de "youtu.be/" en la URL).
+//    Ejemplo: https://youtu.be/ABC123xyz → ID es: ABC123xyz
+// 3. Reemplaza la línea `const YOUTUBE_VIDEO_ID` con tu ID.
 // 4. Guarda y haz git push. Listo.
 // =============================================================
 
-const YOUTUBE_VIDEO_ID = '' // ← Pega aquí el ID de tu video de YouTube
+const YOUTUBE_VIDEO_ID = 'os6G0svpncQ'
 
 export default function ComoFunciona({ project, user, lang }) {
   return (
@@ -20,7 +19,7 @@ export default function ComoFunciona({ project, user, lang }) {
       {/* Header */}
       <div style={{ marginBottom:32 }}>
         <p style={{ fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'var(--g400)', marginBottom:8 }}>
-          Guía para arquitectos
+          Guía para constructores
         </p>
         <h1 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:44, fontWeight:300, color:'var(--ink)', lineHeight:1.1, margin:0 }}>
           ¿Cómo<br/><em style={{ fontStyle:'italic' }}>funciona?</em>
