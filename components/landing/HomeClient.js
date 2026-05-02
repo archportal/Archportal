@@ -37,7 +37,6 @@ export default function HomeClient() {
       window.history.replaceState({}, '', '/')
       setTimeout(() => setPaymentCancelled(false), 6000)
     }
-    // Permite ?lang=en desde links externos
     if (params.get('lang') === 'en') setLang('en')
   }, [])
 
@@ -48,9 +47,9 @@ export default function HomeClient() {
       desc: 'ArchPortal le da a tus clientes acceso 24/7 al avance, fotos, costos y cronograma de su obra. Sin más mensajes de "¿cómo va lo mío?" cada semana.',
       cta1: 'Empezar prueba gratis',
       cta2: 'Ver demo (3 min)',
-      stat1: 'Setup en minutos',
-      stat2: 'Acceso 24/7',
-      stat3: 'Datos en México',
+      stat1Num: '10 min', stat1Label: 'Listo para usar',
+      stat2Num: '24/7',   stat2Label: 'Acceso siempre',
+      stat3Num: '7 días', stat3Label: 'Garantía total',
       paySuccess: '¡Pago exitoso! Tu cuenta está activa. Ya puedes entrar al portal.',
       payCancelled: 'Pago cancelado. No se cobró nada. Si tienes dudas, escríbenos.',
       enterPortal: 'Entrar al portal',
@@ -67,9 +66,9 @@ export default function HomeClient() {
       whyLabel: 'Por qué existe',
       whyH2: 'Hecho por un arquitecto, para arquitectos',
       whyP1:
-        'Soy Luis Castañeda, arquitecto y constructor en Ensenada. Construí ArchPortal después de contestar el "¿cómo va mi obra?" por WhatsApp por décima vez en una semana.',
+        'ArchPortal nació en una obra real, en Ensenada, después de contestar el "¿cómo va mi obra?" por WhatsApp por décima vez en una semana.',
       whyP2:
-        'Mis clientes querían visibilidad. Yo quería trabajar tranquilo. Esto es lo que armé — y ahora lo comparto con otros despachos que viven el mismo problema.',
+        'Los clientes querían visibilidad. El arquitecto quería trabajar tranquilo. Esto es lo que armamos — y ahora lo compartimos con otros despachos que viven el mismo problema.',
       whyP3: 'Si manejas entre 1 y 20 proyectos al año y estás cansado del caos, esto es para ti.',
       pricingLabel: 'Planes',
       pricingH2: 'Comienza hoy',
@@ -109,9 +108,9 @@ export default function HomeClient() {
       desc: 'ArchPortal gives your clients 24/7 access to progress, photos, costs and schedule. No more "how is my project going" messages every week.',
       cta1: 'Start free trial',
       cta2: 'Watch demo (3 min)',
-      stat1: 'Setup in minutes',
-      stat2: '24/7 access',
-      stat3: 'Data hosted in Mexico',
+      stat1Num: '10 min', stat1Label: 'Setup time',
+      stat2Num: '24/7',   stat2Label: 'Always-on access',
+      stat3Num: '7 days', stat3Label: 'Money back',
       paySuccess: 'Payment successful! Your account is active. You can enter the portal now.',
       payCancelled: 'Payment cancelled. No charge was made. Contact us if you have questions.',
       enterPortal: 'Enter portal',
@@ -127,9 +126,9 @@ export default function HomeClient() {
       whyLabel: 'Why it exists',
       whyH2: 'Built by an architect, for architects',
       whyP1:
-        'I\'m Luis Castañeda, architect and builder in Ensenada, Mexico. I built ArchPortal after answering "how is my project going?" on WhatsApp for the tenth time in a week.',
+        'ArchPortal was born on a real construction site, in Ensenada, after answering "how is my project going?" on WhatsApp for the tenth time in a week.',
       whyP2:
-        'My clients wanted visibility. I wanted to work in peace. This is what I built — and now I share it with other firms living the same problem.',
+        'The clients wanted visibility. The architect wanted to work in peace. This is what we built — and now we share it with other firms living the same problem.',
       whyP3: 'If you manage 1 to 20 projects a year and you are tired of the chaos, this is for you.',
       pricingLabel: 'Plans',
       pricingH2: 'Start today',
@@ -207,22 +206,14 @@ export default function HomeClient() {
     <>
       <Nav onLogin={() => setShowLogin(true)} lang={lang} setLang={setLang} />
 
-      {/* Banner pago exitoso */}
       {paymentSuccess && (
         <div role="status" style={{ position:'fixed', top:0, left:0, right:0, zIndex:9999, background:'#2D5016', color:'#fff', padding:'16px 24px', display:'flex', alignItems:'center', justifyContent:'center', gap:12 }}>
           <span style={{ fontSize:20 }}>✓</span>
-          <div>
-            <div style={{ fontSize:14, fontWeight:500 }}>{t.paySuccess}</div>
-          </div>
-          <button
-            onClick={() => setShowLogin(true)}
-            style={{ marginLeft:16, padding:'8px 20px', background:'rgba(255,255,255,.2)', border:'1px solid rgba(255,255,255,.4)', color:'#fff', fontFamily:'Jost,sans-serif', fontSize:11, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer' }}>
-            {t.enterPortal}
-          </button>
+          <div><div style={{ fontSize:14, fontWeight:500 }}>{t.paySuccess}</div></div>
+          <button onClick={() => setShowLogin(true)} style={{ marginLeft:16, padding:'8px 20px', background:'rgba(255,255,255,.2)', border:'1px solid rgba(255,255,255,.4)', color:'#fff', fontFamily:'Jost,sans-serif', fontSize:11, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer' }}>{t.enterPortal}</button>
         </div>
       )}
 
-      {/* Banner pago cancelado */}
       {paymentCancelled && (
         <div role="status" style={{ position:'fixed', top:0, left:0, right:0, zIndex:9999, background:'#7A4A00', color:'#fff', padding:'16px 24px', display:'flex', alignItems:'center', justifyContent:'center', gap:12 }}>
           <span style={{ fontSize:18 }}>!</span>
@@ -247,22 +238,23 @@ export default function HomeClient() {
           <p className="hero-desc">{t.desc}</p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={startTrial}>{t.cta1}</button>
-            <button
-              className="btn-ghost"
-              onClick={() => document.getElementById('video-sec')?.scrollIntoView({ behavior:'smooth' })}>
-              {t.cta2}
-            </button>
+            <button className="btn-ghost" onClick={() => document.getElementById('video-sec')?.scrollIntoView({ behavior:'smooth' })}>{t.cta2}</button>
           </div>
         </div>
+
+        {/* HERO STATS — números grandes Cormorant + label pequeño */}
         <div className="hero-stats">
-          <div className="stat-item">
-            <div className="stat-pill">{t.stat1}</div>
+          <div className="stat-card">
+            <div className="stat-card-num">{t.stat1Num}</div>
+            <div className="stat-card-cap">{t.stat1Label}</div>
           </div>
-          <div className="stat-item">
-            <div className="stat-pill">{t.stat2}</div>
+          <div className="stat-card">
+            <div className="stat-card-num">{t.stat2Num}</div>
+            <div className="stat-card-cap">{t.stat2Label}</div>
           </div>
-          <div className="stat-item">
-            <div className="stat-pill">{t.stat3}</div>
+          <div className="stat-card">
+            <div className="stat-card-num">{t.stat3Num}</div>
+            <div className="stat-card-cap">{t.stat3Label}</div>
           </div>
         </div>
       </section>
@@ -338,7 +330,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* POR QUE EXISTE */}
+      {/* POR QUE EXISTE — ahora con SVG arquitectónico, sin foto personal */}
       <section id="por-que" className="section" style={{ background:'var(--paper)', borderTop:'1px solid var(--border)' }}>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:80, alignItems:'center' }} className="mobile-1col">
           <div>
@@ -348,15 +340,11 @@ export default function HomeClient() {
             <p style={{ marginTop:16, fontSize:15, fontWeight:300, color:'var(--g600)', lineHeight:1.9 }}>{t.whyP2}</p>
             <p style={{ marginTop:16, fontSize:14, fontWeight:400, color:'var(--ink)', lineHeight:1.8, fontStyle:'italic' }}>{t.whyP3}</p>
           </div>
-          <div style={{ position:'relative', aspectRatio:'4/5', background:'var(--g200)', overflow:'hidden' }}>
-            {/* Sustituye /luis.jpg por una foto profesional tuya en public/.
-                Mientras llega la foto real, queda placeholder neutro. */}
-            <Image
-              src="/luis.jpg"
-              alt="Luis Castañeda, fundador de ArchPortal"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit:'cover', filter:'grayscale(30%)' }}
+          <div className="why-illustration">
+            <img
+              src="/archportal-hero.svg"
+              alt="Ilustración arquitectónica — sección de proyecto"
+              style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
             />
           </div>
         </div>
@@ -372,13 +360,7 @@ export default function HomeClient() {
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'260px 260px', gap:8, maxWidth:900, margin:'0 auto' }}>
           {t.mosaicItems.map((img, i) => (
             <div key={i} style={{ position:'relative', overflow:'hidden' }}>
-              <Image
-                src={img.src}
-                alt={img.label}
-                fill
-                sizes="(max-width: 900px) 50vw, 450px"
-                style={{ objectFit:'cover' }}
-              />
+              <Image src={img.src} alt={img.label} fill sizes="(max-width: 900px) 50vw, 450px" style={{ objectFit:'cover' }} />
               <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'12px 14px', background:'linear-gradient(to top, rgba(12,12,12,.8) 0%, transparent 100%)' }}>
                 <div style={{ fontSize:9, letterSpacing:'.15em', textTransform:'uppercase', color:'rgba(255,255,255,.5)', marginBottom:2 }}>{img.num}</div>
                 <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:16, fontWeight:400, color:'#fff', lineHeight:1.2 }}>{img.label}</div>
@@ -396,18 +378,12 @@ export default function HomeClient() {
         <div className="pricing-grid">
           {plans.map(plan => (
             <div key={plan.key} className={`pcard ${plan.featured ? 'featured' : ''}`}>
-              {plan.badge && (
-                <div className="pcard-badge">{plan.badge}</div>
-              )}
+              {plan.badge && <div className="pcard-badge">{plan.badge}</div>}
               <span className="pcard-label">{plan.label}</span>
               <div className="pcard-price">{plan.price}</div>
               <span className="pcard-period">{plan.period}</span>
               <ul className="pcard-features">{plan.features.map((f, i) => <li key={i}>{f}</li>)}</ul>
-              <button
-                className={`btn-plan ${plan.featured ? '' : 'outline'}`}
-                onClick={() => { setSelectedPlan(plan.key); setShowRegister(true) }}>
-                {t.comenzar}
-              </button>
+              <button className={`btn-plan ${plan.featured ? '' : 'outline'}`} onClick={() => { setSelectedPlan(plan.key); setShowRegister(true) }}>{t.comenzar}</button>
             </div>
           ))}
         </div>
@@ -418,9 +394,7 @@ export default function HomeClient() {
         <span className="section-label">{t.contactLabel}</span>
         <h2 className="section-h2">{t.contactH2}</h2>
         <p style={{ marginTop:16, fontSize:15, fontWeight:300, color:'var(--g500)', lineHeight:1.8 }}>{t.contactDesc}</p>
-        <a
-          href="mailto:lcarq01@gmail.com"
-          style={{ display:'inline-flex', alignItems:'center', gap:10, marginTop:20, marginBottom:8, fontSize:15, color:'var(--ink)', fontWeight:400, textDecoration:'none', borderBottom:'1px solid var(--ink)', paddingBottom:2 }}>
+        <a href="mailto:lcarq01@gmail.com" style={{ display:'inline-flex', alignItems:'center', gap:10, marginTop:20, marginBottom:8, fontSize:15, color:'var(--ink)', fontWeight:400, textDecoration:'none', borderBottom:'1px solid var(--ink)', paddingBottom:2 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 7 10-7" /></svg>
           lcarq01@gmail.com
         </a>
@@ -443,7 +417,7 @@ export default function HomeClient() {
           <div>
             <div className="footer-col-title">{t.footerLinks.recursos}</div>
             <ul className="footer-links">
-              <li><button onClick={() => setShowLogin(true)}>{lang === 'en' ? 'Portal' : 'Portal'}</button></li>
+              <li><button onClick={() => setShowLogin(true)}>Portal</button></li>
               <li><button onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior:'smooth' })}>{lang === 'en' ? 'Support' : 'Soporte'}</button></li>
             </ul>
           </div>
