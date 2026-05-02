@@ -1,12 +1,10 @@
 // app/api/stripe/success/route.js
 //
 // Redirect destination después del checkout de Stripe (con o sin trial).
-// Lee pending_registrations por el ID en metadata, crea el user real,
-// y borra el pending. Después redirige al landing con ?payment=success.
-//
-// IMPORTANTE: el webhook de Stripe puede llegar antes que este redirect
-// (race condition). Por eso usamos UPSERT en lugar de INSERT, así si el
-// webhook ya creó el user, simplemente actualizamos en lugar de duplicar.
+// Lee pending_registrations, crea user en Supabase Auth y users table,
+// y AHORA TAMBIÉN guarda los campos de subscription (status, trial_end, etc.)
+// directamente desde Stripe — esto evita la race condition con el webhook
+// que llega antes de que el user exista.
 
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
@@ -15,6 +13,9 @@ import crypto from 'crypto'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://archportal.net'
+
+// Helper: timestamp Unix → ISO string
+const toISO = (unixTs) => unixTs ? new Date(unixTs * 1000).toISOString() : null
 
 export async function GET(request) {
   const url = new URL(request.url)
@@ -26,8 +27,7 @@ export async function GET(request) {
   }
 
   try {
-    // CRÍTICO: expand subscription para que session.subscription venga lleno (no como id),
-    // especialmente importante en flujos con trial_period_days donde tarda en propagarse.
+    // Expand subscription y customer para tener todo en una sola llamada
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['subscription', 'customer'],
     })
@@ -36,57 +36,54 @@ export async function GET(request) {
       id: session.id,
       status: session.status,
       payment_status: session.payment_status,
-      customer: typeof session.customer === 'string' ? session.customer : session.customer?.id,
-      subscription: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id,
       mode: session.mode,
     })
 
-    // Aceptamos status:complete (es lo que pasa con trial). payment_status puede ser
-    // 'paid' (sin trial) o 'no_payment_required' (con trial).
     if (session.status !== 'complete') {
-      console.warn('[success] session not complete, redirecting to cancelled')
+      console.warn('[success] session not complete')
       return NextResponse.redirect(`${APP_URL}?payment=cancelled`)
     }
 
     const pendingId = session.metadata?.pending_id
     if (!pendingId) {
-      console.error('[success] missing pending_id in session metadata:', sessionId)
+      console.error('[success] missing pending_id in metadata')
       return NextResponse.redirect(`${APP_URL}?payment=error`)
     }
 
-    // Buscar el pending registration
     const { data: pending, error: pendingErr } = await supabaseAdmin
       .from('pending_registrations')
       .select('*')
       .eq('id', pendingId)
       .maybeSingle()
 
-    if (pendingErr) {
-      console.error('[success] error fetching pending:', pendingErr)
-      return NextResponse.redirect(`${APP_URL}?payment=error`)
-    }
-    if (!pending) {
-      console.error('[success] pending registration not found:', pendingId)
+    if (pendingErr || !pending) {
+      console.error('[success] pending not found:', pendingId, pendingErr)
       return NextResponse.redirect(`${APP_URL}?payment=error`)
     }
 
-    // Idempotencia: si ya fue consumido, no recrear
     if (pending.consumed_at) {
-      console.log('[success] pending already consumed, redirecting')
+      console.log('[success] pending already consumed')
       return NextResponse.redirect(`${APP_URL}?payment=success`)
     }
 
-    // Extraer customer_id y subscription_id de la session
-    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
-    const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+    // Customer ID y Subscription object completos
+    const customerId = typeof session.customer === 'string'
+      ? session.customer
+      : session.customer?.id
+
+    // session.subscription es el objeto completo gracias al expand
+    const subscription = typeof session.subscription === 'object' ? session.subscription : null
+    const subscriptionId = subscription?.id ||
+      (typeof session.subscription === 'string' ? session.subscription : null)
 
     if (!customerId) {
-      console.error('[success] missing customer in session — this should never happen')
+      console.error('[success] missing customer id in session')
       return NextResponse.redirect(`${APP_URL}?payment=error`)
     }
 
-    // Crear user en Supabase Auth con password aleatorio temporal.
-    // El usuario establecerá su password real desde el email de "establece contraseña".
+    console.log('[success] customer:', customerId, 'subscription:', subscriptionId)
+
+    // Crear auth user con password aleatorio
     const tempPassword = crypto.randomBytes(32).toString('hex')
 
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -100,7 +97,7 @@ export async function GET(request) {
     }
     console.log('[success] auth user created:', authUser.user.id)
 
-    // UPSERT en users — si el webhook ya creó el row, actualizamos; si no, insertamos
+    // Construir payload del user con TODOS los campos de subscription
     const userPayload = {
       id: authUser.user.id,
       email: pending.email,
@@ -111,17 +108,32 @@ export async function GET(request) {
       stripe_subscription_id: subscriptionId || null,
     }
 
+    // Si tenemos el subscription object expandido, llenamos también los campos de status
+    if (subscription) {
+      userPayload.subscription_status = subscription.status
+      userPayload.trial_end = toISO(subscription.trial_end)
+      userPayload.current_period_end = toISO(subscription.current_period_end)
+      userPayload.cancel_at_period_end = subscription.cancel_at_period_end || false
+      console.log('[success] subscription details:', {
+        status: subscription.status,
+        trial_end: userPayload.trial_end,
+        current_period_end: userPayload.current_period_end,
+      })
+    } else {
+      console.warn('[success] subscription not expanded — webhook will need to fill these')
+    }
+
+    // UPSERT — si el webhook ya lo creó, actualizamos
     const { error: insertError } = await supabaseAdmin
       .from('users')
       .upsert(userPayload, { onConflict: 'id' })
 
     if (insertError) {
-      console.error('[success] users insert/upsert failed:', insertError)
-      // Rollback: borrar el auth user creado
+      console.error('[success] users upsert failed:', insertError)
       try { await supabaseAdmin.auth.admin.deleteUser(authUser.user.id) } catch {}
       throw insertError
     }
-    console.log('[success] users row created/updated for', pending.email)
+    console.log('[success] users row created/updated')
 
     // Crear primer proyecto
     const { data: project, error: projectError } = await supabaseAdmin.from('projects').insert({
@@ -139,7 +151,6 @@ export async function GET(request) {
 
     if (projectError) {
       console.error('[success] project insert failed:', projectError)
-      // No hacemos rollback total — el user ya está, sigue al login
     } else if (project) {
       const { error: stageError } = await supabaseAdmin.from('project_stages').insert({
         project_id: project.id,
@@ -152,13 +163,13 @@ export async function GET(request) {
       if (stageError) console.warn('[success] stage insert warning:', stageError)
     }
 
-    // Marcar pending como consumido
+    // Marcar pending como consumido y borrar el password_hash
     await supabaseAdmin
       .from('pending_registrations')
       .update({ consumed_at: new Date().toISOString(), password_hash: '' })
       .eq('id', pendingId)
 
-    // Mandar email "establece tu contraseña"
+    // Email de "establece contraseña"
     if (process.env.RESEND_API_KEY) {
       try {
         const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
@@ -188,12 +199,12 @@ export async function GET(request) {
               <p style="text-align:center;margin-top:24px;font-size:11px;color:#9A9990;">ArchPortal — Portal para despachos de arquitectura</p>
             </div>`,
         })
-        console.log('[success] welcome email sent to', pending.email)
+        console.log('[success] welcome email sent')
       } catch (emailErr) {
         console.warn('[success] welcome email failed (non-fatal):', emailErr.message)
       }
     } else {
-      console.warn('[success] RESEND_API_KEY not configured, skipping welcome email')
+      console.warn('[success] RESEND_API_KEY not configured')
     }
 
     return NextResponse.redirect(`${APP_URL}?payment=success`)
