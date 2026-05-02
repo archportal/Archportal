@@ -95,7 +95,7 @@ export async function POST(request) {
       locale: 'es',
       // Trial de 7 días — alinea con la promesa de "7 días de garantía".
       // Comentar la siguiente línea si NO quieres trial automático.
-      // subscription_data: { trial_period_days: 7 },
+      subscription_data: { trial_period_days: 7 },
     }
 
     if (promotionCodeId) {
