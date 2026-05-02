@@ -252,14 +252,14 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
       <div className="portal-topbar-row1">
         <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:20, fontWeight:400, color:'var(--ink)' }}>ArchPortal</div>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid var(--border)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>
-          <div style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer' }} onClick={() => setShowProfile(true)}>
-            <div style={{ width:32, height:32, borderRadius:'50%', background:'var(--g200)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:600, color:'var(--g600)' }}>{ini}</div>
-            <span style={{ fontSize:13, fontWeight:300, color:'var(--g500)' }}>{user.name||user.email}</span>
-            <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>
+          <button className="portal-tb-btn" onClick={() => setShowHelp(true)}>Ayuda</button>
+          <div className="portal-user-chip" onClick={() => setShowProfile(true)} style={{ cursor:'pointer' }}>
+            <div className="portal-user-chip-avatar">{ini}</div>
+            <span className="portal-user-chip-name">{user.name||user.email}</span>
+            <span className="portal-user-chip-arrow">▾</span>
           </div>
-          {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00', letterSpacing:'.06em', textTransform:'uppercase' }}>Impersonando</span>}
-          <button onClick={() => window.location.reload()} style={{ background:'none', border:'1px solid var(--border)', padding:'6px 12px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Salir</button>
+          {user.impersonated && <span className="portal-impersonate-badge">Impersonando</span>}
+          <button className="portal-tb-btn" onClick={() => window.location.reload()}>Salir</button>
         </div>
       </div>
       </div>
@@ -453,14 +453,14 @@ export default function Portal({ user, projects:initialProjects, onLogout, lang,
             <span style={menuOpen?{transform:'rotate(-45deg) translate(5px,-5px)'}:{}}/>
           </button>
           <div className="portal-user">
-            {isArq && <button onClick={() => setShowHelp(true)} style={{ background:'none', border:'1px solid rgba(0,0,0,.12)', padding:'5px 14px', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g400)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Ayuda</button>}
-            <div style={{ display:'flex', alignItems:'center', gap:6, cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
-              <div className="portal-avatar">{ini}</div>
-              <span className="portal-username" style={{ fontSize:12, color:'var(--g400)' }}>{activeProject?.nombre || '—'}</span>
-              {isArq && <span style={{ fontSize:10, color:'var(--g400)' }}>▾</span>}
+            {isArq && <button className="portal-tb-btn" onClick={() => setShowHelp(true)}>Ayuda</button>}
+            <div className="portal-user-chip" style={{ cursor: isArq ? 'pointer' : 'default' }} onClick={() => isArq && setShowProfile(true)}>
+              <div className="portal-user-chip-avatar">{ini}</div>
+              <span className="portal-user-chip-name portal-username">{activeProject?.nombre || '—'}</span>
+              {isArq && <span className="portal-user-chip-arrow">▾</span>}
             </div>
-            {user.impersonated && <span style={{ fontSize:10, padding:'3px 8px', background:'#FEF4E4', color:'#7A4A00' }}>Admin</span>}
-            <button className="btn-logout" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
+            {user.impersonated && <span className="portal-impersonate-badge">Admin</span>}
+            <button className="portal-tb-btn" onClick={onLogout}>{lang==='en' ? 'Sign out' : 'Salir'}</button>
           </div>
         </div>
         {/* Tabs: centro en desktop, dropdown en móvil */}

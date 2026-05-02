@@ -37,7 +37,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 .form-input:focus-visible { outline: none; border-bottom-color: var(--ink); }
 
-/* ── NAV ──────────────────────────────────────────── */
+/* ── NAV (LANDING) ────────────────────────────────── */
 .nav { position:fixed; top:0; left:0; right:0; height:68px; display:flex; align-items:center; justify-content:space-between; padding:0 48px; z-index:100; transition:background .3s,border .3s; }
 .nav.scrolled { background:var(--white); border-bottom:1px solid var(--border); }
 .nav-logo { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400; color:var(--white); letter-spacing:.04em; cursor:pointer; transition:color .3s; }
@@ -57,7 +57,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .nav.scrolled .lang-btn { color:var(--g400); }
 .nav.scrolled .lang-btn.active { background:var(--g100); color:var(--ink); }
 
-/* ── HERO ─────────────────────────────────────────── */
+/* ── HERO (LANDING) ───────────────────────────────── */
 .hero { min-height:100vh; background:var(--ink); display:grid; grid-template-columns:1fr 1fr; align-items:end; padding:120px 48px 80px; gap:48px; position:relative; overflow:hidden; }
 .hero-bg { position:absolute; inset:0; object-fit:cover; opacity:.4; width:100%; height:100%; }
 .hero-content { position:relative; z-index:2; }
@@ -70,35 +70,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .btn-ghost { padding:14px 32px; background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.3); font-family:'Jost',sans-serif; font-size:11px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:border-color .2s; }
 .btn-ghost:hover { border-color:rgba(255,255,255,.7); }
 
-/* ── HERO STATS — números grandes con jerarquía ─────── */
-.hero-stats {
-  position:relative; z-index:2;
-  display:flex; flex-direction:column; gap:36px;
-  align-items:flex-end; align-self:end; padding-bottom:8px;
-}
-.stat-card {
-  text-align:right;
-  padding-right:18px;
-  border-right:1px solid rgba(255,255,255,.18);
-  transition:border-color .3s ease;
-}
+/* ── HERO STATS ───────────────────────────────────── */
+.hero-stats { position:relative; z-index:2; display:flex; flex-direction:column; gap:36px; align-items:flex-end; align-self:end; padding-bottom:8px; }
+.stat-card { text-align:right; padding-right:18px; border-right:1px solid rgba(255,255,255,.18); transition:border-color .3s ease; }
 .stat-card:hover { border-right-color:var(--gold); }
-.stat-card-num {
-  font-family:'Cormorant Garamond', serif;
-  font-size:64px; font-weight:300; color:var(--white);
-  line-height:1; letter-spacing:-.02em; white-space:nowrap;
-}
-.stat-card-cap {
-  font-family:'Jost', sans-serif;
-  font-size:10px; letter-spacing:.22em; text-transform:uppercase;
-  color:rgba(255,255,255,.55); margin-top:8px; font-weight:500;
-}
-/* legacy fallback */
+.stat-card-num { font-family:'Cormorant Garamond', serif; font-size:64px; font-weight:300; color:var(--white); line-height:1; letter-spacing:-.02em; white-space:nowrap; }
+.stat-card-cap { font-family:'Jost', sans-serif; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-top:8px; font-weight:500; }
 .stat-pill { display:inline-block; padding:10px 20px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.92); font-family:'Jost',sans-serif; font-size:12px; }
 .stat-number { font-family:'Cormorant Garamond',serif; font-size:64px; font-weight:300; color:var(--white); line-height:1; }
 .stat-label { font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:rgba(255,255,255,.45); margin-top:4px; }
 
-/* ── SECTIONS ─────────────────────────────────────── */
+/* ── SECTIONS (LANDING) ───────────────────────────── */
 .section { padding:100px 48px; }
 .section-label { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--g400); margin-bottom:16px; display:block; }
 .section-h2 { font-family:'Cormorant Garamond',serif; font-size:52px; font-weight:400; color:var(--ink); line-height:1.1; }
@@ -111,14 +93,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .feature-title { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400; color:var(--ink); margin-bottom:12px; }
 .feature-desc { font-size:13px; font-weight:300; color:var(--g500); line-height:1.8; }
 
-/* ── WHY EXISTE — ilustración SVG ─────────────────── */
-.why-illustration {
-  position:relative; aspect-ratio:4/5;
-  background:#FFFFFF; border:1px solid var(--border); overflow:hidden;
-  box-shadow:0 8px 40px rgba(12,12,12,.08);
-}
+.why-illustration { position:relative; aspect-ratio:4/5; background:#FFFFFF; border:1px solid var(--border); overflow:hidden; box-shadow:0 8px 40px rgba(12,12,12,.08); }
 
-/* ── PRICING ──────────────────────────────────────── */
+/* ── PRICING (LANDING) ────────────────────────────── */
 .pricing-section { background:var(--ink); padding:100px 48px; }
 .pricing-section .section-h2 { color:var(--white); }
 .pricing-section .section-label { color:rgba(255,255,255,.4); }
@@ -137,7 +114,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .btn-plan.outline { background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.25); }
 .pcard-badge { position:absolute; top:-1px; right:-1px; background:var(--gold); color:var(--ink); font-family:'Jost',sans-serif; font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:6px 12px; }
 
-/* ── FOOTER ───────────────────────────────────────── */
+/* ── FOOTER (LANDING) ─────────────────────────────── */
 .footer { background:var(--ink); padding:64px 48px 32px; }
 .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; margin-bottom:48px; }
 .footer-brand { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--white); margin-bottom:16px; }
@@ -145,11 +122,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .footer-col-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:rgba(255,255,255,.35); margin-bottom:20px; }
 .footer-links { list-style:none; }
 .footer-links li { margin-bottom:12px; }
-.footer-links a, .footer-links button {
-  font-family:'Jost',sans-serif; font-size:13px; font-weight:300;
-  color:rgba(255,255,255,.5); text-decoration:none; cursor:pointer;
-  transition:color .2s; background:none; border:none; padding:0; text-align:left;
-}
+.footer-links a, .footer-links button { font-family:'Jost',sans-serif; font-size:13px; font-weight:300; color:rgba(255,255,255,.5); text-decoration:none; cursor:pointer; transition:color .2s; background:none; border:none; padding:0; text-align:left; }
 .footer-links a:hover, .footer-links button:hover { color:var(--white); }
 .footer-bottom { border-top:1px solid rgba(255,255,255,.1); padding-top:24px; display:flex; justify-content:space-between; font-size:12px; font-weight:300; color:rgba(255,255,255,.3); }
 
@@ -171,7 +144,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .step-tab { flex:1; padding:14px; text-align:center; font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-family:'Jost',sans-serif; color:var(--g400); border-bottom:2px solid transparent; transition:all .2s; }
 .step-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 
-/* ── PORTAL TOPBAR ────────────────────────────────── */
+/* ══════════════════════════════════════════════════════ */
+/* PORTAL                                                 */
+/* ══════════════════════════════════════════════════════ */
+
 .portal-hamburger { display:none; }
 .portal-topbar {
   background:var(--white); border-bottom:1px solid var(--border);
@@ -187,7 +163,97 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .portal-tabs { display:flex; gap:0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .portal-tab { padding:8px 18px; background:none; border:none; font-family:'Jost',sans-serif; font-size:12px; font-weight:400; color:var(--g400); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all .2s; letter-spacing:.04em; }
 .portal-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
-.portal-user { display:flex; align-items:center; gap:12px; font-size:12px; color:var(--g500); }
+.portal-user { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--g500); }
+
+/* Botones del topbar (Ayuda, Salir) — diseño consistente */
+.portal-tb-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 7px 16px;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--g500);
+  cursor: pointer;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: all .2s ease;
+  white-space: nowrap;
+}
+.portal-tb-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--paper);
+}
+.portal-tb-btn:active {
+  transform: translateY(1px);
+}
+
+/* Chip de usuario/proyecto activo — fondo negro para contraste */
+.portal-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  transition: background .2s ease, border-color .2s ease;
+  user-select: none;
+}
+.portal-user-chip:hover {
+  background: var(--ink2);
+  border-color: var(--ink2);
+}
+.portal-user-chip-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  flex-shrink: 0;
+}
+.portal-user-chip-name {
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,.92);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.portal-user-chip-arrow {
+  font-size: 10px;
+  color: rgba(255,255,255,.5);
+  margin-left: 2px;
+}
+
+/* Badge "Impersonando" / "Admin" */
+.portal-impersonate-badge {
+  font-size: 10px;
+  padding: 4px 10px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid rgba(122,74,0,.15);
+}
+
+/* Legacy fallback — el avatar viejo y btn-logout */
+.portal-avatar { width:32px; height:32px; border-radius:50%; background:var(--g200); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--g600); flex-shrink:0; }
+.btn-logout { background:transparent; border:1px solid var(--border); padding:7px 16px; font-family:'Jost',sans-serif; font-size:11px; font-weight:500; color:var(--g500); cursor:pointer; letter-spacing:.08em; text-transform:uppercase; border-radius:4px; transition:all .2s; }
+.btn-logout:hover { border-color:var(--ink); color:var(--ink); background:var(--paper); }
 
 /* ── PORTAL DASHBOARD / CARDS ─────────────────────── */
 .page-content { padding:32px; max-width:1200px; margin:0 auto; }
@@ -266,6 +332,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .section-hero { padding:18px 16px; }
   .section-hero-title { font-size:24px; }
 
+  /* Portal topbar mobile */
   .portal-topbar { padding:0; height:auto; flex-direction:column; align-items:stretch; grid-template-columns:none; display:flex; }
   .portal-topbar-row1 { display:flex !important; align-items:center; justify-content:space-between; padding:0 16px; height:52px; border-bottom:1px solid var(--border); }
   .portal-tabs { display:none; flex-direction:column; background:var(--white); border-bottom:1px solid var(--border); padding:8px 0; }
@@ -273,8 +340,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .portal-tab { padding:13px 20px; font-size:13px; white-space:nowrap; border-bottom:none; border-left:3px solid transparent; text-align:left; width:100%; }
   .portal-tab.active { border-left-color:var(--ink); color:var(--ink); font-weight:600; background:var(--off); border-bottom-color:transparent; }
   .portal-user span.portal-username { display:none; }
+  .portal-user-chip-name { max-width:100px; }
   .portal-hamburger { display:flex; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:8px; }
   .portal-hamburger span { display:block; width:22px; height:2px; background:var(--ink); border-radius:2px; transition:all .2s; }
+
+  .portal-tb-btn { padding:6px 12px; font-size:10px; }
 
   .modal { max-width:100%; margin:0 16px; }
   .modal-header { padding:28px 24px 20px; }
@@ -291,6 +361,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .metric-value { font-size:22px; }
   .footer-grid { grid-template-columns:1fr; }
   .portal-tab { padding:10px 10px; font-size:10px; }
+  .portal-user-chip-name { display:none; }
+  .portal-tb-btn { padding:6px 10px; }
 }
 
 @media print {
