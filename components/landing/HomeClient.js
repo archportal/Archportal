@@ -72,7 +72,7 @@ export default function HomeClient() {
       whyP3: 'Si manejas entre 1 y 20 proyectos al año y estás cansado del caos, esto es para ti.',
       pricingLabel: 'Planes',
       pricingH2: 'Comienza hoy',
-      pricingTrust: '7 días de garantía · Cancelas cuando quieras · Sin permanencia',
+      pricingTrust: '7 días gratis · Cancelas cuando quieras · Sin permanencia',
       comenzar: 'Comenzar',
       contactLabel: 'Contacto',
       contactH2: 'Hablemos',
