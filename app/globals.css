@@ -53,7 +53,7 @@ input:focus-visible,
 .nav-cta { padding:10px 24px; background:var(--white); color:var(--ink); border:none; font-family:'Jost',sans-serif; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s; }
 .nav.scrolled .nav-cta { background:var(--ink); color:var(--white); }
 
-/* Lang toggle (extraído de inline styles) */
+/* Lang toggle */
 .lang-toggle { display:flex; gap:2px; border:1px solid rgba(255,255,255,.25); border-radius:4px; padding:2px; margin-right:8px; transition:border-color .3s; }
 .nav.scrolled .lang-toggle { border-color:var(--border); }
 .lang-btn { padding:5px 12px; background:transparent; color:rgba(255,255,255,.45); border:none; border-radius:3px; font-family:'Jost',sans-serif; font-size:11px; font-weight:500; letter-spacing:.08em; cursor:pointer; transition:all .2s; }
@@ -74,7 +74,7 @@ input:focus-visible,
 .btn-ghost { padding:14px 32px; background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.3); font-family:'Jost',sans-serif; font-size:11px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:border-color .2s; }
 .btn-ghost:hover { border-color:rgba(255,255,255,.7); }
 
-/* Hero stats — ahora "pills" en vez de números fake */
+/* Hero stats — pills */
 .hero-stats { position:relative; z-index:2; display:flex; flex-direction:column; gap:14px; align-items:flex-end; align-self:end; padding-bottom:8px; }
 .stat-item { text-align:right; }
 .stat-pill {
@@ -89,7 +89,7 @@ input:focus-visible,
   letter-spacing:.06em;
   backdrop-filter: blur(4px);
 }
-/* Compatibilidad legacy si quedan stat-number/stat-label en algún lado */
+/* Compatibilidad legacy */
 .stat-number { font-family:'Cormorant Garamond',serif; font-size:64px; font-weight:300; color:var(--white); line-height:1; }
 .stat-label { font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:rgba(255,255,255,.45); margin-top:4px; }
 
@@ -124,7 +124,7 @@ input:focus-visible,
 .btn-plan:hover { opacity:.85; }
 .btn-plan.outline { background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.25); }
 
-/* Badge "Más popular" en plan destacado */
+/* Badge "Más popular" */
 .pcard-badge {
   position:absolute;
   top:-1px;
@@ -201,19 +201,34 @@ input:focus-visible,
 .portal-tab.active { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 .portal-user { display:flex; align-items:center; gap:12px; font-size:12px; color:var(--g500); }
 
-/* ── DASHBOARD/CARDS ──────────────────────────────── */
-.page-content { padding:24px 32px; max-width:1200px; margin:0 auto; }
-.card { background:var(--white); border:1px solid var(--border); padding:24px; }
-.section-hero { background:var(--paper); padding:32px; }
-.section-hero-title { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:400; color:var(--ink); }
+/* ── PORTAL DASHBOARD / CARDS ─────────────────────── */
+.page-content { padding:32px; max-width:1200px; margin:0 auto; }
+
+/* Section hero — el bloque oscuro grande con datos del proyecto */
+.section-hero { background:var(--ink); padding:28px 32px; margin-bottom:20px; position:relative; overflow:hidden; }
+.section-hero::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--gold), transparent); }
+.section-hero-eyebrow { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.35); margin-bottom:10px; }
+.section-hero-title { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:400; color:var(--white); line-height:1.1; }
+.section-hero-sub { font-size:13px; color:rgba(255,255,255,.45); margin-top:6px; font-weight:300; }
+
+/* Metric cards — las tarjetas blancas con AVANCE GENERAL, PRESUPUESTO, etc. */
 .metrics-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
-.metric-card { background:var(--white); border:1px solid var(--border); padding:24px; }
-.metric-value { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--ink); }
-.metric-label { font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--g400); margin-bottom:12px; }
-.metric-sub { font-size:12px; color:var(--g500); margin-top:8px; }
-.two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
-.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; }
-.stage-row { display:flex; gap:16px; align-items:center; padding:14px 0; border-bottom:1px solid var(--g100); }
+.metric-card { background:var(--white); border:1px solid var(--border); padding:24px 24px 20px; position:relative; overflow:hidden; transition:box-shadow .2s; }
+.metric-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.06); }
+.metric-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--ink); }
+.metric-label { font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--g400); margin-bottom:12px; font-weight:500; }
+.metric-value { font-family:'Cormorant Garamond',serif; font-size:42px; font-weight:300; color:var(--ink); line-height:1; margin-bottom:8px; }
+.metric-sub { font-size:12px; font-weight:300; color:var(--g400); }
+.metric-card.accent::before { background:var(--gold); }
+.metric-card.accent .metric-value { color:var(--warn); }
+
+/* Card y stages */
+.card { background:var(--white); border:1px solid var(--border); padding:28px; margin-bottom:16px; }
+.card:hover { box-shadow:0 2px 12px rgba(0,0,0,.04); }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.stage-row { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--g100); }
+.stage-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
 
 /* Tables */
 .data-table { width:100%; border-collapse:collapse; }
@@ -260,6 +275,9 @@ input:focus-visible,
   .metric-label { font-size:9px; margin-bottom:8px; }
   .metric-sub { font-size:10px; }
   .two-col,.three-col { grid-template-columns:1fr; }
+  .card { padding:16px; }
+  .section-hero { padding:18px 16px; }
+  .section-hero-title { font-size:24px; }
 
   /* Portal topbar — hamburguesa en móvil */
   .portal-topbar {
@@ -297,9 +315,6 @@ input:focus-visible,
   .modal { max-width:100%; margin:0 16px; }
   .modal-header { padding:28px 24px 20px; }
   .modal-body { padding:24px; }
-  .card { padding:16px; }
-  .section-hero { padding:18px 16px; }
-  .section-hero-title { font-size:24px; }
   .data-table th, .data-table td { padding:10px 8px 10px 0; font-size:12px; }
   .stage-row { gap:8px; }
 }
