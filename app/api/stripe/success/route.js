@@ -1,43 +1,57 @@
 // app/api/stripe/success/route.js
 //
-// Webhook/redirect destination después del pago exitoso de Stripe.
+// Redirect destination después del checkout de Stripe (con o sin trial).
 // Lee pending_registrations por el ID en metadata, crea el user real,
 // y borra el pending. Después redirige al landing con ?payment=success.
 //
-// IMPORTANTE: si ya tienes un /api/stripe/success existente, MERGE este código
-// con el tuyo en lugar de reemplazar. Lo crítico es:
-//   1. Leer session.metadata.pending_id (NO password)
-//   2. Buscar en pending_registrations
-//   3. Crear el user con auth.admin.createUser pasando el password_hash
-//      (NOTA: Supabase no acepta password_hash directo, así que el flujo
-//      requiere un workaround — ver comentarios abajo)
-//   4. Marcar el pending como consumido y borrar el password_hash
+// IMPORTANTE: el webhook de Stripe puede llegar antes que este redirect
+// (race condition). Por eso usamos UPSERT en lugar de INSERT, así si el
+// webhook ya creó el user, simplemente actualizamos en lugar de duplicar.
 
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase'
+import crypto from 'crypto'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://archportal.net'
 
 export async function GET(request) {
   const url = new URL(request.url)
   const sessionId = url.searchParams.get('session_id')
 
   if (!sessionId) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=error`)
+    console.error('[success] missing session_id')
+    return NextResponse.redirect(`${APP_URL}?payment=error`)
   }
 
   try {
-    // Recuperar la sesión de Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-    if (session.payment_status !== 'paid' && session.status !== 'complete') {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=cancelled`)
+    // CRÍTICO: expand subscription para que session.subscription venga lleno (no como id),
+    // especialmente importante en flujos con trial_period_days donde tarda en propagarse.
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'customer'],
+    })
+
+    console.log('[success] session retrieved:', {
+      id: session.id,
+      status: session.status,
+      payment_status: session.payment_status,
+      customer: typeof session.customer === 'string' ? session.customer : session.customer?.id,
+      subscription: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id,
+      mode: session.mode,
+    })
+
+    // Aceptamos status:complete (es lo que pasa con trial). payment_status puede ser
+    // 'paid' (sin trial) o 'no_payment_required' (con trial).
+    if (session.status !== 'complete') {
+      console.warn('[success] session not complete, redirecting to cancelled')
+      return NextResponse.redirect(`${APP_URL}?payment=cancelled`)
     }
 
     const pendingId = session.metadata?.pending_id
     if (!pendingId) {
-      console.error('Stripe success without pending_id:', sessionId)
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=error`)
+      console.error('[success] missing pending_id in session metadata:', sessionId)
+      return NextResponse.redirect(`${APP_URL}?payment=error`)
     }
 
     // Buscar el pending registration
@@ -47,59 +61,70 @@ export async function GET(request) {
       .eq('id', pendingId)
       .maybeSingle()
 
-    if (pendingErr || !pending) {
-      console.error('Pending registration not found:', pendingId, pendingErr)
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=error`)
+    if (pendingErr) {
+      console.error('[success] error fetching pending:', pendingErr)
+      return NextResponse.redirect(`${APP_URL}?payment=error`)
+    }
+    if (!pending) {
+      console.error('[success] pending registration not found:', pendingId)
+      return NextResponse.redirect(`${APP_URL}?payment=error`)
     }
 
-    // Si ya fue consumido, no recrear (idempotencia para webhooks duplicados)
+    // Idempotencia: si ya fue consumido, no recrear
     if (pending.consumed_at) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=success`)
+      console.log('[success] pending already consumed, redirecting')
+      return NextResponse.redirect(`${APP_URL}?payment=success`)
     }
 
-    // ────────────────────────────────────────────────────────────────────
-    // NOTA IMPORTANTE sobre el password:
-    // Supabase auth.admin.createUser() acepta `password` (plaintext) pero NO
-    // acepta directamente un bcrypt hash. La forma segura es:
-    //  (a) Crear el user CON un password aleatorio fuerte
-    //  (b) Marcar email_confirm=true
-    //  (c) Mandar al usuario un email con link de "establecer contraseña"
-    //      usando supabaseAdmin.auth.admin.generateLink({ type: 'recovery' })
-    //
-    // De esta forma, el password que el usuario eligió en el RegisterModal
-    // efectivamente NO se usa — se le pide que lo configure de nuevo en el
-    // primer login. Es la única forma realmente segura sin tocar el flujo
-    // de hash de Supabase.
-    //
-    // Alternativa pragmática (NO recomendada para producción): conservar el
-    // password en plaintext durante 30 min en pending_registrations, leerlo
-    // aquí, y usarlo para createUser. La superficie de exposición es mucho
-    // menor que en Stripe metadata pero sigue siendo plaintext en una DB.
-    // ────────────────────────────────────────────────────────────────────
+    // Extraer customer_id y subscription_id de la session
+    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
+    const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
 
-    // Generar un password aleatorio temporal (el usuario establecerá el suyo después)
-    const tempPassword = require('crypto').randomBytes(32).toString('hex')
+    if (!customerId) {
+      console.error('[success] missing customer in session — this should never happen')
+      return NextResponse.redirect(`${APP_URL}?payment=error`)
+    }
+
+    // Crear user en Supabase Auth con password aleatorio temporal.
+    // El usuario establecerá su password real desde el email de "establece contraseña".
+    const tempPassword = crypto.randomBytes(32).toString('hex')
 
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: pending.email,
       password: tempPassword,
       email_confirm: true,
     })
-    if (authError) throw authError
+    if (authError) {
+      console.error('[success] auth.admin.createUser failed:', authError)
+      throw authError
+    }
+    console.log('[success] auth user created:', authUser.user.id)
 
-    // Insertar en users table
-    await supabaseAdmin.from('users').insert({
+    // UPSERT en users — si el webhook ya creó el row, actualizamos; si no, insertamos
+    const userPayload = {
       id: authUser.user.id,
       email: pending.email,
       name: pending.nombre,
       role: 'arq',
       plan: pending.plan,
-      stripe_customer_id: session.customer,
-      stripe_subscription_id: session.subscription,
-    })
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId || null,
+    }
+
+    const { error: insertError } = await supabaseAdmin
+      .from('users')
+      .upsert(userPayload, { onConflict: 'id' })
+
+    if (insertError) {
+      console.error('[success] users insert/upsert failed:', insertError)
+      // Rollback: borrar el auth user creado
+      try { await supabaseAdmin.auth.admin.deleteUser(authUser.user.id) } catch {}
+      throw insertError
+    }
+    console.log('[success] users row created/updated for', pending.email)
 
     // Crear primer proyecto
-    const { data: project } = await supabaseAdmin.from('projects').insert({
+    const { data: project, error: projectError } = await supabaseAdmin.from('projects').insert({
       user_id: authUser.user.id,
       nombre: (pending.despacho || pending.nombre) + ' - Proyecto 1',
       cliente: '',
@@ -112,8 +137,11 @@ export async function GET(request) {
       architect_email: pending.email,
     }).select().single()
 
-    if (project) {
-      await supabaseAdmin.from('project_stages').insert({
+    if (projectError) {
+      console.error('[success] project insert failed:', projectError)
+      // No hacemos rollback total — el user ya está, sigue al login
+    } else if (project) {
+      const { error: stageError } = await supabaseAdmin.from('project_stages').insert({
         project_id: project.id,
         nombre: 'Proyecto arquitectonico',
         porcentaje: 0,
@@ -121,21 +149,22 @@ export async function GET(request) {
         estatus: 'Pendiente',
         orden: 0,
       })
+      if (stageError) console.warn('[success] stage insert warning:', stageError)
     }
 
-    // Marcar pending como consumido y BORRAR el password_hash inmediatamente
+    // Marcar pending como consumido
     await supabaseAdmin
       .from('pending_registrations')
       .update({ consumed_at: new Date().toISOString(), password_hash: '' })
       .eq('id', pendingId)
 
-    // Generar link de "establecer contraseña" y mandarlo por email
+    // Mandar email "establece tu contraseña"
     if (process.env.RESEND_API_KEY) {
       try {
         const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
           type: 'recovery',
           email: pending.email,
-          options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password` },
+          options: { redirectTo: `${APP_URL}/reset-password` },
         })
 
         const { Resend } = await import('resend')
@@ -150,24 +179,27 @@ export async function GET(request) {
                 <p style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6B6A62;margin:0 0 24px;">Cuenta activada</p>
                 <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:400;color:#0C0C0C;margin:0 0 24px;">Bienvenido, ${pending.nombre}</h1>
                 <p style="font-size:14px;color:#3D3C36;line-height:1.8;margin:0 0 24px;">
-                  Tu pago se procesó correctamente. Para acceder a tu portal, establece tu contraseña haciendo click abajo.
+                  Tu cuenta está activa. Para acceder al portal, establece tu contraseña haciendo click abajo.
                   Por seguridad, este link expira en 1 hora.
                 </p>
-                <a href="${linkData?.properties?.action_link || process.env.NEXT_PUBLIC_APP_URL}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">Establecer contraseña</a>
+                <a href="${linkData?.properties?.action_link || APP_URL}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">Establecer contraseña</a>
                 <p style="font-size:12px;color:#9A9990;margin-top:32px;">Plan activado: <strong>${pending.plan}</strong></p>
               </div>
               <p style="text-align:center;margin-top:24px;font-size:11px;color:#9A9990;">ArchPortal — Portal para despachos de arquitectura</p>
             </div>`,
         })
+        console.log('[success] welcome email sent to', pending.email)
       } catch (emailErr) {
-        console.warn('Setup-password email error:', emailErr.message)
+        console.warn('[success] welcome email failed (non-fatal):', emailErr.message)
       }
+    } else {
+      console.warn('[success] RESEND_API_KEY not configured, skipping welcome email')
     }
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=success`)
+    return NextResponse.redirect(`${APP_URL}?payment=success`)
 
   } catch (error) {
-    console.error('Stripe success handler error:', error)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?payment=error`)
+    console.error('[success] handler error:', error)
+    return NextResponse.redirect(`${APP_URL}?payment=error`)
   }
 }
