@@ -572,9 +572,9 @@ export default function Dashboard({ project, user, lang }) {
       {/* AVANCE POR ETAPA + BITÁCORA VISUAL */}
       <div className="dash-two-col">
         <div className="card">
-          <div className="card-title dash-card-title">
+          <div className="card-title dash-card-title" style={{marginBottom:14}}>
             <span className="dash-card-title-icon"><IconPercent /></span>
-            {t.avEtapa}
+            <span>{t.avEtapa}</span>
           </div>
           {stages.length===0 ? <p style={{fontSize:13,color:'var(--g400)',fontWeight:300}}>Sin etapas definidas</p> : (
             <div style={{maxHeight:360, overflowY: stages.length > 7 ? 'auto' : 'visible', paddingRight: stages.length > 7 ? 4 : 0}}>
@@ -582,15 +582,32 @@ export default function Dashboard({ project, user, lang }) {
                 const pct = e.porcentaje||0
                 const color = pct===100?'var(--success)':pct>0?'var(--ink)':'var(--g200)'
                 return (
-                  <div key={i} className="stage-row">
-                    <div className="stage-dot" style={{background:color}}/>
-                    <span className="stage-name" style={{fontWeight:pct>0?400:300}}>{e.nombre}</span>
-                    <div style={{flex:2,minWidth:60}}>
-                      <div className="progress-bar-wrap" style={{height:6}}>
-                        <div className="progress-bar-fill" style={{background:color,width:pct+'%',height:6,borderRadius:3,transition:'width .8s'}}/>
-                      </div>
+                  <div key={i} style={{
+                    display:'grid',
+                    gridTemplateColumns:'10px 160px 1fr 44px',
+                    alignItems:'center',
+                    gap:12,
+                    padding:'12px 0',
+                    borderBottom: i === stages.length - 1 ? 'none' : '1px solid var(--g100)',
+                  }}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:color}}/>
+                    <span style={{
+                      fontSize:13,
+                      color:'var(--ink)',
+                      fontWeight:pct>0?400:300,
+                      overflow:'hidden',
+                      textOverflow:'ellipsis',
+                      whiteSpace:'nowrap',
+                    }}>{e.nombre}</span>
+                    <div style={{height:6,background:'var(--g100)',borderRadius:3,overflow:'hidden'}}>
+                      <div style={{height:6,background:color,width:pct+'%',transition:'width .8s ease',borderRadius:3}}/>
                     </div>
-                    <span className="stage-pct">{pct}%</span>
+                    <span style={{
+                      fontSize:12,
+                      fontWeight:600,
+                      color:'var(--ink)',
+                      textAlign:'right',
+                    }}>{pct}%</span>
                   </div>
                 )
               })}
