@@ -1,8 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 import { rateLimit, getIP, rateLimitResponse } from '@/lib/ratelimit'
+import bcrypt from 'bcryptjs'
 
-// Master credentials desde variables de entorno (nunca hardcodeadas)
 const MASTER_EMAIL = process.env.MASTER_EMAIL || 'master@archportal.net'
 const MASTER_PASS  = process.env.MASTER_PASS
 
@@ -27,13 +27,13 @@ export async function POST(request) {
       })
     }
 
-    // Try Supabase Auth
+    // Try Supabase Auth (architect)
     const { data, error } = await supabaseAdmin.auth.signInWithPassword({ email, password })
 
     if (!error && data?.user) {
       const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', data.user.id).maybeSingle()
       // Update last_seen
-      await supabaseAdmin.from('users').update({ last_seen: new Date().toISOString() }).eq('id', data.user.id).then(()=>{})
+      await supabaseAdmin.from('users').update({ last_seen: new Date().toISOString() }).eq('id', data.user.id)
       return NextResponse.json({
         success: true,
         user: user || { id: data.user.id, email: data.user.email, role: 'arq', name: email.split('@')[0] },
@@ -41,29 +41,54 @@ export async function POST(request) {
       })
     }
 
-    // Try client login (email+pass stored in project)
-    const { data: projects } = await supabaseAdmin
+    // Try client login.
+    // Buscamos solo por email — la verificación de password se hace en código,
+    // soportando tanto el formato hasheado nuevo (client_pass_hash) como el plaintext
+    // legacy (client_pass) para compatibilidad mientras migras los datos.
+    const { data: candidates } = await supabaseAdmin
       .from('projects')
       .select('*, users!projects_user_id_fkey(id, name, email)')
       .eq('client_email', email)
-      .eq('client_pass', password)
 
-    if (projects && projects.length > 0) {
-      const proj = projects[0]
-      // Save client last seen on the project
-      await supabaseAdmin.from('projects').update({ client_last_seen: new Date().toISOString() }).eq('id', proj.id).then(()=>{})
-      return NextResponse.json({
-        success: true,
-        user: { id: proj.user_id + '_client_' + proj.id, email, role: 'cli', name: email, project_id: proj.id },
-        session: null,
-        client_project: proj
-      })
+    if (candidates && candidates.length > 0) {
+      for (const proj of candidates) {
+        let valid = false
+
+        // Preferimos el hash nuevo si existe
+        if (proj.client_pass_hash) {
+          try {
+            valid = await bcrypt.compare(password, proj.client_pass_hash)
+          } catch { valid = false }
+        }
+        // Fallback temporal — plaintext legacy.
+        // QUITAR esta rama una vez que hayas migrado todos los projects a client_pass_hash.
+        else if (proj.client_pass && proj.client_pass === password) {
+          valid = true
+        }
+
+        if (valid) {
+          await supabaseAdmin.from('projects').update({ client_last_seen: new Date().toISOString() }).eq('id', proj.id)
+          return NextResponse.json({
+            success: true,
+            user: {
+              id: proj.user_id + '_client_' + proj.id,
+              email,
+              role: 'cli',
+              name: email,
+              project_id: proj.id
+            },
+            session: null,
+            client_project: proj
+          })
+        }
+      }
     }
 
     return NextResponse.json({ error: 'Usuario o contraseña incorrectos' }, { status: 401 })
 
   } catch (error) {
+    // No leakear detalles del error al cliente
     console.error('Login error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

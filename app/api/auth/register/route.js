@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { rateLimit, getIP, rateLimitResponse } from '@/lib/ratelimit'
 
 export async function POST(request) {
+  let createdAuthUserId = null
+
   try {
     // Rate limit: 3 registros por minuto por IP
     const rl = rateLimit(getIP(request), 3, 60_000)
@@ -14,10 +16,24 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Nombre, email y contraseña son requeridos' }, { status: 400 })
     }
 
-    // Check duplicate
+    if (password.length < 10) {
+      return NextResponse.json({ error: 'La contraseña debe tener al menos 10 caracteres' }, { status: 400 })
+    }
+
+    // Check duplicate en users table
     const { data: existing } = await supabaseAdmin.from('users').select('id').eq('email', email).maybeSingle()
     if (existing) {
       return NextResponse.json({ error: 'Ya existe una cuenta con ese correo. Ingresa directamente al portal.' }, { status: 400 })
+    }
+
+    // Check duplicate también en Supabase Auth (puede haber un user huérfano de un registro fallido previo)
+    try {
+      const { data: authList } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
+      if (authList?.users?.some(u => u.email === email)) {
+        return NextResponse.json({ error: 'Ya existe una cuenta con ese correo. Ingresa directamente al portal.' }, { status: 400 })
+      }
+    } catch {
+      // Si listUsers falla, continuamos — el siguiente paso fallaría de todos modos si es duplicado
     }
 
     // Create Supabase Auth user
@@ -25,8 +41,9 @@ export async function POST(request) {
       email, password, email_confirm: true
     })
     if (authError) throw authError
+    createdAuthUserId = authUser.user.id
 
-    // Save to users table
+    // Save to users table — si falla, hacemos rollback del auth user
     const { data: user, error: userError } = await supabaseAdmin.from('users').insert({
       id: authUser.user.id, email, name: nombre, role: 'arq', plan: plan || 'mensual'
     }).select().single()
@@ -48,7 +65,7 @@ export async function POST(request) {
       })
     }
 
-    // Try send welcome email via Resend if available
+    // Try send welcome email via Resend if available (server-side, sin password)
     if (process.env.RESEND_API_KEY) {
       try {
         const { Resend } = await import('resend')
@@ -56,15 +73,15 @@ export async function POST(request) {
         await resend.emails.send({
           from: 'ArchPortal <noreply@archportal.net>',
           to: email,
-          subject: 'Bienvenido a ArchPortal — Tus credenciales de acceso',
+          subject: 'Bienvenido a ArchPortal',
           html: `
             <div style="font-family:Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;background:#F5F4F1;padding:48px 24px;">
               <div style="background:#fff;border:1px solid #E2E1DC;padding:48px;">
                 <p style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6B6A62;margin:0 0 24px;">Cuenta activada</p>
                 <h1 style="font-family:Georgia,serif;font-size:32px;font-weight:400;color:#0C0C0C;margin:0 0 24px;">Bienvenido a ArchPortal, ${nombre}</h1>
-                <p style="font-size:14px;color:#3D3C36;line-height:1.8;margin:0 0 24px;">Tu cuenta ha sido creada exitosamente.</p>
+                <p style="font-size:14px;color:#3D3C36;line-height:1.8;margin:0 0 24px;">Tu cuenta ha sido creada exitosamente. Ingresa al portal con el correo y la contraseña que elegiste durante el registro.</p>
                 <div style="background:#F5F4F1;padding:24px;margin:0 0 32px;">
-                  <p style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#9A9990;margin:0 0 12px;">Tus credenciales</p>
+                  <p style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#9A9990;margin:0 0 12px;">Tu cuenta</p>
                   <p style="margin:0;font-size:14px;color:#0C0C0C;"><strong>Usuario:</strong> ${email}</p>
                   <p style="margin:8px 0 0;font-size:14px;color:#0C0C0C;"><strong>Plan:</strong> ${plan || 'Mensual'}</p>
                 </div>
@@ -78,13 +95,21 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json({
-      success: true, user,
-      credentials: { email, password }
-    })
+    // No regresamos credentials con password en plaintext
+    return NextResponse.json({ success: true, user })
 
   } catch (error) {
+    // Rollback: si creamos el auth user pero falló algo después, lo borramos
+    if (createdAuthUserId) {
+      try {
+        await supabaseAdmin.auth.admin.deleteUser(createdAuthUserId)
+        console.warn('Rolled back auth user:', createdAuthUserId)
+      } catch (rbErr) {
+        console.error('Rollback failed for', createdAuthUserId, rbErr)
+      }
+    }
+
     console.error('Register error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'No se pudo crear la cuenta. Intenta de nuevo.' }, { status: 500 })
   }
 }
