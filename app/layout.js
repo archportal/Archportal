@@ -4,6 +4,8 @@
 
 import './globals.css'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const siteUrl = 'https://archportal.net'
 
@@ -102,16 +104,8 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         {children}
-
-        {/* Plausible Analytics (gratis, GDPR-friendly, ~1KB).
-            Registra el dominio archportal.net en plausible.io antes de deployar. */}
-        <Script
-          defer
-          data-domain="archportal.net"
-          src="https://plausible.io/js/script.js"
-          strategy="afterInteractive"
-        />
-
+        <Analytics />
+        <SpeedInsights />
         {/* EmailJS SDK — necesario porque emailjs.js depende de window.emailjs */}
         <Script
           src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
