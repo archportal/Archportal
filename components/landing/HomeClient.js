@@ -9,6 +9,7 @@ import PrivacyModal from '@/components/landing/PrivacyModal'
 import Portal from '@/components/portal/Portal'
 import MasterPanel from '@/components/master/MasterPanel'
 import { getPlansForLanding } from '@/lib/plans'
+import { sendMembershipEmail } from '@/lib/emailjs'
 
 export default function HomeClient() {
   const [lang, setLang] = useState('es')
@@ -29,6 +30,16 @@ export default function HomeClient() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('payment') === 'success') {
       setPaymentSuccess(true)
+
+      // Disparar email de membresía con los datos del registro recién completado
+      const email = params.get('email')
+      const nombre = params.get('nombre')
+      const plan = params.get('plan')
+      if (email && nombre) {
+        sendMembershipEmail(nombre, email, plan || 'mensual')
+          .catch(err => console.warn('Membership email failed:', err))
+      }
+
       window.history.replaceState({}, '', '/')
       setTimeout(() => setPaymentSuccess(false), 8000)
     }
