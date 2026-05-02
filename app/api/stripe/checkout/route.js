@@ -43,7 +43,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'La contraseña debe tener al menos 10 caracteres' }, { status: 400 })
     }
 
-    // Validar cupón ANTES de crear la sesión — si pasaron uno y no existe, error explícito
+    // Validar cupón ANTES de crear la sesión
     let promotionCodeId = null
     if (coupon) {
       promotionCodeId = await getPromotionCodeId(coupon)
@@ -53,13 +53,17 @@ export async function POST(request) {
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // SEGURIDAD: nunca metas el password en Stripe metadata.
-    // Hash el password con bcrypt y guarda los datos del registro en una
-    // tabla temporal `pending_registrations`. Pasamos solo el ID a Stripe.
-    // En /api/stripe/success leeremos por ese ID, crearemos el user real,
-    // y borraremos el pending.
+    // SEGURIDAD:
+    //   - password_hash (bcrypt) se guarda permanentemente en pending_registrations
+    //     hasta que se consume (queda como histórico de ese intento)
+    //   - password_temp (plaintext) se guarda SOLO durante la ventana de checkout
+    //     (30 min máximo, vía expires_at). Se borra al consumir el pending en
+    //     /api/stripe/success. Es necesario porque Supabase Auth requiere plaintext
+    //     para createUser().
     //
-    // Requiere migración SQL — ver supabase/migration_pending_registrations.sql
+    //   La tabla pending_registrations solo es accesible con service_role key
+    //   (RLS deniega anon/authenticated). Esto significa que el plaintext nunca
+    //   sale de la red de Supabase y vive máximo 30 minutos.
     // ──────────────────────────────────────────────────────────────────
     const passwordHash = await bcrypt.hash(password, 12)
 
@@ -68,12 +72,13 @@ export async function POST(request) {
       .insert({
         email,
         password_hash: passwordHash,
+        password_temp: password, // plaintext temporal — se borra en success
         nombre,
         despacho: despacho || null,
         ciudad: ciudad || null,
         tel: tel || null,
         plan: canonicalPlan,
-        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       })
       .select()
       .single()
@@ -93,8 +98,7 @@ export async function POST(request) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}?payment=cancelled`,
       locale: 'es',
-      // Trial de 7 días — alinea con la promesa de "7 días de garantía".
-      // Comentar la siguiente línea si NO quieres trial automático.
+      // Trial de 7 días
       subscription_data: { trial_period_days: 7 },
     }
 
