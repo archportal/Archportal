@@ -1,7 +1,4 @@
 // app/layout.js
-// IMPORTANTE: si ya tienes un layout.js, MERGE este metadata + Plausible Script
-// en el tuyo en lugar de reemplazarlo completo, para no perder otras configuraciones.
-
 import './globals.css'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
@@ -45,7 +42,7 @@ export const metadata = {
       'Tus clientes consultan avances, costos y fotos de obra cuando quieren. Tú trabajas tranquilo.',
     images: [
       {
-        url: '/og-image.jpg', // crear 1200×630 en public/
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'ArchPortal — Portal de gestión para arquitectos y constructores',
