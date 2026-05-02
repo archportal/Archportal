@@ -353,7 +353,7 @@ export default function HomeClient() {
           </div>
           <div className="why-illustration">
             <img
-              src="/archportal-hero.svg"
+              src="/archportal-hero.jpg"
               alt="Ilustración arquitectónica — sección de proyecto"
               style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
             />
