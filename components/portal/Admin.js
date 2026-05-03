@@ -1,8 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { sendBitacoraEmail, sendClientAccessEmail } from '@/lib/emailjs'
-import { supabase } from '@/lib/supabase'
-import { uploadToSupabaseWithRetry } from '@/lib/uploadWithRetry'
+import { uploadToApiWithRetry } from '@/lib/uploadWithRetry'
 
 // ===== Constantes visuales (mismo lenguaje que Dashboard) =====
 const CARD_RADIUS = 12
@@ -142,17 +141,17 @@ async function extractPdfTextClient(file) {
   } catch (e) { console.warn('PDF client extraction error:', e.message); return null }
 }
 
-async function uploadFile(file, projectId, bucket, onProgress, onRetry) {
+async function uploadFile(file, projectId, bucket, onProgress, onRetry, userId) {
   if (!file) return null
   onProgress?.(5)
   const processed = await compressImage(file, onProgress)
   onProgress?.(35)
-  const fileName = processed.name.replace(/\s/g, '_')
-  const path = `${projectId}/${Date.now()}_${fileName}`
 
-  return uploadToSupabaseWithRetry(supabase, processed, bucket, path, {
-    contentType: processed.type,
-    upsert: true,
+  return uploadToApiWithRetry(processed, {
+    projectId,
+    bucket,
+    userId: userId || '',
+  }, {
     onProgress,
     onRetry,
     timeoutMs: 60000,
@@ -561,7 +560,8 @@ export default function Admin({ project, user, onRefresh }) {
             const result = await uploadFile(
               file, p.id, 'project-photos',
               pct => { newProgress[file.name] = pct; setUploadProgress({...newProgress}) },
-              (attempt, max) => { showToast(`Conexión inestable, reintentando (${attempt}/${max})…`) }
+              (attempt, max) => { showToast(`Conexión inestable, reintentando (${attempt}/${max})…`) },
+              user?.id
             )
             if(result?.url) newPhotos.unshift({nombre:file.name,url:result.url,fecha:new Date().toLocaleDateString('es-MX')})
             else failedFiles.push(file.name)
@@ -640,7 +640,8 @@ export default function Admin({ project, user, onRefresh }) {
           const result=archivoFile?await uploadFile(
             archivoFile, p.id, 'project-files',
             null,
-            (attempt, max) => { showToast(`Conexión inestable, reintentando (${attempt}/${max})…`) }
+            (attempt, max) => { showToast(`Conexión inestable, reintentando (${attempt}/${max})…`) },
+            user?.id
           ):{url:null}
           if(archivoFile && !result?.url) {
             showToast('No se pudo subir el archivo. Revisa tu conexión e intenta de nuevo.')

@@ -20,10 +20,60 @@ const emailHtml = (titulo, proyecto, mensaje, cta = null) => `
     <div style="background:#F5F4F1;border-left:3px solid #0C0C0C;padding:20px 24px;margin-bottom:32px;">
       <p style="font-size:14px;color:#3D3C36;font-weight:300;line-height:1.8;margin:0;">${mensaje}</p>
     </div>
-    ${cta ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">${cta}</a>` : ''}
+    ${cta ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://archportal.net'}" style="display:inline-block;padding:14px 32px;background:#0C0C0C;color:#fff;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;">${cta}</a>` : ''}
   </div>
   <p style="text-align:center;margin-top:24px;font-size:11px;color:#9A9990;font-family:Helvetica,sans-serif;">ArchPortal — Portal para despachos de arquitectura</p>
 </div>`
+
+// ===== Genera signed URLs para items con paths (no URLs completas) =====
+// Items con `url` que NO empieza con "http" se considera path y se firma.
+// Items con URL completa (legacy) se devuelven tal cual (fallarán al cargar — buckets son privados).
+async function generateSignedUrls(items, bucket) {
+  if (!items || items.length === 0) return items || []
+
+  const SIGNED_URL_EXPIRY = 3600 // 1 hora
+
+  // Separar items por tipo
+  const itemsToSign = []
+  const itemsLegacy = []
+
+  items.forEach((item, idx) => {
+    const u = item.url || ''
+    if (u && !u.startsWith('http')) {
+      itemsToSign.push({ idx, path: u })
+    } else {
+      itemsLegacy.push({ idx })
+    }
+  })
+
+  if (itemsToSign.length === 0) return items
+
+  try {
+    const paths = itemsToSign.map(i => i.path)
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .createSignedUrls(paths, SIGNED_URL_EXPIRY)
+
+    if (error) {
+      console.error(`[projects] Signed URLs error for ${bucket}:`, error)
+      return items
+    }
+
+    // Crear copia de items con URLs firmadas inyectadas
+    const result = items.map(item => ({ ...item }))
+    data.forEach((d, i) => {
+      const targetIdx = itemsToSign[i].idx
+      if (d.signedUrl && !d.error) {
+        result[targetIdx].url = d.signedUrl
+      }
+    })
+
+    return result
+  } catch (e) {
+    console.error(`[projects] Unexpected error generating signed URLs:`, e)
+    return items
+  }
+}
 
 export async function GET(request) {
   try {
@@ -42,7 +92,22 @@ export async function GET(request) {
         supabaseAdmin.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false }),
         supabaseAdmin.from('project_questions').select('*').eq('project_id', projectId).order('created_at', { ascending: false }),
       ])
-      return NextResponse.json({ project, stages: stages.data||[], costs: costs.data||[], posts: posts.data||[], photos: photos.data||[], files: files.data||[], questions: questions.data||[] })
+
+      // Generar signed URLs en paralelo
+      const [photosSigned, filesSigned] = await Promise.all([
+        generateSignedUrls(photos.data || [], 'project-photos'),
+        generateSignedUrls(files.data || [], 'project-files'),
+      ])
+
+      return NextResponse.json({
+        project,
+        stages: stages.data || [],
+        costs: costs.data || [],
+        posts: posts.data || [],
+        photos: photosSigned,
+        files: filesSigned,
+        questions: questions.data || [],
+      })
     }
 
     if (userId) {
