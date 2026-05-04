@@ -192,24 +192,145 @@ function HelpModal({ user, onClose }) {
 }
 
 function ProjectCard({ proj, onSelect, onDelete }) {
+  const CARD_RADIUS = 12
+  const BTN_RADIUS = 6
+
+  const etapa = proj.etapa_actual || 'Por iniciar'
+  const etapaLower = etapa.toLowerCase()
+
+  // Colores semánticos para el pill de etapa (mismo lenguaje que tags de archivos)
+  const etapaColors = (() => {
+    if (etapaLower.includes('proceso') || etapaLower.includes('progreso') || etapaLower.includes('curso') || etapaLower.includes('construc'))
+      return { bg: '#EBF2E4', color: '#2D5016' }
+    if (etapaLower.includes('finaliz') || etapaLower.includes('entreg') || etapaLower.includes('completad') || etapaLower.includes('termin'))
+      return { bg: '#E4EBF8', color: '#1A3A8B' }
+    if (etapaLower.includes('pausa') || etapaLower.includes('detenido') || etapaLower.includes('cancel'))
+      return { bg: '#FBE4E4', color: '#8B1A1A' }
+    return { bg: '#F0EFEC', color: '#6B6A62' }
+  })()
+
   return (
-    <div onClick={() => onSelect(proj)} style={{ background:'var(--white)', border:'1px solid var(--border)', padding:28, cursor:'pointer', transition:'all .2s' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor='var(--ink)'; e.currentTarget.style.transform='translateY(-2px)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.transform='none' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
-        <div>
-          <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:22, fontWeight:400, color:'var(--ink)', marginBottom:4 }}>{proj.nombre}</div>
-          <div style={{ fontSize:12, fontWeight:300, color:'var(--g400)' }}>{proj.cliente || '—'}</div>
-        </div>
-        <span style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'var(--g400)', border:'1px solid var(--border)', padding:'3px 8px', whiteSpace:'nowrap' }}>{proj.etapa_actual || 'Por iniciar'}</span>
+    <div onClick={() => onSelect(proj)} style={{
+      background: 'var(--white)',
+      border: '1px solid var(--border)',
+      padding: 24,
+      borderRadius: CARD_RADIUS,
+      cursor: 'pointer',
+      transition: 'border-color .2s, box-shadow .2s',
+      position: 'relative',
+      overflow: 'hidden',
+    }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = 'var(--ink)'
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,.06)'
+        const arrow = e.currentTarget.querySelector('.proj-arrow')
+        if (arrow) { arrow.style.opacity = '1'; arrow.style.transform = 'translateX(0)' }
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = 'var(--border)'
+        e.currentTarget.style.boxShadow = 'none'
+        const arrow = e.currentTarget.querySelector('.proj-arrow')
+        if (arrow) { arrow.style.opacity = '0'; arrow.style.transform = 'translateX(-4px)' }
+      }}>
+
+      {/* Eyebrow dorado */}
+      <div style={{
+        fontSize: 10,
+        letterSpacing: '.16em',
+        textTransform: 'uppercase',
+        color: 'var(--gold)',
+        fontWeight: 500,
+        marginBottom: 10,
+      }}>
+        Proyecto
       </div>
-      <div style={{ height:1, background:'var(--border)', marginBottom:16 }} />
-      <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, fontWeight:300, color:'var(--g400)', marginBottom:14 }}>
+
+      {/* Header: nombre + pill de etapa */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: 24,
+            fontWeight: 400,
+            color: 'var(--ink)',
+            marginBottom: 4,
+            lineHeight: 1.2,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>{proj.nombre}</div>
+          <div style={{ fontSize: 12, fontWeight: 300, color: 'var(--g500)' }}>
+            {proj.cliente || '—'}
+          </div>
+        </div>
+        <span style={{
+          fontSize: 10,
+          padding: '3px 10px',
+          letterSpacing: '.08em',
+          textTransform: 'uppercase',
+          background: etapaColors.bg,
+          color: etapaColors.color,
+          fontWeight: 600,
+          borderRadius: 999,
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+        }}>{etapa}</span>
+      </div>
+
+      <div style={{ height: 1, background: 'var(--border)', marginBottom: 14 }} />
+
+      {/* Metadata row */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        fontSize: 11,
+        fontWeight: 300,
+        color: 'var(--g400)',
+        marginBottom: 16,
+        gap: 8,
+        flexWrap: 'wrap',
+      }}>
         <span>{proj.ubicacion?.split(',')[0] || '—'}</span>
         <span>Entrega: {proj.entrega || 'Por definir'}</span>
       </div>
-      <div style={{ display:'flex', justifyContent:'flex-end', paddingTop:14, borderTop:'1px solid var(--border)' }}>
-        <button onClick={e => { e.stopPropagation(); onDelete(proj.id) }} style={{ padding:'5px 14px', background:'transparent', border:'1px solid var(--border)', color:'var(--g400)', fontSize:10, letterSpacing:'.08em', textTransform:'uppercase', cursor:'pointer', fontFamily:'Jost, sans-serif' }}>
+
+      {/* Footer: indicador dorado + eliminar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 14,
+        borderTop: '1px solid var(--border)',
+      }}>
+        <span className="proj-arrow" style={{
+          fontSize: 10,
+          color: 'var(--gold)',
+          fontWeight: 600,
+          letterSpacing: '.1em',
+          textTransform: 'uppercase',
+          fontFamily: 'Jost, sans-serif',
+          opacity: 0,
+          transform: 'translateX(-4px)',
+          transition: 'opacity .2s, transform .2s',
+        }}>
+          Abrir →
+        </span>
+        <button onClick={e => { e.stopPropagation(); onDelete(proj.id) }} style={{
+          padding: '6px 12px',
+          background: 'transparent',
+          border: '1px solid var(--border)',
+          color: 'var(--g400)',
+          fontSize: 10,
+          letterSpacing: '.08em',
+          textTransform: 'uppercase',
+          cursor: 'pointer',
+          fontFamily: 'Jost, sans-serif',
+          borderRadius: BTN_RADIUS,
+          transition: 'border-color .15s, color .15s',
+        }}
+          onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.borderColor = 'var(--danger)'; e.currentTarget.style.color = 'var(--danger)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--g400)' }}
+        >
           Eliminar
         </button>
       </div>
@@ -278,12 +399,12 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
               </span>
             </div>
           </div>
-          <button onClick={() => { if(atLimit){ setError(`Tu plan ${plan} permite máximo ${limit} proyecto(s). Actualiza tu plan para agregar más.`); setShowForm(false); return; } setShowForm(!showForm) }} style={{ padding:'12px 24px', background: atLimit ? 'var(--g300)' : 'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor: atLimit ? 'not-allowed' : 'pointer' }}>+ Nuevo proyecto</button>
+          <button onClick={() => { if(atLimit){ setError(`Tu plan ${plan} permite máximo ${limit} proyecto(s). Actualiza tu plan para agregar más.`); setShowForm(false); return; } setShowForm(!showForm) }} style={{ padding:'12px 24px', background: atLimit ? 'var(--g300)' : 'var(--ink)', color:'var(--white)', border:'none', fontFamily:'Jost, sans-serif', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', cursor: atLimit ? 'not-allowed' : 'pointer', borderRadius:6 }}>+ Nuevo proyecto</button>
         </div>
-        {error && <p style={{ fontSize:12, color:'#B83232', marginBottom:16, padding:'12px 16px', background:'#FBE4E4' }}>{error}</p>}
+        {error && <p style={{ fontSize:12, color:'#B83232', marginBottom:16, padding:'12px 16px', background:'#FBE4E4', borderRadius:8 }}>{error}</p>}
 
         {showForm && (
-          <div style={{ background:'var(--white)', border:'1px solid var(--border)', padding:32, marginBottom:32 }}>
+          <div style={{ background:'var(--white)', border:'1px solid var(--border)', padding:32, marginBottom:32, borderRadius:12 }}>
             <h3 style={{ fontFamily:'Cormorant Garamond, serif', fontSize:24, fontWeight:400, color:'var(--ink)', marginBottom:24 }}>Nuevo proyecto</h3>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'0 24px' }}>
               {[['nombre','Nombre *','Casa López'],['cliente','Cliente','Familia López'],['ubicacion','Ubicación','Ensenada, BC']].map(([k,label,ph]) => (
@@ -295,7 +416,7 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
             </div>
             {error && !atLimit && <p style={{ fontSize:12, color:'#B83232', marginBottom:12 }}>{error}</p>}
             <div style={{ display:'flex', gap:10, marginTop:8 }}>
-              <button onClick={() => setShowForm(false)} style={{ padding:'10px 24px', background:'transparent', border:'1px solid var(--border)', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase' }}>Cancelar</button>
+              <button onClick={() => setShowForm(false)} style={{ padding:'10px 24px', background:'transparent', border:'1px solid var(--border)', fontFamily:'Jost, sans-serif', fontSize:11, color:'var(--g500)', cursor:'pointer', letterSpacing:'.08em', textTransform:'uppercase', borderRadius:6 }}>Cancelar</button>
               <button className="btn-submit" onClick={crear} disabled={loading} style={{ maxWidth:180, marginTop:0 }}>{loading?'...':'Crear proyecto'}</button>
             </div>
           </div>
@@ -308,7 +429,7 @@ function ProjectsScreen({ user, projects, onSelect, onCreate, onDelete }) {
               placeholder="Buscar proyecto o cliente..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width:'100%', padding:'12px 16px 12px 40px', border:'1px solid var(--border)', fontFamily:'Jost,sans-serif', fontSize:13, fontWeight:300, color:'var(--ink)', background:'var(--white)', outline:'none', boxSizing:'border-box' }}
+              style={{ width:'100%', padding:'12px 16px 12px 40px', border:'1px solid var(--border)', fontFamily:'Jost,sans-serif', fontSize:13, fontWeight:300, color:'var(--ink)', background:'var(--white)', outline:'none', boxSizing:'border-box', borderRadius:8 }}
             />
             <span style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', fontSize:14, color:'var(--g300)' }}>🔍</span>
             {search && <button onClick={()=>setSearch('')} style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', fontSize:16, color:'var(--g400)' }}>✕</button>}
