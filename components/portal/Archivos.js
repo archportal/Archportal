@@ -32,9 +32,31 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
   const p = project?.project || project || {}
   const files = project?.files || p.files || []
   const [deleting, setDeleting] = useState(null)
+  const [opening, setOpening] = useState(null)
   const [toast, setToast] = useState('')
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  const openFile = async (f, i) => {
+    setOpening(i)
+    try {
+      const res = await fetch('/api/files/sign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: f.path || null, url: f.url || null })
+      })
+      const data = await res.json()
+      if (res.ok && data.signedUrl) {
+        window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+      } else {
+        showToast(data.error || 'No se pudo abrir el archivo')
+      }
+    } catch {
+      showToast('Error de red al abrir el archivo')
+    } finally {
+      setOpening(null)
+    }
+  }
 
   const deleteFile = async (i) => {
     if (!confirm('¿Eliminar este archivo?')) return
@@ -117,8 +139,8 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
 
                   {/* Botones compactos */}
                   <div style={{display:'flex',gap:6,flexShrink:0,alignItems:'center'}}>
-                    {f.url && (
-                      <a href={f.url} target="_blank" rel="noreferrer"
+                    {(f.url || f.path) && (
+                      <button onClick={()=>openFile(f, i)} disabled={opening===i}
                         style={{
                           display:'inline-flex',
                           alignItems:'center',
@@ -127,7 +149,7 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
                           color:'var(--ink)',
                           background:'var(--white)',
                           border:'1px solid var(--border)',
-                          textDecoration:'none',
+                          cursor: opening===i ? 'wait' : 'pointer',
                           padding:'7px 12px',
                           fontFamily:'Jost,sans-serif',
                           letterSpacing:'.06em',
@@ -135,12 +157,13 @@ export default function Archivos({ project, user, lang, onRefresh, isArq }) {
                           fontWeight:500,
                           borderRadius:BTN_RADIUS,
                           transition:'all .15s',
+                          opacity: opening===i ? 0.6 : 1,
                         }}
-                        onMouseEnter={e=>{e.currentTarget.style.background='var(--ink)';e.currentTarget.style.color='var(--white)';e.currentTarget.style.borderColor='var(--ink)'}}
-                        onMouseLeave={e=>{e.currentTarget.style.background='var(--white)';e.currentTarget.style.color='var(--ink)';e.currentTarget.style.borderColor='var(--border)'}}>
+                        onMouseEnter={e=>{if(opening!==i){e.currentTarget.style.background='var(--ink)';e.currentTarget.style.color='var(--white)';e.currentTarget.style.borderColor='var(--ink)'}}}
+                        onMouseLeave={e=>{if(opening!==i){e.currentTarget.style.background='var(--white)';e.currentTarget.style.color='var(--ink)';e.currentTarget.style.borderColor='var(--border)'}}}>
                         <IconDownload />
-                        <span>Descargar</span>
-                      </a>
+                        <span>{opening===i ? 'Abriendo...' : 'Descargar'}</span>
+                      </button>
                     )}
                     {isArq && (
                       <button onClick={()=>deleteFile(i)} disabled={deleting===i}
