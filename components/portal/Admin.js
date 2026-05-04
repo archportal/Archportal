@@ -648,7 +648,7 @@ export default function Admin({ project, user, onRefresh }) {
             setSaving(false)
             return
           }
-          const newFiles=[...filesDB,{...archivoForm,url:result?.url||null,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
+          const newFiles=[...filesDB,{...archivoForm,url:result?.url||null,path:result?.path||result?.url||null,fecha:archivoForm.fecha||new Date().toLocaleDateString('es-MX')}]
           let extraPatches={}
           if(extractedText){ const currentKb=(()=>{try{return typeof p.knowledge_base==='string'?JSON.parse(p.knowledge_base):(Array.isArray(p.knowledge_base)?p.knowledge_base:[])}catch{return[]}})(); extraPatches={knowledge_base:[...currentKb,{tema:archivoForm.nombre,info:extractedText}]} }
           const ok=await api({files:newFiles,...extraPatches})

@@ -10,7 +10,7 @@ const BUCKET = 'project-files'
 // Extrae el path del archivo desde una signed URL antigua de Supabase
 // Ej: https://xxx.supabase.co/storage/v1/object/sign/project-files/UUID/123_archivo.pdf?token=...
 //     -> "UUID/123_archivo.pdf"
-function extractPathFromUrl(url) {
+function extractPathFromSignedUrl(url) {
   try {
     const u = new URL(url)
     const marker = `/storage/v1/object/sign/${BUCKET}/`
@@ -22,15 +22,28 @@ function extractPathFromUrl(url) {
   }
 }
 
+// Resuelve un path de Storage desde varias entradas posibles:
+// 1. Si viene `path` explícito → úsalo
+// 2. Si viene `url` que parece signed URL → extraer path
+// 3. Si viene `url` que parece ser un path (no http) → úsalo directamente
+function resolvePath({ path, url }) {
+  if (path && typeof path === 'string') return path
+
+  if (url && typeof url === 'string') {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return extractPathFromSignedUrl(url)
+    }
+    // Es un path directo (caso: archivos recién subidos antes del refetch)
+    return url
+  }
+
+  return null
+}
+
 export async function POST(req) {
   try {
     const body = await req.json()
-    let { path, url } = body
-
-    // Si no viene el path explícito, intentar extraerlo del URL viejo
-    if (!path && url) {
-      path = extractPathFromUrl(url)
-    }
+    const path = resolvePath(body)
 
     if (!path) {
       return Response.json({ error: 'Falta path o url válido' }, { status: 400 })
@@ -42,11 +55,13 @@ export async function POST(req) {
       .createSignedUrl(path, 3600) // 1 hora
 
     if (error) {
+      console.error('[files/sign] Storage error:', error)
       return Response.json({ error: error.message }, { status: 500 })
     }
 
     return Response.json({ signedUrl: data.signedUrl })
   } catch (err) {
+    console.error('[files/sign] Unexpected error:', err)
     return Response.json({ error: err.message }, { status: 500 })
   }
 }

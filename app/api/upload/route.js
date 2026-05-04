@@ -5,6 +5,19 @@ export const maxDuration = 60
 
 const ALLOWED_BUCKETS = ['project-photos', 'project-files']
 
+// Sanitiza nombre de archivo preservando información (acentos → letra base, ñ → n, etc.)
+function sanitizeFileName(name) {
+  if (!name) return `upload_${Date.now()}`
+  return name
+    .normalize('NFD')                          // descompone acentos: á → a + ́
+    .replace(/[\u0300-\u036f]/g, '')          // remueve marcas de acento combinantes
+    .replace(/\s+/g, '_')                     // espacios → underscore
+    .replace(/[^a-zA-Z0-9._-]/g, '')          // elimina cualquier otro carácter raro
+    .replace(/_+/g, '_')                      // colapsa underscores múltiples
+    .replace(/^[._-]+|[._-]+$/g, '')          // sin puntos/guiones al inicio/final
+    || `upload_${Date.now()}`                  // fallback si quedó vacío
+}
+
 export async function POST(request) {
   try {
     const formData = await request.formData()
@@ -41,7 +54,7 @@ export async function POST(request) {
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const fileName = (file.name || `upload_${Date.now()}`).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
+    const fileName = sanitizeFileName(file.name)
     const path = `${projectId}/${Date.now()}_${fileName}`
 
     const { error } = await supabaseAdmin.storage
